@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils'
 const SETTINGS_LINKS = [
   { href: '/settings/account',     label: 'Account',     icon: 'person'       },
   { href: '/settings/preferences', label: 'Preferences', icon: 'tune'         },
-  { href: '/settings/billing',     label: 'Billing',     icon: 'credit_card'  },
   { href: '/settings/team',        label: 'Team',        icon: 'group'        },
   { href: '/settings/api-keys',    label: 'API Keys',    icon: 'key'          },
 ] as const

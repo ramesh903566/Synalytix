@@ -13,7 +13,6 @@ const COMMANDS = [
   { label: 'Go to Insights',    icon: 'psychology',  href: '/insights'           },
   { label: 'Account Settings',  icon: 'person',      href: '/settings/account'   },
   { label: 'Preferences',       icon: 'tune',        href: '/settings/preferences'},
-  { label: 'Billing Settings',  icon: 'credit_card', href: '/settings/billing'   },
   { label: 'Manage Team',       icon: 'group',       href: '/settings/team'      },
   { label: 'API Keys',          icon: 'key',         href: '/settings/api-keys'  },
 ]

@@ -1,0 +1,1 @@
+ALTER TABLE organizations DROP COLUMN IF EXISTS stripe_customer_id; ALTER TABLE organizations DROP COLUMN IF EXISTS stripe_subscription_id; ALTER TABLE organizations DROP COLUMN IF EXISTS plan; DROP TABLE IF EXISTS billing_events;

@@ -1,0 +1,292 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:20px 0;font-family:var(--font-sans)}
+.layer-row{display:flex;gap:12px;margin-bottom:12px;align-items:stretch}
+.layer-label{writing-mode:vertical-lr;transform:rotate(180deg);font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em;text-transform:uppercase;min-width:28px;display:flex;align-items:center;justify-content:center;padding:8px 0}
+.cards{display:flex;gap:10px;flex:1;flex-wrap:wrap}
+.card{flex:1;min-width:140px;border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.card:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.card-icon{font-size:16px;color:var(--color-text-secondary)}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.card-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.55}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.tag{font-size:11px;padding:1px 7px;border-radius:20px;border:1px solid}
+.t-blue{color:var(--color-text-info);border-color:var(--color-border-info);background:var(--color-background-info)}
+.t-green{color:var(--color-text-success);border-color:var(--color-border-success);background:var(--color-background-success)}
+.t-amber{color:var(--color-text-warning);border-color:var(--color-border-warning);background:var(--color-background-warning)}
+.t-red{color:var(--color-text-danger);border-color:var(--color-border-danger);background:var(--color-background-danger)}
+.t-gray{color:var(--color-text-secondary);border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.divider{height:1px;background:var(--color-border-tertiary);margin:16px 0;position:relative}
+.divider-label{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--color-background-primary);padding:0 10px;font-size:11px;color:var(--color-text-tertiary);white-space:nowrap}
+.detail{border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:0;overflow:hidden;margin-top:20px;display:none}
+.detail.open{display:block}
+.detail-header{padding:12px 16px;background:var(--color-background-secondary);border-bottom:1px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.detail-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.detail-close{font-size:18px;color:var(--color-text-tertiary);cursor:pointer;line-height:1;padding:0 4px}
+.detail-body{padding:16px}
+.step-list{display:flex;flex-direction:column;gap:10px}
+.step{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary)}
+.step-num{font-size:11px;font-weight:500;min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sn-blue{background:var(--color-background-info);color:var(--color-text-info)}
+.sn-green{background:var(--color-background-success);color:var(--color-text-success)}
+.sn-amber{background:var(--color-background-warning);color:var(--color-text-warning)}
+.sn-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+.sn-gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.step-content{}
+.step-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.step-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.55}
+.arch-note{padding:10px 14px;border-left:3px solid var(--color-border-info);background:var(--color-background-info);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;margin-bottom:14px;font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.arch-note strong{color:var(--color-text-info);font-weight:500}
+</style>
+
+<div class="wrap">
+
+<div class="layer-row">
+  <div class="layer-label">layer 1 — done</div>
+  <div class="cards">
+    <div class="card" style="border-color:var(--color-border-success);background:var(--color-background-success)" onclick="open_detail('backend')">
+      <div class="card-head"><i class="ti ti-server card-icon" aria-hidden="true" style="color:var(--color-text-success)"></i><span class="card-title" style="color:var(--color-text-success)">Backend API</span></div>
+      <div class="card-desc" style="color:var(--color-text-success)">8 phases complete. REST + OpenAPI, Supabase, Railway, BullMQ, all services.</div>
+      <div class="card-tags"><span class="tag t-green">Complete</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><span class="divider-label">you are here — what to build next</span></div>
+
+<div class="layer-row">
+  <div class="layer-label">layer 2 — frontend</div>
+  <div class="cards">
+    <div class="card" onclick="open_detail('design')">
+      <div class="card-head"><i class="ti ti-palette card-icon" aria-hidden="true"></i><span class="card-title">Design system</span></div>
+      <div class="card-desc">Tokens, components, Storybook. Build once, use everywhere.</div>
+      <div class="card-tags"><span class="tag t-blue">First</span><span class="tag t-gray">shadcn/ui</span></div>
+    </div>
+    <div class="card" onclick="open_detail('nextjs')">
+      <div class="card-head"><i class="ti ti-layout card-icon" aria-hidden="true"></i><span class="card-title">Next.js app</span></div>
+      <div class="card-desc">App Router, auth flow, shell, sidebar, all feature modules.</div>
+      <div class="card-tags"><span class="tag t-blue">Core</span><span class="tag t-gray">Next.js 14</span></div>
+    </div>
+    <div class="card" onclick="open_detail('dashboard')">
+      <div class="card-head"><i class="ti ti-chart-bar card-icon" aria-hidden="true"></i><span class="card-title">Dashboard builder</span></div>
+      <div class="card-desc">Drag-and-drop widgets, chart library, NLQ interface.</div>
+      <div class="card-tags"><span class="tag t-amber">Complex</span><span class="tag t-gray">Recharts</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="layer-row">
+  <div class="layer-label">layer 3 — integration</div>
+  <div class="cards">
+    <div class="card" onclick="open_detail('e2e')">
+      <div class="card-head"><i class="ti ti-plug card-icon" aria-hidden="true"></i><span class="card-title">Frontend ↔ backend</span></div>
+      <div class="card-desc">API client, TanStack Query hooks, Supabase Realtime subscriptions.</div>
+      <div class="card-tags"><span class="tag t-blue">Critical</span></div>
+    </div>
+    <div class="card" onclick="open_detail('testing')">
+      <div class="card-head"><i class="ti ti-test-pipe card-icon" aria-hidden="true"></i><span class="card-title">E2E testing</span></div>
+      <div class="card-desc">Playwright: signup → upload → build dashboard → share report.</div>
+      <div class="card-tags"><span class="tag t-green">Playwright</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><span class="divider-label">go-to-market</span></div>
+
+<div class="layer-row">
+  <div class="layer-label">layer 4 — gtm</div>
+  <div class="cards">
+    <div class="card" onclick="open_detail('alpha')">
+      <div class="card-head"><i class="ti ti-users card-icon" aria-hidden="true"></i><span class="card-title">Closed alpha</span></div>
+      <div class="card-desc">5–10 design partners. Real data, weekly feedback loops.</div>
+      <div class="card-tags"><span class="tag t-amber">Users</span></div>
+    </div>
+    <div class="card" onclick="open_detail('landing')">
+      <div class="card-head"><i class="ti ti-world card-icon" aria-hidden="true"></i><span class="card-title">Marketing site</span></div>
+      <div class="card-desc">Landing page, pricing, waitlist, changelog, docs site.</div>
+      <div class="card-tags"><span class="tag t-gray">Growth</span></div>
+    </div>
+    <div class="card" onclick="open_detail('launch')">
+      <div class="card-head"><i class="ti ti-rocket card-icon" aria-hidden="true"></i><span class="card-title">Public launch</span></div>
+      <div class="card-desc">Product Hunt, Stripe live keys, SLAs, support channel.</div>
+      <div class="card-tags"><span class="tag t-red">Launch</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="layer-row">
+  <div class="layer-label">layer 5 — scale</div>
+  <div class="cards">
+    <div class="card" onclick="open_detail('obs')">
+      <div class="card-head"><i class="ti ti-activity card-icon" aria-hidden="true"></i><span class="card-title">Observability</span></div>
+      <div class="card-desc">PostHog funnels, Sentry alerts, uptime monitoring, on-call.</div>
+      <div class="card-tags"><span class="tag t-gray">PostHog</span></div>
+    </div>
+    <div class="card" onclick="open_detail('enterprise')">
+      <div class="card-head"><i class="ti ti-building card-icon" aria-hidden="true"></i><span class="card-title">Enterprise track</span></div>
+      <div class="card-desc">SSO/SAML, SOC 2 audit, custom contracts, SLA tiers.</div>
+      <div class="card-tags"><span class="tag t-amber">Later</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail panels -->
+<div class="detail" id="d-design">
+  <div class="detail-header"><span class="detail-title">Design system — build order</span><span class="detail-close" onclick="close_detail('design')">×</span></div>
+  <div class="detail-body">
+    <div class="arch-note"><strong>Why first:</strong> Every feature module imports from the design system. Building it first means you never retrofit consistency — you ship it.</div>
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-blue">1</div><div class="step-content"><div class="step-title">CSS variables + Tailwind config</div><div class="step-desc">Define all color tokens, spacing scale, radius vars in tailwind.config.ts. Dark mode via class strategy. This is the single source of truth for every color in the app.</div></div></div>
+      <div class="step"><div class="step-num sn-blue">2</div><div class="step-content"><div class="step-title">shadcn/ui component install + theme</div><div class="step-desc">Install and theme: Button, Input, Select, Dialog, Sheet, Dropdown, Tooltip, Badge, Card, Table, Skeleton, Tabs. Override default Radix styles to match Synalytix tokens.</div></div></div>
+      <div class="step"><div class="step-num sn-blue">3</div><div class="step-content"><div class="step-title">Layout primitives</div><div class="step-desc">Shell, Sidebar (collapsible + icon mode), TopNav (org switcher, search trigger, bell), PageContainer (max-width, breadcrumbs). These wrap every page.</div></div></div>
+      <div class="step"><div class="step-num sn-blue">4</div><div class="step-content"><div class="step-title">Data display components</div><div class="step-desc">DataTable (virtualized, sortable, filterable), ChartCard, MetricBadge, EmptyState (contextual illustration + CTA), ErrorBoundary, SkeletonCard. These appear on every dashboard page.</div></div></div>
+      <div class="step"><div class="step-num sn-gray">5</div><div class="step-content"><div class="step-title">Storybook (optional but recommended)</div><div class="step-desc">Document each component with light/dark variants, loading/error/empty states. Becomes the team's component reference. Deploy to Chromatic for visual regression testing.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-nextjs">
+  <div class="detail-header"><span class="detail-title">Next.js app — feature build order</span><span class="detail-close" onclick="close_detail('nextjs')">×</span></div>
+  <div class="detail-body">
+    <div class="arch-note"><strong>Routing strategy:</strong> (marketing) → /app/(auth)/login → /app/(dashboard)/[orgSlug]/... — separate route groups keep auth and app layouts isolated. Server Components fetch data; Client Components handle interactivity.</div>
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-blue">1</div><div class="step-content"><div class="step-title">Auth flow</div><div class="step-desc">Login, signup, forgot password, OAuth callbacks (Google, GitHub) via Supabase Auth helpers for Next.js. Middleware redirects unauthenticated users. useAuth hook. Onboarding flow (create org → invite team).</div></div></div>
+      <div class="step"><div class="step-num sn-blue">2</div><div class="step-content"><div class="step-title">App shell + navigation</div><div class="step-desc">Sidebar with nav items, org switcher, Cmd+K global search (cmdk library), notification bell with unread count from Supabase Realtime. Settings drawer (not page). Responsive collapse behavior.</div></div></div>
+      <div class="step"><div class="step-num sn-blue">3</div><div class="step-content"><div class="step-title">Dataset module</div><div class="step-desc">Upload flow (drag-drop → signed URL → progress → processing status polling), dataset list, schema inspector, data preview table (virtualized), query builder UI.</div></div></div>
+      <div class="step"><div class="step-num sn-blue">4</div><div class="step-content"><div class="step-title">Dashboard builder</div><div class="step-desc">Grid layout (react-grid-layout), widget palette, widget config panel, chart types (line, bar, pie, metric, table). Save layout. Public share view (no auth required).</div></div></div>
+      <div class="step"><div class="step-num sn-green">5</div><div class="step-content"><div class="step-title">AI features UI</div><div class="step-desc">NLQ chat interface (streaming responses), insights feed, anomaly alerts, report summarization trigger + result display. All async — skeleton while job processes.</div></div></div>
+      <div class="step"><div class="step-num sn-green">6</div><div class="step-content"><div class="step-title">Team + billing UI</div><div class="step-desc">Members table, invite modal, role management. Billing page: current plan, usage meters, upgrade CTA → Stripe Checkout redirect. Invoice history table.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-dashboard">
+  <div class="detail-header"><span class="detail-title">Dashboard builder — the hardest UI to get right</span><span class="detail-close" onclick="close_detail('dashboard')">×</span></div>
+  <div class="detail-body">
+    <div class="arch-note"><strong>Complexity warning:</strong> The dashboard builder is the most complex UI in the app. Allocate 3–4 weeks minimum. Plan it before building — grid system, widget state, and query binding must be designed together.</div>
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-amber">1</div><div class="step-content"><div class="step-title">Grid system (react-grid-layout)</div><div class="step-desc">Responsive 12-column grid. Drag to reposition, resize handles. Layout JSON serialized to backend on save. Distinguish edit mode vs view mode clearly.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">2</div><div class="step-content"><div class="step-title">Widget registry pattern</div><div class="step-desc">Each widget type (LineChart, BarChart, MetricCard, DataTable, TextBlock) is a self-contained component that receives config_json + executes its own query. Widget registry maps type → component.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">3</div><div class="step-content"><div class="step-title">Query binding UI</div><div class="step-desc">Each widget has a query builder panel: pick dataset, pick columns, add filters, group-by, aggregation. Preview updates live (debounced 500ms). This is the core product value.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">4</div><div class="step-content"><div class="step-title">NLQ widget mode</div><div class="step-desc">Toggle from query builder → natural language input. Send to /nlq endpoint, stream back SQL + explanation, render result in widget. Show generated SQL in collapsible panel for transparency.</div></div></div>
+      <div class="step"><div class="step-num sn-gray">5</div><div class="step-content"><div class="step-title">Dashboard filters + cross-filtering</div><div class="step-desc">Global date range picker. Clicking a bar in chart A filters chart B. Requires a shared filter context (Zustand store) that widgets subscribe to. V2 feature — ship after core builder works.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-e2e">
+  <div class="detail-header"><span class="detail-title">Frontend ↔ backend integration</span><span class="detail-close" onclick="close_detail('e2e')">×</span></div>
+  <div class="detail-body">
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-blue">1</div><div class="step-content"><div class="step-title">API client setup</div><div class="step-desc">src/lib/api.ts — typed fetch wrapper that attaches Supabase JWT, handles 401 refresh, returns typed responses. Generate TypeScript types from OpenAPI spec (openapi-typescript).</div></div></div>
+      <div class="step"><div class="step-num sn-blue">2</div><div class="step-content"><div class="step-title">TanStack Query hooks</div><div class="step-desc">One query hook per resource: useOrganization, useProjects, useDatasets, useDashboard, useInsights. Optimistic mutations for fast UI. Invalidation strategy per entity graph.</div></div></div>
+      <div class="step"><div class="step-num sn-blue">3</div><div class="step-content"><div class="step-title">Supabase Realtime subscriptions</div><div class="step-desc">useRealtimeInsights hook subscribes to ai_insights channel. useJobStatus polls or subscribes to dataset processing updates. Drives live notification bell without polling.</div></div></div>
+      <div class="step"><div class="step-num sn-green">4</div><div class="step-content"><div class="step-title">Error handling UX</div><div class="step-desc">API errors → toast notifications (Sonner). 402 plan limit errors → upgrade modal. 401 → redirect to login. Network errors → retry with exponential backoff. Never expose raw error messages to users.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-testing">
+  <div class="detail-header"><span class="detail-title">E2E testing with Playwright</span><span class="detail-close" onclick="close_detail('testing')">×</span></div>
+  <div class="detail-body">
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-green">1</div><div class="step-content"><div class="step-title">Critical path: signup → onboarding</div><div class="step-desc">New user signs up via email, verifies (Supabase dev mode bypasses email), creates org, completes onboarding checklist. Must pass before every deploy.</div></div></div>
+      <div class="step"><div class="step-num sn-green">2</div><div class="step-content"><div class="step-title">Dataset upload + processing</div><div class="step-desc">Upload a CSV fixture → assert processing completes → assert schema detected correctly → assert preview table renders. Tests the full async job pipeline end-to-end.</div></div></div>
+      <div class="step"><div class="step-num sn-green">3</div><div class="step-content"><div class="step-title">Dashboard create + share</div><div class="step-desc">Create dashboard → add chart widget → bind to dataset → save → generate public link → open in incognito → assert chart renders without auth.</div></div></div>
+      <div class="step"><div class="step-num sn-green">4</div><div class="step-content"><div class="step-title">Billing upgrade flow</div><div class="step-desc">Hit a plan limit → see upgrade prompt → redirect to Stripe Checkout (test mode) → webhook fires → plan upgrades → feature now accessible. Uses Stripe CLI for local webhook testing.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-alpha">
+  <div class="detail-header"><span class="detail-title">Closed alpha — how to run it right</span><span class="detail-close" onclick="close_detail('alpha')">×</span></div>
+  <div class="detail-body">
+    <div class="arch-note"><strong>The alpha phase determines product-market fit.</strong> Ship rough, learn fast. The backend and UI you built are 90% useless until real users hit real problems with their real data.</div>
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-amber">1</div><div class="step-content"><div class="step-title">Find 5–10 design partners</div><div class="step-desc">Target companies already doing analytics manually (spreadsheets, Metabase, Looker). Offer free access for 3 months in exchange for weekly 30-min feedback calls. No cold outreach — warm intros only.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">2</div><div class="step-content"><div class="step-title">Instrument everything with PostHog</div><div class="step-desc">Track: time to first dataset upload, time to first dashboard created, NLQ queries per session, features used per plan. You need data to know what to build next — not opinions.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">3</div><div class="step-content"><div class="step-title">Set up a feedback channel</div><div class="step-desc">Slack Connect or Discord with alpha users. Respond to every bug report within 4 hours. Ship fixes same day when possible. Speed of response is the product at this stage.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">4</div><div class="step-content"><div class="step-title">Weekly changelog</div><div class="step-desc">Every Friday, email alpha users what shipped. Makes them feel heard, builds habit, and primes them to become advocates at launch. Use a simple markdown template.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-landing">
+  <div class="detail-header"><span class="detail-title">Marketing site — what to build</span><span class="detail-close" onclick="close_detail('landing')">×</span></div>
+  <div class="detail-body">
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-gray">1</div><div class="step-content"><div class="step-title">Landing page</div><div class="step-desc">Hero with demo video or interactive preview. 3 core value props. Customer logos (alpha partners). Pricing table. CTA to waitlist or sign up. Build with Next.js or Framer — not WordPress.</div></div></div>
+      <div class="step"><div class="step-num sn-gray">2</div><div class="step-content"><div class="step-title">Docs site</div><div class="step-desc">Mintlify or Docusaurus. API reference auto-generated from OpenAPI spec. Quickstart guide, connector docs, webhook reference. Good docs reduce support load by 60%.</div></div></div>
+      <div class="step"><div class="step-num sn-gray">3</div><div class="step-content"><div class="step-title">Changelog</div><div class="step-desc">Public changelog at /changelog or changelog.synalytix.com. Ship weekly. Links from in-app notification bell. Shows momentum to prospects and keeps existing users engaged.</div></div></div>
+      <div class="step"><div class="step-num sn-gray">4</div><div class="step-content"><div class="step-title">SEO + blog</div><div class="step-desc">Target "analytics for [industry]" keywords. 2–3 posts/month on data topics your ICP Googles. Long tail content compounds over 6–12 months into meaningful organic traffic.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-launch">
+  <div class="detail-header"><span class="detail-title">Public launch checklist</span><span class="detail-close" onclick="close_detail('launch')">×</span></div>
+  <div class="detail-body">
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-red">1</div><div class="step-content"><div class="step-title">Switch Stripe to live keys</div><div class="step-desc">Test every billing flow in staging with live keys first. Ensure webhook signing secrets are rotated. Confirm Stripe Tax is configured for your target markets.</div></div></div>
+      <div class="step"><div class="step-num sn-red">2</div><div class="step-content"><div class="step-title">Status page + uptime monitoring</div><div class="step-desc">Betterstack or Instatus. Monitor: API health endpoint, Supabase, Railway app. Set up PagerDuty or similar for on-call alerts. SLA requires you to know about outages before users tweet.</div></div></div>
+      <div class="step"><div class="step-num sn-red">3</div><div class="step-content"><div class="step-title">Product Hunt launch</div><div class="step-desc">Schedule for Tuesday–Thursday. Prepare hunter, gallery assets, tagline, first comment. Brief alpha users to upvote and comment on launch day. Aim for top 5 of the day.</div></div></div>
+      <div class="step"><div class="step-num sn-red">4</div><div class="step-content"><div class="step-title">Support infrastructure</div><div class="step-desc">Intercom or Plain for in-app chat. Help docs linked from every error state. Define SLA: free = community, pro = 24h, business = 4h. Brief first responders before launch.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-obs">
+  <div class="detail-header"><span class="detail-title">Observability &amp; analytics stack</span><span class="detail-close" onclick="close_detail('obs')">×</span></div>
+  <div class="detail-body">
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-gray">1</div><div class="step-content"><div class="step-title">PostHog product analytics</div><div class="step-desc">Session recordings on key flows (upload, dashboard builder). Funnels: signup → first dataset → first dashboard (where do users drop off?). Feature flags for gradual rollouts.</div></div></div>
+      <div class="step"><div class="step-num sn-gray">2</div><div class="step-content"><div class="step-title">Sentry performance monitoring</div><div class="step-desc">Already configured in Phase 8. Set p95 latency alerts (> 2s = page, > 5s = incident). Track slow queries. Error rate alerts by route prefix (/api/v1/ai is allowed to be slower than /api/v1/datasets).</div></div></div>
+      <div class="step"><div class="step-num sn-gray">3</div><div class="step-content"><div class="step-title">Business metrics dashboard</div><div class="step-desc">Internal Synalytix dashboard tracking: MRR, churn rate, DAU/MAU, avg datasets per org, NLQ query volume, p99 API latency. Eat your own cooking — this validates the product.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-enterprise">
+  <div class="detail-header"><span class="detail-title">Enterprise track — when to start</span><span class="detail-close" onclick="close_detail('enterprise')">×</span></div>
+  <div class="detail-body">
+    <div class="arch-note"><strong>Don't start enterprise track until you have 3+ inbound enterprise requests.</strong> Building SSO and SOC 2 before demand wastes 3+ months that should go toward user growth.</div>
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-amber">1</div><div class="step-content"><div class="step-title">SSO / SAML</div><div class="step-desc">WorkOS or Auth0 for SAML/OIDC. Adds Okta, Azure AD, Google Workspace SSO. 2–3 week integration. Triggers for 1st inbound enterprise request that mentions SSO as a blocker.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">2</div><div class="step-content"><div class="step-title">SOC 2 Type I audit</div><div class="step-desc">Vanta or Drata automates 60–70% of evidence collection. ~3 months to prepare, ~1 month for auditor. Type I first (point-in-time), then Type II (6-month observation period) for enterprise deals.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">3</div><div class="step-content"><div class="step-title">Custom contracts + SLAs</div><div class="step-desc">99.9% uptime SLA, DPA for GDPR, MSA template, security questionnaire boilerplate. Use a lawyer for the first contract — don't template-hunt on GitHub.</div></div></div>
+      <div class="step"><div class="step-num sn-amber">4</div><div class="step-content"><div class="step-title">Private cloud / VPC deployment</div><div class="step-desc">Some enterprises require data to never leave their VPC. Prepare a Docker Compose + Helm chart self-hosted deployment path. Supabase self-hosted is an option here.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="d-backend">
+  <div class="detail-header"><span class="detail-title">Backend — what you've built</span><span class="detail-close" onclick="close_detail('backend')">×</span></div>
+  <div class="detail-body">
+    <div class="arch-note"><strong>Everything above this line is your foundation.</strong> The frontend, testing, and GTM layers all depend on what you built in phases 1–8.</div>
+    <div class="step-list">
+      <div class="step"><div class="step-num sn-green">✓</div><div class="step-content"><div class="step-title">Infrastructure + Railway deploy</div><div class="step-desc">Docker, GitHub Actions CI/CD, environment config, Redis, health endpoints.</div></div></div>
+      <div class="step"><div class="step-num sn-green">✓</div><div class="step-content"><div class="step-title">Prisma schema + Supabase</div><div class="step-desc">14 tables, RLS policies, GIN indexes, connection pooler config.</div></div></div>
+      <div class="step"><div class="step-num sn-green">✓</div><div class="step-content"><div class="step-title">Middleware stack + RBAC</div><div class="step-desc">Auth, rate limiting, RBAC, error handling, structured logging.</div></div></div>
+      <div class="step"><div class="step-num sn-green">✓</div><div class="step-content"><div class="step-title">All REST API modules</div><div class="step-desc">Orgs, teams, projects, datasets, dashboards, AI insights, workflows, billing.</div></div></div>
+      <div class="step"><div class="step-num sn-green">✓</div><div class="step-content"><div class="step-title">BullMQ jobs + AI pipeline</div><div class="step-desc">CSV processing, NLQ, insight generation, anomaly detection, report summarization.</div></div></div>
+      <div class="step"><div class="step-num sn-green">✓</div><div class="step-content"><div class="step-title">Stripe billing + OpenAPI docs</div><div class="step-desc">Checkout, portal, webhooks, feature gating, auto-generated spec + Swagger UI.</div></div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function open_detail(id) {
+  document.querySelectorAll('.detail').forEach(d => d.classList.remove('open'));
+  const el = document.getElementById('d-'+id);
+  if(el) el.classList.add('open');
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function close_detail(id) {
+  const el = document.getElementById('d-'+id);
+  if(el) el.classList.remove('open');
+}
+</script>

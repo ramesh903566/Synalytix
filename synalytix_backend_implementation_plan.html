@@ -1,0 +1,551 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.plan { padding: 20px 0; }
+.header { margin-bottom: 24px; }
+.header h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.phase { margin-bottom: 20px; border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.phase-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; background: var(--color-background-secondary); border-bottom: 1px solid var(--color-border-tertiary); user-select: none; }
+.phase-header:hover { background: var(--color-background-tertiary); }
+.phase-num { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+.phase-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+.phase-meta { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; }
+.chevron { font-size: 12px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+.phase-body { display: none; padding: 16px; }
+.phase.open .phase-body { display: block; }
+.phase.open .chevron { transform: rotate(90deg); }
+.task-grid { display: grid; gap: 8px; }
+.task { display: flex; gap: 10px; padding: 10px 12px; background: var(--color-background-primary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); }
+.task-icon { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+.task-content { flex: 1; min-width: 0; }
+.task-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+.task-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.task-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.tag { font-size: 11px; padding: 1px 7px; border-radius: 20px; border: 1px solid; white-space: nowrap; }
+.tag-blue { color: var(--color-text-info); border-color: var(--color-border-info); background: var(--color-background-info); }
+.tag-green { color: var(--color-text-success); border-color: var(--color-border-success); background: var(--color-background-success); }
+.tag-amber { color: var(--color-text-warning); border-color: var(--color-border-warning); background: var(--color-background-warning); }
+.tag-red { color: var(--color-text-danger); border-color: var(--color-border-danger); background: var(--color-background-danger); }
+.tag-gray { color: var(--color-text-secondary); border-color: var(--color-border-secondary); background: var(--color-background-secondary); }
+.section-label { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin: 14px 0 6px; }
+.section-label:first-child { margin-top: 0; }
+.files { margin-top: 8px; padding: 10px 12px; background: var(--color-background-tertiary); border-radius: var(--border-radius-md); font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary); line-height: 1.8; }
+.files span { color: var(--color-text-primary); }
+.dep-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.dep { font-size: 11px; font-family: var(--font-mono); padding: 2px 8px; background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: 4px; color: var(--color-text-secondary); }
+.summary-bar { display: flex; gap: 16px; flex-wrap: wrap; padding: 14px 16px; background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); margin-bottom: 20px; }
+.summary-item { display: flex; align-items: center; gap: 6px; }
+.summary-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.summary-text { font-size: 12px; color: var(--color-text-secondary); }
+.summary-text strong { color: var(--color-text-primary); font-weight: 500; }
+.arch-note { padding: 12px 14px; border-left: 3px solid var(--color-border-info); background: var(--color-background-info); border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; margin-top: 8px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+.arch-note strong { color: var(--color-text-info); font-weight: 500; }
+</style>
+
+<div class="plan">
+  <div class="header">
+    <h1>Synalytix backend — implementation plan</h1>
+    <p>8 phases · REST + OpenAPI · Supabase · Railway · TypeScript strict</p>
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-item"><div class="summary-dot" style="background:#378ADD"></div><div class="summary-text"><strong>Foundation</strong> Phases 1–2</div></div>
+    <div class="summary-item"><div class="summary-dot" style="background:#1D9E75"></div><div class="summary-text"><strong>Core API</strong> Phases 3–5</div></div>
+    <div class="summary-item"><div class="summary-dot" style="background:#BA7517"></div><div class="summary-text"><strong>Platform</strong> Phases 6–7</div></div>
+    <div class="summary-item"><div class="summary-dot" style="background:#A32D2D"></div><div class="summary-text"><strong>Production</strong> Phase 8</div></div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <div class="phase open" id="p1">
+    <div class="phase-header" onclick="toggle('p1')">
+      <span class="phase-num tag-blue">Phase 1</span>
+      <span class="phase-title">Project scaffold &amp; infrastructure</span>
+      <span class="phase-meta">Day 1–2</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="arch-note"><strong>Goal:</strong> Every engineer can clone the repo, run <code>docker compose up</code>, and hit a health endpoint. Zero config drift between local and Railway.</div>
+
+      <div class="section-label">Tasks</div>
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-file-code" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Package setup &amp; TypeScript strict config</div>
+            <div class="task-desc">Initialize package.json with all production deps. tsconfig.json with noImplicitAny, strictNullChecks, exactOptionalPropertyTypes, noUncheckedIndexedAccess. Path aliases @/* → src/*.</div>
+            <div class="task-tags"><span class="tag tag-gray">package.json</span><span class="tag tag-gray">tsconfig.json</span><span class="tag tag-gray">.eslintrc</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-settings" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Environment config with Zod validation</div>
+            <div class="task-desc">src/config/env.ts — parse all env vars at startup with Zod. App crashes with a clear message if any required var is missing. Never read process.env directly elsewhere in the codebase.</div>
+            <div class="task-tags"><span class="tag tag-blue">Zod</span><span class="tag tag-gray">.env.example</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-brand-docker" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Docker Compose dev environment</div>
+            <div class="task-desc">docker-compose.dev.yml with Redis (for BullMQ + rate limiting). Postgres is Supabase-hosted — no local DB container needed. Volumes for Redis persistence.</div>
+            <div class="task-tags"><span class="tag tag-gray">Docker</span><span class="tag tag-green">Redis</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-server" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Express app factory &amp; health endpoint</div>
+            <div class="task-desc">src/app.ts exports createApp(). src/index.ts bootstraps server. GET /health returns {status, version, timestamp, db: "ok", redis: "ok"} — checks live connections to Supabase and Redis.</div>
+            <div class="task-tags"><span class="tag tag-blue">Express</span><span class="tag tag-green">GET /health</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-git-branch" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Railway deployment config</div>
+            <div class="task-desc">railway.toml with build command (npm run build), start command (node dist/index.js), healthcheck path, restart policy. Dockerfile for reproducible builds (node:20-alpine, non-root user, multi-stage).</div>
+            <div class="task-tags"><span class="tag tag-amber">Railway</span><span class="tag tag-gray">Dockerfile</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-brand-github" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">GitHub Actions CI pipeline</div>
+            <div class="task-desc">On pull request: typecheck → lint → test → build. On merge to main: build → deploy to Railway via CLI. Secrets injected from GitHub env.</div>
+            <div class="task-tags"><span class="tag tag-gray">CI/CD</span><span class="tag tag-green">Vitest</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Key files produced</div>
+      <div class="files">
+        <span>src/config/env.ts</span> · <span>src/app.ts</span> · <span>src/index.ts</span><br>
+        <span>src/lib/redis.ts</span> · <span>src/lib/supabase.ts</span><br>
+        <span>Dockerfile</span> · <span>docker-compose.dev.yml</span> · <span>railway.toml</span><br>
+        <span>.github/workflows/ci.yml</span> · <span>.github/workflows/deploy.yml</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase" id="p2">
+    <div class="phase-header" onclick="toggle('p2')">
+      <span class="phase-num tag-blue">Phase 2</span>
+      <span class="phase-title">Prisma schema, migrations &amp; Supabase setup</span>
+      <span class="phase-meta">Day 2–3</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="arch-note"><strong>Architecture note:</strong> Prisma connects via Supabase connection pooler (port 6543, pgBouncer mode) for the app. Direct connection (port 5432) is used only for migrations. RLS is enabled on all tenant tables as a defense-in-depth layer — RBAC middleware is the primary enforcement.</div>
+
+      <div class="section-label">Tasks</div>
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-database" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Full Prisma schema — all 14 core tables</div>
+            <div class="task-desc">users, organizations, organization_members, projects, datasets, dashboards, widgets, reports, ai_insights, workflows, activity_logs, api_keys, billing_events, invitations. All tenant tables carry org_id. Soft deletes via deleted_at on mutable entities.</div>
+            <div class="task-tags"><span class="tag tag-blue">Prisma</span><span class="tag tag-amber">14 models</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-search" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Indexes strategy</div>
+            <div class="task-desc">FKs indexed. Composite (org_id, created_at) on all tenant tables. Unique on users.email, api_keys.hashed_key. GIN indexes on JSONB cols (layout_json, config_json, schema_json). Partial index on active subscriptions. Raw SQL migration for GIN (Prisma limitation).</div>
+            <div class="task-tags"><span class="tag tag-green">Performance</span><span class="tag tag-gray">GIN</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Supabase RLS policies</div>
+            <div class="task-desc">SQL migration enabling RLS on every tenant table. Policy: authenticated users can only SELECT/UPDATE/DELETE rows where org_id matches their JWT claim. Service role key bypasses RLS for backend-to-backend operations.</div>
+            <div class="task-tags"><span class="tag tag-red">Security</span><span class="tag tag-blue">Supabase</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-database" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Prisma client singleton &amp; seed script</div>
+            <div class="task-desc">src/db/client.ts — singleton with connection pooling config. src/db/seed.ts — creates demo org, owner user, sample project, sample dataset for local development. Idempotent via upsert.</div>
+            <div class="task-tags"><span class="tag tag-gray">src/db/</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Key files produced</div>
+      <div class="files">
+        <span>prisma/schema.prisma</span><br>
+        <span>prisma/migrations/001_initial_schema.sql</span><br>
+        <span>prisma/migrations/002_gin_indexes.sql</span><br>
+        <span>prisma/migrations/003_rls_policies.sql</span><br>
+        <span>src/db/client.ts</span> · <span>src/db/seed.ts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase" id="p3">
+    <div class="phase-header" onclick="toggle('p3')">
+      <span class="phase-num tag-green">Phase 3</span>
+      <span class="phase-title">Middleware stack &amp; auth layer</span>
+      <span class="phase-meta">Day 3–4</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="arch-note"><strong>Auth flow:</strong> Supabase Auth issues JWTs. Every request hits our Express server with Authorization: Bearer &lt;token&gt;. Our middleware verifies the token with Supabase's JWKS endpoint (cached), extracts user + org context, then enforces RBAC. We never issue our own JWTs.</div>
+
+      <div class="section-label">Middleware order (applied in this sequence)</div>
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-hash" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">1. Request ID + structured logger</div>
+            <div class="task-desc">Attach x-request-id (nanoid) to every request. Winston logger emits JSON in production (Railway log drain), pretty-print in dev. Log: method, path, status, duration, request_id. Never log Authorization headers or passwords.</div>
+            <div class="task-tags"><span class="tag tag-gray">Winston</span><span class="tag tag-gray">Morgan</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-shield" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">2. Security headers</div>
+            <div class="task-desc">Helmet.js with tight CSP. CORS — strict origin whitelist from env (FRONTEND_URL). No wildcard origins in production. SameSite cookie policy. X-Frame-Options DENY.</div>
+            <div class="task-tags"><span class="tag tag-red">Helmet</span><span class="tag tag-red">CORS</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-clock" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">3. Rate limiter (Redis-backed)</div>
+            <div class="task-desc">Global: 200 req/min per IP. Auth endpoints: 10 req/min per IP (brute-force protection). AI endpoints: 30 req/min per user. Storage in Redis with sliding window. Returns 429 with Retry-After header.</div>
+            <div class="task-tags"><span class="tag tag-amber">rate-limit-redis</span><span class="tag tag-green">Redis</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-key" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">4. JWT authentication middleware</div>
+            <div class="task-desc">Verifies Supabase JWT via JWKS (public key cached 1hr in Redis). Extracts user_id, email, org_id from claims. Attaches to req.user. Returns 401 on invalid/expired token. Separate API key auth path for programmatic access.</div>
+            <div class="task-tags"><span class="tag tag-blue">Supabase Auth</span><span class="tag tag-red">Security</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-user-check" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">5. RBAC authorization middleware</div>
+            <div class="task-desc">requireRole(...roles) factory. Checks organization_members for user's role in current org. Role hierarchy: Owner → Admin → Manager → Member → Viewer. Caches role lookups 5min in Redis. Returns 403 on insufficient permissions.</div>
+            <div class="task-tags"><span class="tag tag-red">RBAC</span><span class="tag tag-green">Redis cache</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-alert-circle" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">6. Global error handler</div>
+            <div class="task-desc">Catches all thrown errors. Maps Zod ValidationErrors → 400, AuthError → 401, ForbiddenError → 403, NotFoundError → 404, ConflictError → 409. All others → 500. Standard envelope: {success, error: {code, message, details?}}. Sentry capture on 5xx.</div>
+            <div class="task-tags"><span class="tag tag-gray">Error boundary</span><span class="tag tag-amber">Sentry</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Key files produced</div>
+      <div class="files">
+        <span>src/middleware/requestId.ts</span> · <span>src/middleware/logger.ts</span><br>
+        <span>src/middleware/security.ts</span> · <span>src/middleware/rateLimiter.ts</span><br>
+        <span>src/middleware/authenticate.ts</span> · <span>src/middleware/authorize.ts</span><br>
+        <span>src/middleware/errorHandler.ts</span><br>
+        <span>src/types/express.d.ts</span> (extends Request with user, orgId)<br>
+        <span>src/lib/errors.ts</span> (custom error classes)
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase" id="p4">
+    <div class="phase-header" onclick="toggle('p4')">
+      <span class="phase-num tag-green">Phase 4</span>
+      <span class="phase-title">Core REST API — org, project, team, API keys</span>
+      <span class="phase-meta">Day 4–6</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="arch-note"><strong>Pattern:</strong> Every route module = router.ts (routes + validation) + controller.ts (req/res handling) + service.ts (business logic + DB). Controllers never touch Prisma directly. Services never touch req/res.</div>
+
+      <div class="section-label">Route modules</div>
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-building" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Organizations API</div>
+            <div class="task-desc">POST /orgs (create), GET /orgs/:id, PATCH /orgs/:id (name, slug), DELETE /orgs/:id (owner only, soft delete). GET /orgs/:id/usage — returns seat count, dataset rows, AI query count against plan limits. OrgService handles slug uniqueness, plan enforcement.</div>
+            <div class="task-tags"><span class="tag tag-blue">5 endpoints</span><span class="tag tag-amber">Owner-only delete</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-users" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Team management API</div>
+            <div class="task-desc">POST /orgs/:id/invitations (send email via Supabase), GET /orgs/:id/members, PATCH /members/:id (change role), DELETE /members/:id (remove), POST /invitations/:token/accept, DELETE /invitations/:id (revoke). Invite tokens expire 7 days.</div>
+            <div class="task-tags"><span class="tag tag-blue">6 endpoints</span><span class="tag tag-green">Email via Supabase</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-folder" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Projects API</div>
+            <div class="task-desc">CRUD for projects scoped to org. POST, GET (list with pagination), GET /:id, PATCH, DELETE. ProjectService enforces plan limits on project count. Returns project with member access list. Cursor-based pagination.</div>
+            <div class="task-tags"><span class="tag tag-blue">5 endpoints</span><span class="tag tag-gray">Cursor pagination</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-key" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">API keys API</div>
+            <div class="task-desc">POST /api-keys (generate key, return plaintext once only, store hash), GET /api-keys (list, never return plaintext), DELETE /api-keys/:id, PATCH /api-keys/:id (name, permissions). ApiKeyService uses sha256 for hashing, nanoid for generation (syn_live_xxx prefix).</div>
+            <div class="task-tags"><span class="tag tag-red">SHA-256 hash</span><span class="tag tag-amber">Plaintext once</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-activity" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Activity log API</div>
+            <div class="task-desc">GET /orgs/:id/activity — paginated audit log. Filterable by actor, entity_type, date range. ActivityService writes structured events on every mutating operation across all services. Partitioned by month in DB.</div>
+            <div class="task-tags"><span class="tag tag-gray">Audit trail</span><span class="tag tag-blue">GET only</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Shared service patterns</div>
+      <div class="files">
+        All services use: <span>validateOrgAccess(userId, orgId)</span> before any DB op<br>
+        All list endpoints use: <span>cursor-based pagination</span> (createdAt + id cursor)<br>
+        All mutations emit: <span>ActivityService.log(event)</span> after successful write<br>
+        Plan enforcement via: <span>SubscriptionService.assertCapability(orgId, feature)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 -->
+  <div class="phase" id="p5">
+    <div class="phase-header" onclick="toggle('p5')">
+      <span class="phase-num tag-green">Phase 5</span>
+      <span class="phase-title">Data layer — datasets, dashboards, widgets</span>
+      <span class="phase-meta">Day 6–8</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="arch-note"><strong>Upload flow:</strong> Client requests signed URL → uploads directly to Supabase Storage → calls our API with storage path → BullMQ job processes file (parse, validate schema, write row count) → webhook/realtime event notifies client when ready.</div>
+
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Dataset upload &amp; ingestion API</div>
+            <div class="task-desc">POST /projects/:id/datasets/upload-url — returns Supabase Storage signed URL. POST /projects/:id/datasets — registers dataset record, enqueues csv-processor job. GET /datasets/:id/status — polling endpoint for processing status. GET /datasets/:id/preview — first 100 rows from processed data.</div>
+            <div class="task-tags"><span class="tag tag-blue">Supabase Storage</span><span class="tag tag-amber">BullMQ</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Dashboards &amp; widgets API</div>
+            <div class="task-desc">Full CRUD for dashboards. POST /dashboards/:id/duplicate. Widget CRUD nested under dashboard. PATCH /dashboards/:id/layout — bulk update widget positions (layout_json). GET /dashboards/:id/share — generate public share token. Zod validates widget config_json per widget type enum.</div>
+            <div class="task-tags"><span class="tag tag-blue">8 endpoints</span><span class="tag tag-green">Public share</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-database" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Dataset query API</div>
+            <div class="task-desc">POST /datasets/:id/query — accepts structured query (filters, group-by, aggregations, sort, limit). QueryBuilder service translates to parameterized SQL against a read-only DB role. 5s timeout. Results cached 5min in Redis by query hash. Returns {columns, rows, total, cached}.</div>
+            <div class="task-tags"><span class="tag tag-red">Read-only role</span><span class="tag tag-green">Redis cache</span><span class="tag tag-amber">5s timeout</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Reports API</div>
+            <div class="task-desc">CRUD for collaborative reports. POST /reports/:id/comments — threaded comments. POST /reports/:id/publish — locks content, generates shareable link. POST /reports/:id/export — enqueues PDF generation job (returns job_id for polling).</div>
+            <div class="task-tags"><span class="tag tag-blue">6 endpoints</span><span class="tag tag-gray">Comments</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Key files produced</div>
+      <div class="files">
+        <span>src/api/v1/datasets/</span> router, controller, service<br>
+        <span>src/api/v1/dashboards/</span> router, controller, service<br>
+        <span>src/services/QueryBuilderService.ts</span><br>
+        <span>src/services/StorageService.ts</span> (Supabase Storage wrapper)<br>
+        <span>src/jobs/queues/datasetQueue.ts</span><br>
+        <span>src/jobs/processors/csvProcessor.ts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 -->
+  <div class="phase" id="p6">
+    <div class="phase-header" onclick="toggle('p6')">
+      <span class="phase-num tag-amber">Phase 6</span>
+      <span class="phase-title">AI features — NLQ, insights, anomaly detection</span>
+      <span class="phase-meta">Day 8–10</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="arch-note"><strong>Safety model:</strong> All AI-generated SQL runs against a read-only Postgres role. Generated queries are validated (no DDL/DML, complexity check) before execution. Insights below 0.7 confidence threshold are discarded. All AI ops are async — client polls or listens via Supabase Realtime.</div>
+
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-message-chatbot" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Natural language query (NLQ) endpoint</div>
+            <div class="task-desc">POST /datasets/:id/nlq — accepts natural language question. NlqService injects dataset schema into Anthropic prompt, requests SQL + explanation. Validates generated SQL (read-only, max 10 joins, no subquery bombs). Executes via QueryBuilder. Returns {sql, explanation, results}. Metered per org.</div>
+            <div class="task-tags"><span class="tag tag-blue">Anthropic API</span><span class="tag tag-red">SQL validation</span><span class="tag tag-amber">Usage metered</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-sparkles" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">AI insights generation job</div>
+            <div class="task-desc">BullMQ job (insightQueue) scheduled daily per active dataset. InsightProcessor computes statistical summary (min/max/mean/stddev per column, null rates, top values). Sends to Anthropic for narrative insights. Stores in ai_insights with confidence_score. Discards score &lt; 0.7.</div>
+            <div class="task-tags"><span class="tag tag-amber">BullMQ cron</span><span class="tag tag-blue">Anthropic</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Anomaly detection service</div>
+            <div class="task-desc">AnomalyService runs on new data ingestion. Z-score based threshold detection (|z| &gt; 3 = anomaly) per numeric column. Flagged anomalies sent to Anthropic for plain-English explanation. Stored as ai_insights of type ANOMALY. Triggers alert workflow if configured.</div>
+            <div class="task-tags"><span class="tag tag-amber">Statistical</span><span class="tag tag-blue">LLM explanation</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-file-analytics" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Report summarization</div>
+            <div class="task-desc">POST /reports/:id/summarize — async job. ReportSummaryProcessor fetches report content + referenced dataset stats. RAG-style: chunks content, retrieves relevant data points, sends to Anthropic with citation prompt. Returns structured summary with data citations.</div>
+            <div class="task-tags"><span class="tag tag-blue">RAG pattern</span><span class="tag tag-gray">Citations</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-bell" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">AI insights API</div>
+            <div class="task-desc">GET /projects/:id/insights — paginated list with filters (type, dataset, date, confidence). GET /insights/:id — full insight with metadata. POST /insights/:id/dismiss. Supabase Realtime broadcast when new insight is written (client subscribes by org_id channel).</div>
+            <div class="task-tags"><span class="tag tag-green">Realtime</span><span class="tag tag-blue">4 endpoints</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 7 -->
+  <div class="phase" id="p7">
+    <div class="phase-header" onclick="toggle('p7')">
+      <span class="phase-num tag-amber">Phase 7</span>
+      <span class="phase-title">Billing, workflows &amp; OpenAPI docs</span>
+      <span class="phase-meta">Day 10–13</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-credit-card" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Stripe billing integration</div>
+            <div class="task-desc">POST /billing/checkout — create Stripe Checkout session for plan upgrade. POST /billing/portal — create Stripe Customer Portal session. GET /billing/subscription — current plan + limits + usage. POST /billing/webhooks — handle customer.subscription.updated/deleted, invoice.paid/failed. Idempotent webhook processing via event ID dedup in Redis.</div>
+            <div class="task-tags"><span class="tag tag-blue">Stripe</span><span class="tag tag-red">Webhook sig verify</span><span class="tag tag-green">Idempotent</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-adjustments" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Feature gating (capability flags)</div>
+            <div class="task-desc">SubscriptionService.assertCapability(orgId, capability) — checks plan tier against PLAN_CAPABILITIES map. Capabilities: nlq_queries, ai_insights, custom_dashboards, workflow_automation, api_access, advanced_exports. Throws PlanLimitError on gated features. Returns 402 with upgrade prompt.</div>
+            <div class="task-tags"><span class="tag tag-amber">Plan gates</span><span class="tag tag-gray">Capability flags</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-robot" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Workflow automation engine</div>
+            <div class="task-desc">CRUD for workflows (trigger_config + action_config JSON). WorkflowService evaluates triggers: schedule (cron), data_threshold (KPI crossing), anomaly_detected, report_published. Actions: send_email, create_report, post_webhook, send_slack. Human-in-the-loop flag for destructive actions. BullMQ repeatable jobs for scheduled triggers.</div>
+            <div class="task-tags"><span class="tag tag-blue">BullMQ</span><span class="tag tag-amber">4 trigger types</span><span class="tag tag-green">4 action types</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-file-description" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">OpenAPI 3.0 documentation</div>
+            <div class="task-desc">zod-to-openapi generates spec from Zod schemas. GET /api/docs — Swagger UI. GET /api/openapi.json — raw spec. All routes registered with description, tags, request/response schemas, auth requirements, error responses. Auto-generated TypeScript client types from spec.</div>
+            <div class="task-tags"><span class="tag tag-gray">Swagger UI</span><span class="tag tag-blue">zod-to-openapi</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 8 -->
+  <div class="phase" id="p8">
+    <div class="phase-header" onclick="toggle('p8')">
+      <span class="phase-num tag-red">Phase 8</span>
+      <span class="phase-title">Testing, observability &amp; production hardening</span>
+      <span class="phase-meta">Day 13–15</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="phase-body">
+      <div class="task-grid">
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-test-pipe" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Unit tests — services &amp; utilities</div>
+            <div class="task-desc">Vitest. Mock Prisma with prisma-mock. Mock Redis with ioredis-mock. Test: AuthService token validation, QueryBuilderService SQL generation, AnomalyService z-score detection, OrgService plan enforcement, RateLimiter sliding window. Target 80% coverage on src/services.</div>
+            <div class="task-tags"><span class="tag tag-green">Vitest</span><span class="tag tag-gray">80% coverage</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-api" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Integration tests — API endpoints</div>
+            <div class="task-desc">Supertest against real Express app. Test DB = Supabase branch DB or local Postgres via Docker. Test: auth flow, org CRUD with RBAC assertions, dataset upload + processing, billing webhook handling. Seed/teardown per test suite.</div>
+            <div class="task-tags"><span class="tag tag-green">Supertest</span><span class="tag tag-blue">Supabase branch DB</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-eye" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Observability — Sentry + structured logs</div>
+            <div class="task-desc">Sentry SDK initialized in app.ts. Capture all 5xx errors with request context (user_id, org_id, request_id — no PII). Performance traces on slow queries (&gt;500ms). Winston ships JSON logs to Railway log drain. Log retention policy documented.</div>
+            <div class="task-tags"><span class="tag tag-amber">Sentry</span><span class="tag tag-gray">Winston JSON</span></div>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-icon"><i class="ti ti-rocket" aria-hidden="true"></i></div>
+          <div class="task-content">
+            <div class="task-title">Production checklist &amp; Railway tuning</div>
+            <div class="task-desc">PgBouncer connection pooling config. Redis maxmemory-policy allkeys-lru. Graceful shutdown (SIGTERM handler, drain in-flight requests). Railway health check tuned (5s interval, 3 failures = restart). Environment variable audit — no secrets in code. npm audit clean. Dockerfile non-root user.</div>
+            <div class="task-tags"><span class="tag tag-red">Security audit</span><span class="tag tag-amber">PgBouncer</span><span class="tag tag-green">Graceful shutdown</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">CI/CD gates before deploy</div>
+      <div class="files">
+        tsc --noEmit → eslint --max-warnings 0 → vitest --coverage<br>
+        npm audit --audit-level=high → prisma migrate deploy → docker build<br>
+        Railway deploy (zero-downtime rolling restart)
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggle(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+</script>

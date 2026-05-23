@@ -1,0 +1,282 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:20px 0;font-family:var(--font-sans)}
+.section{margin-bottom:20px}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.section-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.pill{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap}
+.p-red{color:var(--color-text-danger);border-color:var(--color-border-danger);background:var(--color-background-danger)}
+.p-green{color:var(--color-text-success);border-color:var(--color-border-success);background:var(--color-background-success)}
+.p-amber{color:var(--color-text-warning);border-color:var(--color-border-warning);background:var(--color-background-warning)}
+.p-blue{color:var(--color-text-info);border-color:var(--color-border-info);background:var(--color-background-info)}
+.p-gray{color:var(--color-text-secondary);border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;gap:12px;padding:12px 14px;border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary)}
+.item-icon{font-size:16px;color:var(--color-text-secondary);flex-shrink:0;margin-top:1px}
+.item-body{flex:1;min-width:0}
+.item-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.item-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.item-code{font-family:var(--font-mono);font-size:11px;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:6px;padding:8px 10px;margin-top:8px;color:var(--color-text-primary);line-height:1.7;white-space:pre-wrap;word-break:break-all}
+.item-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.divider{height:1px;background:var(--color-border-tertiary);margin:4px 0 16px}
+.note{padding:12px 14px;border-left:3px solid var(--color-border-warning);background:var(--color-background-warning);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:16px}
+.note strong{color:var(--color-text-warning);font-weight:500}
+.note-green{border-left-color:var(--color-border-success);background:var(--color-background-success)}
+.note-green strong{color:var(--color-text-success)}
+.toggle-head{display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-secondary);margin-bottom:8px;user-select:none}
+.toggle-head:hover{background:var(--color-background-tertiary)}
+.toggle-title{font-size:13px;font-weight:500;color:var(--color-text-primary);flex:1}
+.toggle-chevron{font-size:13px;color:var(--color-text-tertiary);transition:transform .2s}
+.toggle-body{display:none;padding:12px 14px;border:1px solid var(--color-border-tertiary);border-top:none;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);margin-top:-8px;margin-bottom:8px}
+.toggle-body.open{display:block}
+.open-chevron{transform:rotate(90deg)}
+</style>
+
+<div class="wrap">
+
+<div class="note">
+  <strong>Context:</strong> "Free" can mean two different things — know which one you chose. <strong>Fully free forever</strong> (no billing at all, open access) vs <strong>free tier</strong> (free plan with limits, paid plans later). The changes below cover both, with notes on what differs.
+</div>
+
+<div class="section">
+  <div class="section-head"><i class="ti ti-server item-icon" aria-hidden="true"></i><span class="section-title">Backend changes</span><span class="pill p-red">Code changes required</span></div>
+  <div class="items">
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-shield-off" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Remove or bypass all feature gates</div>
+        <div class="item-desc">Every call to SubscriptionService.assertCapability() currently throws a 402 if the org is on the free plan. You need to either remove these checks entirely, or make the capability check always return true regardless of plan.</div>
+        <div class="item-code">// src/services/SubscriptionService.ts
+// Option A — fully free, no gates at all
+async assertCapability(_orgId: string, _cap: string) {
+  return; // always passes
+}
+
+// Option B — keep gates, unlock everything
+const ALL_CAPABILITIES = new Set([
+  'nlq_queries', 'ai_insights', 'custom_dashboards',
+  'workflow_automation', 'api_access', 'advanced_exports'
+]);
+async assertCapability(_orgId: string, cap: string) {
+  if (!ALL_CAPABILITIES.has(cap)) throw new Error('Unknown capability');
+  return; // all caps unlocked
+}</div>
+        <div class="item-tags"><span class="pill p-red">Required</span><span class="pill p-gray">SubscriptionService.ts</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-credit-card" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Disable or remove Stripe billing routes</div>
+        <div class="item-desc">If fully free: remove /billing/checkout and /billing/portal routes entirely. Keep /billing/subscription so you can still show usage stats. Keep the webhook handler dormant — you may reactivate billing later.</div>
+        <div class="item-code">// src/api/v1/billing/router.ts
+// Comment out or remove:
+// router.post('/checkout', ...)
+// router.post('/portal', ...)
+
+// Keep:
+router.get('/subscription', authenticate, getUsage);
+// Returns { plan: 'free', usage: {...} } for all orgs</div>
+        <div class="item-tags"><span class="pill p-red">Required</span><span class="pill p-gray">billing/router.ts</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-adjustments" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Raise or remove usage limits</div>
+        <div class="item-desc">Your plan config likely has hard limits on dataset rows, AI queries, seats, and API calls. Set these to a high number or remove the enforcement. Keep tracking usage — you'll want this data when you reintroduce pricing.</div>
+        <div class="item-code">// src/config/plans.ts
+export const PLAN_LIMITS = {
+  free: {
+    datasets:     9999,   // was 3
+    datasetRows:  5000000, // was 10,000
+    aiQueries:    9999,   // was 20/month
+    seats:        9999,   // was 3
+    apiCalls:     9999,   // was 1000/day
+    dashboards:   9999,   // was 5
+    workflows:    9999,   // was 2
+  }
+} as const;</div>
+        <div class="item-tags"><span class="pill p-amber">Important</span><span class="pill p-gray">config/plans.ts</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Keep usage metering — just stop enforcing it</div>
+        <div class="item-desc">Do NOT remove the billing_events table or stop writing usage records. You'll want 3–6 months of usage data when you introduce paid plans. Knowing what users actually use is how you design a pricing model that converts.</div>
+        <div class="item-tags"><span class="pill p-amber">Important</span><span class="pill p-gray">Don't delete billing_events</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-mail" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Remove or update plan-related email triggers</div>
+        <div class="item-desc">Any workflow or job that sends "You've hit your plan limit — upgrade to Pro" emails should be disabled. Also update trial expiry, payment failure, and subscription cancellation email templates.</div>
+        <div class="item-tags"><span class="pill p-amber">Important</span><span class="pill p-gray">jobs/processors/</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-head"><i class="ti ti-layout item-icon" aria-hidden="true"></i><span class="section-title">Frontend changes</span><span class="pill p-red">Code changes required</span></div>
+  <div class="items">
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-lock-open" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Remove all upgrade prompts and plan-gate UI</div>
+        <div class="item-desc">Every place in the UI that shows "Upgrade to Pro to use this feature" — modals, tooltips, disabled buttons, banner nudges — needs to be removed or unlocked. Gated UI that leads nowhere is actively harmful to user experience.</div>
+        <div class="item-code">// Search your codebase for:
+// - "upgrade" (case insensitive)
+// - isPlanGated, isFeatureLocked, canAccess
+// - plan === 'free' checks
+// - 402 error handling in API client
+// - PlanLimitError catch blocks
+// Remove or invert all of them</div>
+        <div class="item-tags"><span class="pill p-red">Required</span><span class="pill p-gray">Global search</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-badge" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Remove "Upgrade" badge from TopNav</div>
+        <div class="item-desc">The TopNav has an "Upgrade" CTA pill for free plan users. Remove it — it now signals a broken experience. Replace with nothing, or with a "Beta" badge if you want to communicate the product stage.</div>
+        <div class="item-tags"><span class="pill p-red">Required</span><span class="pill p-gray">TopNav.tsx</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-credit-card" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Remove or simplify the billing page</div>
+        <div class="item-desc">The /settings/billing page probably shows plan comparison, credit card management, and invoice history. Replace it with a simple usage dashboard: seats used, datasets created, AI queries this month. No payment UI.</div>
+        <div class="item-code">// New /settings/billing page — just usage
+&lt;UsagePage&gt;
+  &lt;UsageMeter label="Datasets" used={12} /&gt;
+  &lt;UsageMeter label="AI queries this month" used={340} /&gt;
+  &lt;UsageMeter label="Team members" used={4} /&gt;
+  &lt;p&gt;Synalytix is free during our beta. 
+     Enjoy unlimited access.&lt;/p&gt;
+&lt;/UsagePage&gt;</div>
+        <div class="item-tags"><span class="pill p-amber">Important</span><span class="pill p-gray">settings/billing/page.tsx</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-speakerphone" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Add a beta banner (optional but recommended)</div>
+        <div class="item-desc">A subtle top banner sets expectations: "Synalytix is free during beta — we'd love your feedback." Dismissible per-session. Links to your feedback channel. Builds goodwill and primes users to give you input.</div>
+        <div class="item-code">// components/layout/BetaBanner.tsx
+// Dismissible banner, renders above TopNav
+// "Free during beta · Share feedback →"
+// Stores dismissed state in sessionStorage</div>
+        <div class="item-tags"><span class="pill p-green">Recommended</span><span class="pill p-gray">Shell.tsx</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-head"><i class="ti ti-world item-icon" aria-hidden="true"></i><span class="section-title">Marketing &amp; positioning changes</span><span class="pill p-amber">Do this today</span></div>
+  <div class="items">
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-home" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Update landing page hero and CTA</div>
+        <div class="item-desc">Change "Start free trial" or "View pricing" to "Get started free — no credit card required." Remove any pricing section. The removal of pricing friction is itself a marketing message — make it loud in the hero.</div>
+        <div class="item-tags"><span class="pill p-red">Required</span><span class="pill p-gray">Landing page</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Remove or archive the pricing page</div>
+        <div class="item-desc">Redirect /pricing to the homepage or to a simple page: "Synalytix is free during beta. Sign up and start building." A pricing page with nothing to buy confuses visitors and signals instability.</div>
+        <div class="item-tags"><span class="pill p-red">Required</span><span class="pill p-gray">/pricing route</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-brand-twitter" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Announce it — this is a growth moment</div>
+        <div class="item-desc">Post on X/LinkedIn/relevant communities: "We just made Synalytix completely free. AI-powered analytics, no credit card, no limits during beta. Try it: [link]." Free product announcements get organic reach. Don't waste it.</div>
+        <div class="item-tags"><span class="pill p-green">Opportunity</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-mail-forward" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Email existing waitlist / users</div>
+        <div class="item-desc">If you have a waitlist or any existing users: email them today. Subject: "Synalytix is now free — your account is ready." This is the highest-converting email you'll ever send. Keep it short: one sentence, one button.</div>
+        <div class="item-tags"><span class="pill p-green">High impact</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-head"><i class="ti ti-bulb item-icon" aria-hidden="true"></i><span class="section-title">Strategic decisions to make now</span><span class="pill p-blue">Think through these</span></div>
+  <div class="items">
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-clock" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">How long will it be free?</div>
+        <div class="item-desc">You need a clear answer — even internally. "Free during beta" with a rough timeline (3–6 months) is honest and sets expectations. "Free forever" is a bigger commitment that affects your entire business model. Pick one and communicate it clearly.</div>
+        <div class="item-tags"><span class="pill p-blue">Decision required</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-chart-line" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Define your "free → paid" trigger now</div>
+        <div class="item-desc">Before you reintroduce pricing, you need data. Track: which features users love most, which orgs are most active, how much it costs you per active org (AI API + Supabase + Railway). That data shapes your pricing model. Start collecting it today.</div>
+        <div class="item-tags"><span class="pill p-blue">Plan ahead</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-icon"><i class="ti ti-users" aria-hidden="true"></i></div>
+      <div class="item-body">
+        <div class="item-title">Set a cost ceiling per user</div>
+        <div class="item-desc">AI API calls (Anthropic) and Supabase storage cost real money. Calculate your max cost per active org per month. If a single org runs 10,000 NLQ queries, you're paying for that. Set a soft rate limit on AI endpoints to protect yourself — not as a paywall, but as abuse prevention.</div>
+        <div class="item-code">// Keep this rate limit even on free plan:
+// AI endpoints: 200 req/day per org (soft cap)
+// Log when orgs hit 80% — reach out proactively
+// This is ops protection, not a pricing gate</div>
+        <div class="item-tags"><span class="pill p-amber">Protect yourself</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="note note-green" style="margin-top:4px">
+  <strong>The right mindset:</strong> Going free is not giving up on revenue — it's buying user growth and usage data cheaply. Every active org is a future customer, a case study, or a referral. Treat them like gold.
+</div>
+
+</div>

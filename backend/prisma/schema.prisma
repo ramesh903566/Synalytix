@@ -1,0 +1,242 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                   String               @id @default(uuid())
+  email                String               @unique
+  name                 String?
+  avatar_url           String?
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  deleted_at           DateTime?
+
+  memberships          OrganizationMember[]
+  activity_logs        ActivityLog[]
+
+  @@map("users")
+}
+
+model Organization {
+  id                   String               @id @default(uuid())
+  name                 String
+  slug                 String               @unique
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  deleted_at           DateTime?
+
+  members              OrganizationMember[]
+  projects             Project[]
+  api_keys             ApiKey[]
+  activity_logs        ActivityLog[]
+  invitations          Invitation[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id                   String               @id @default(uuid())
+  organization_id      String
+  user_id              String
+  role                 String               @default("member") // owner, admin, manager, member, viewer
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+
+  organization         Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user                 User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, user_id])
+  @@index([organization_id, created_at])
+  @@map("organization_members")
+}
+
+model Project {
+  id                   String               @id @default(uuid())
+  organization_id      String
+  name                 String
+  description          String?
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  deleted_at           DateTime?
+
+  organization         Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  datasets             Dataset[]
+  dashboards           Dashboard[]
+  reports              Report[]
+  ai_insights          AiInsight[]
+  workflows            Workflow[]
+
+  @@index([organization_id, created_at])
+  @@map("projects")
+}
+
+model Dataset {
+  id                   String               @id @default(uuid())
+  project_id           String
+  organization_id      String
+  name                 String
+  description          String?
+  storage_path         String
+  schema_json          Json?                // GIN index needed
+  row_count            Int                  @default(0)
+  status               String               @default("pending") // pending, processing, ready, failed
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  deleted_at           DateTime?
+
+  project              Project              @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id, created_at])
+  @@map("datasets")
+}
+
+model Dashboard {
+  id                   String               @id @default(uuid())
+  project_id           String
+  organization_id      String
+  name                 String
+  description          String?
+  layout_json          Json?                // GIN index needed
+  is_public            Boolean              @default(false)
+  share_token          String?              @unique
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  deleted_at           DateTime?
+
+  project              Project              @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  widgets              Widget[]
+
+  @@index([organization_id, created_at])
+  @@map("dashboards")
+}
+
+model Widget {
+  id                   String               @id @default(uuid())
+  dashboard_id         String
+  organization_id      String
+  name                 String
+  type                 String
+  config_json          Json                 // GIN index needed
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+
+  dashboard            Dashboard            @relation(fields: [dashboard_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id, created_at])
+  @@map("widgets")
+}
+
+model Report {
+  id                   String               @id @default(uuid())
+  project_id           String
+  organization_id      String
+  title                String
+  content              String               @db.Text
+  is_published         Boolean              @default(false)
+  share_token          String?              @unique
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  deleted_at           DateTime?
+
+  project              Project              @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id, created_at])
+  @@map("reports")
+}
+
+model AiInsight {
+  id                   String               @id @default(uuid())
+  project_id           String
+  organization_id      String
+  type                 String               // anomaly, summary, suggestion
+  title                String
+  description          String               @db.Text
+  confidence_score     Float
+  data_references      Json?
+  is_dismissed         Boolean              @default(false)
+  created_at           DateTime             @default(now())
+
+  project              Project              @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id, created_at])
+  @@map("ai_insights")
+}
+
+model Workflow {
+  id                   String               @id @default(uuid())
+  project_id           String
+  organization_id      String
+  name                 String
+  is_active            Boolean              @default(true)
+  trigger_type         String
+  trigger_config       Json
+  action_type          String
+  action_config        Json
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+
+  project              Project              @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id, created_at])
+  @@map("workflows")
+}
+
+model ActivityLog {
+  id                   String               @id @default(uuid())
+  organization_id      String
+  user_id              String?
+  action               String
+  entity_type          String
+  entity_id            String?
+  metadata             Json?
+  ip_address           String?
+  created_at           DateTime             @default(now())
+
+  organization         Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user                 User?                @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([organization_id, created_at])
+  @@index([entity_type, entity_id])
+  @@map("activity_logs")
+}
+
+model ApiKey {
+  id                   String               @id @default(uuid())
+  organization_id      String
+  name                 String
+  hashed_key           String               @unique
+  prefix               String               @db.VarChar(12)
+  permissions          String[]
+  last_used_at         DateTime?
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  deleted_at           DateTime?
+
+  organization         Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id, created_at])
+  @@map("api_keys")
+}
+
+
+
+model Invitation {
+  id                   String               @id @default(uuid())
+  organization_id      String
+  email                String
+  role                 String               @default("member")
+  token                String               @unique
+  expires_at           DateTime
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+
+  organization         Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, email])
+  @@index([organization_id, created_at])
+  @@map("invitations")
+}
