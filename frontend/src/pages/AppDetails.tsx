@@ -6,6 +6,8 @@ import { MOCK_APPS, MOCK_ACCOUNTS, IG_OVERVIEW, IG_AUDIENCE, IG_CONTENT_POSTS } 
 import { connectLeetCode, connectPlatform, getGitHubData, getLeetCodeData } from '../lib/api';
 import { ArrowLeft, Plus, Heart, MessageCircle, Send, Bookmark, X, Eye, Activity, Info, ChevronDown, Users } from 'lucide-react';
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { XAnalyticsModule } from '../modules/x-analytics/XAnalyticsModule';
+import { LinkedInAnalyticsDashboard } from '../features/linkedin/pages/LinkedInAnalyticsDashboard';
 
 type ContentSort = 'Views' | 'Accounts reached' | 'Follows' | 'Likes' | 'Comments' | 'Reposts' | 'Shares' | 'Saves';
 type InsightsTab = 'overview' | 'content' | 'audience';
@@ -186,6 +188,38 @@ export default function AppDetails() {
   const sortedContent = [...IG_CONTENT_POSTS].sort((a, b) => (b[SORT_KEYS[contentSort]] as number) - (a[SORT_KEYS[contentSort]] as number));
   const days = ['Su','M','Tu','W','Th','F','Sa'];
 
+  const renderActiveAccountsStory = () => {
+    if (accounts.length === 0) return null;
+    return (
+      <div className="mb-8">
+        <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#999] mb-4">Active Accounts</h3>
+        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+          {accounts.map((acc: any) => {
+            const isActive = selectedAccount?.id === acc.id;
+            return (
+              <div key={acc.id} onClick={() => setSelectedAccount(acc)} className={`flex flex-col items-center gap-1.5 cursor-pointer ${isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100 transition-opacity'}`}>
+                <div className={`w-14 h-14 rounded-full p-[2px] transition-all ${isActive ? 'bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-400' : 'bg-transparent border-2 border-zinc-200'}`}>
+                  <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white">
+                    <img src={acc.avatarUrl || `https://ui-avatars.com/api/?name=${acc.username}`} alt={acc.username} className="w-full h-full object-cover" />
+                  </div>
+                </div>
+                <span className="text-[9px] font-semibold uppercase text-[#1A1A1A] max-w-[64px] truncate text-center">{acc.username}</span>
+              </div>
+            );
+          })}
+          <div className="flex flex-col items-center gap-1.5 cursor-pointer opacity-50 hover:opacity-100 transition-opacity">
+            <div className="w-14 h-14 rounded-full border-2 border-transparent p-[2px]">
+              <div className="w-full h-full rounded-full border-2 border-dashed border-[#999] flex items-center justify-center bg-[#F5F5F5]">
+                <Plus className="w-4 h-4 text-[#999]" />
+              </div>
+            </div>
+            <span className="text-[9px] font-semibold uppercase text-[#1A1A1A]">Add</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // ─── GITHUB ───
   if (appInfo.id === 'github') {
     if (githubLoading) return <div className="p-8 text-center text-zinc-500 mt-20">Loading GitHub data...</div>;
@@ -200,6 +234,7 @@ export default function AppDetails() {
         <button onClick={() => navigate('/app/apps')} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-black mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Apps
         </button>
+        {renderActiveAccountsStory()}
         <div className="flex items-center gap-4 mb-10">
           <div className="w-16 h-16 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center shadow-sm font-semibold text-2xl text-gray-800">
             {profile.avatar_url ? <img src={profile.avatar_url} alt="Avatar" className="w-full h-full rounded-2xl" /> : 'G'}
@@ -263,6 +298,7 @@ export default function AppDetails() {
       <button onClick={() => navigate('/app/apps')} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-black mb-8 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Apps
       </button>
+      {renderActiveAccountsStory()}
       <div className="flex items-center gap-4 mb-10">
         <div className="w-16 h-16 rounded-2xl bg-yellow-50 border border-yellow-200 flex items-center justify-center text-2xl">🎯</div>
         <div>
@@ -350,6 +386,7 @@ export default function AppDetails() {
       <button onClick={() => navigate('/app/apps')} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-black mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Apps
       </button>
+      {renderActiveAccountsStory()}
 
       {/* Account header */}
       <div className="bg-white border border-[#EFEFEF] rounded-2xl p-6 mb-6 flex items-center gap-4">
@@ -637,7 +674,67 @@ export default function AppDetails() {
     </motion.div>
   );
 
-  // ─── X / LINKEDIN (generic) ───
+  // ─── X ANALYTICS ───
+  if (appInfo.id === 'x') {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+        <div className="max-w-5xl mx-auto px-6 pt-6">
+          <button onClick={() => navigate('/app/apps')} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-6 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Apps
+          </button>
+          
+          <div className="mb-4">
+            {renderActiveAccountsStory()}
+          </div>
+        </div>
+        
+        {selectedAccount ? (
+          <XAnalyticsModule appInfo={appInfo} account={selectedAccount} />
+        ) : (
+          <div className="max-w-5xl mx-auto px-6 py-20 text-center">
+            <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="w-8 h-8 text-zinc-600" />
+            </div>
+            <h2 className="text-xl font-medium text-white mb-2">No Account Selected</h2>
+            <p className="text-zinc-500">Please select or connect an X account to view analytics.</p>
+          </div>
+        )}
+      </motion.div>
+    );
+  }
+
+  // ─── LINKEDIN ───
+  if (appInfo.id === 'linkedin') {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+        <div className="max-w-[1400px] mx-auto px-6 pt-6">
+          <button onClick={() => navigate('/app/apps')} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-6 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Apps
+          </button>
+          
+          <div className="mb-4">
+            {renderActiveAccountsStory()}
+          </div>
+        </div>
+        
+        {selectedAccount ? (
+          <div className="max-w-[1400px] mx-auto px-6">
+            <LinkedInAnalyticsDashboard />
+          </div>
+        ) : (
+          <div className="max-w-5xl mx-auto px-6 py-20 text-center">
+            <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="w-8 h-8 text-zinc-600" />
+            </div>
+            <h2 className="text-xl font-medium text-white mb-2">No Account Selected</h2>
+            <p className="text-zinc-500">Please select or connect a LinkedIn account to view analytics.</p>
+          </div>
+        )}
+      </motion.div>
+    );
+  }
+
+  // ─── OTHERS (generic) ───
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
       <button onClick={() => navigate('/app/apps')} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-black mb-8 transition-colors">
@@ -654,25 +751,7 @@ export default function AppDetails() {
           </div>
         </div>
       </div>
-      <div className="mb-10">
-        <h3 className="text-sm font-medium uppercase tracking-widest text-zinc-400 mb-4">Active Accounts</h3>
-        <div className="flex gap-6 overflow-x-auto pb-4">
-          {accounts.map((acc: any) => (
-            <button key={acc.id} onClick={() => setSelectedAccount(acc)} className="flex flex-col items-center gap-3 w-20 flex-shrink-0">
-              <div className={`w-16 h-16 rounded-full p-1 transition-all ${selectedAccount?.id === acc.id ? 'border-2 border-black' : 'border border-transparent hover:border-zinc-300'}`}>
-                <img src={acc.avatarUrl} alt={acc.username} className="w-full h-full rounded-full object-cover"/>
-              </div>
-              <span className="text-xs font-medium truncate w-full text-center">{acc.username}</span>
-            </button>
-          ))}
-          <button className="flex flex-col items-center gap-3 w-20 flex-shrink-0 group">
-            <div className="w-16 h-16 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 group-hover:text-black group-hover:border-black transition-colors bg-white">
-              <Plus className="w-6 h-6"/>
-            </div>
-            <span className="text-xs font-medium text-zinc-400 group-hover:text-black transition-colors">Add</span>
-          </button>
-        </div>
-      </div>
+      {renderActiveAccountsStory()}
       {selectedAccount && (
         <div className="bg-white rounded-2xl border border-[#EFEFEF] p-8">
           <div className="flex items-center gap-4 mb-8 pb-8 border-b border-[#F5F5F5]">

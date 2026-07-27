@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { GenerateInput, GenerateOutput } from "../types/recommendations";
 
-const API_BASE = "http://localhost:3001/api"; // Or whatever the base is, I should use the common fetch wrapper if it exists
+const API_BASE = "http://localhost:4000/api";
 
 async function fetchRecommendations(): Promise<GenerateOutput["data"]> {
   const token = localStorage.getItem("token") || "";
@@ -34,7 +34,7 @@ async function generateRecommendations(input: GenerateInput): Promise<GenerateOu
 async function markComplete(id: string): Promise<void> {
   const token = localStorage.getItem("token") || "";
   const res = await fetch(`${API_BASE}/recommendations/${id}/complete`, {
-    method: "PATCH",
+    method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Failed to mark complete");
@@ -43,7 +43,7 @@ async function markComplete(id: string): Promise<void> {
 async function dismissRecommendation(id: string): Promise<void> {
   const token = localStorage.getItem("token") || "";
   const res = await fetch(`${API_BASE}/recommendations/${id}/dismiss`, {
-    method: "PATCH",
+    method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Failed to dismiss");
@@ -52,7 +52,7 @@ async function dismissRecommendation(id: string): Promise<void> {
 async function dismissOpportunityAlert(id: string): Promise<void> {
   const token = localStorage.getItem("token") || "";
   const res = await fetch(`${API_BASE}/recommendations/alerts/${id}/dismiss`, {
-    method: "PATCH",
+    method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Failed to dismiss alert");

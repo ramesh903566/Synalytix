@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Anton", sans-serif;
-  --font-stats: "Bebas Neue", sans-serif;
-  --font-label: "Arimo", sans-serif;
+  --font-display: "Calistoga", serif;
+  --font-stats: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
 
-  --color-brand-primary: #3e32d3;
-  --color-brand-secondary: #276954;
-  --color-brand-tertiary: #4b4b7e;
-  --color-brand-bg: #f8fafc;
+  --color-brand-primary: #7C3AED;
+  --color-brand-secondary: #EC4899;
+  --color-brand-tertiary: #2563EB;
+  --color-brand-bg: #FAF5FF;
 }
 
 @layer base {
   body {
     background-color: var(--color-brand-bg);
-    background-image: radial-gradient(rgba(75, 75, 126, 0.15) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(rgba(124, 58, 237, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
     background-position: 0 0;
-    color: #191c1e;
+    color: #0F172A;
   }
 }
 

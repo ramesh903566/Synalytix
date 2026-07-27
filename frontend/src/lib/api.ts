@@ -1,6 +1,7 @@
-import { supabase } from './supabase';
-
-const BACKEND = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+import { 
+  IG_OVERVIEW, IG_AUDIENCE, IG_CONTENT_POSTS,
+  MOCK_ACCOUNTS, MOCK_APPS
+} from '../data/mockData';
 
 type ApiEnvelope<T = any> = {
   success: boolean;
@@ -9,156 +10,141 @@ type ApiEnvelope<T = any> = {
   message?: string;
 };
 
-const OAUTH_PLATFORMS = new Set(['github', 'instagram', 'x', 'linkedin']);
+// Simulate network delay
+const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
-function getErrorMessage(body: ApiEnvelope | null, fallback: string) {
-  if (typeof body?.error === 'string') return body.error;
-  if (body?.error?.message) return body.error.message;
-  return body?.message || fallback;
+export async function connectPlatform(platform: string): Promise<void> {
+  await delay();
+  console.log(`Mock connect to ${platform}`);
 }
 
-async function readJson<T = any>(res: Response, fallback: string): Promise<ApiEnvelope<T>> {
-  const body = await res.json().catch(() => null) as ApiEnvelope<T> | null;
-  if (!res.ok || !body?.success) {
-    throw new Error(getErrorMessage(body, fallback));
-  }
-  return body;
-}
-
-export async function getAuthHeader(): Promise<Record<string, string>> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-
-  if (!token) throw new Error('Not authenticated');
-
+export async function getConnectionStatus(): Promise<ApiEnvelope<{ connected: string[] }>> {
+  await delay();
   return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    success: true,
+    data: { connected: ['instagram', 'x', 'github', 'linkedin', 'leetcode'] }
   };
 }
 
-// Connect a platform — redirects browser to platform OAuth page
-export async function connectPlatform(platform: string) {
-  if (!OAUTH_PLATFORMS.has(platform)) {
-    throw new Error(`${platform} does not support OAuth connection yet.`);
-  }
-
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/auth/connect/${platform}?format=json`, {
-    headers,
-  });
-
-  const body = await readJson<{ url: string }>(res, 'Failed to start platform authorization');
-  if (!body.data?.url) throw new Error('Backend did not return an authorization URL.');
-
-  window.location.href = body.data.url;
+export async function disconnectPlatform(platform: string): Promise<ApiEnvelope> {
+  await delay();
+  return { success: true };
 }
 
-// Get connection status
-export async function getConnectionStatus() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/auth/status`, { headers });
-  return readJson(res, 'Failed to get connection status');
+export async function getDashboardSummary(): Promise<ApiEnvelope> {
+  await delay();
+  return {
+    success: true,
+    data: {
+      totalInteractions: 8200,
+      totalReach: 45000,
+      recentActivity: [],
+      // Mock some summary data based on MOCK_ACCOUNTS
+    }
+  };
 }
 
-// Disconnect a platform
-export async function disconnectPlatform(platform: string) {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/auth/disconnect/${platform}`, {
-    method: 'DELETE',
-    headers,
-  });
-  return readJson(res, 'Failed to disconnect platform');
+export async function getGitHubData(): Promise<ApiEnvelope> {
+  await delay();
+  return {
+    success: true,
+    data: {
+      account: MOCK_ACCOUNTS.github[0],
+      overview: { commits: 120, PRs: 15, issues: 5 },
+      repos: []
+    }
+  };
 }
 
-// Get all platform data at once (for dashboard)
-export async function getDashboardSummary() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/data/summary`, { headers });
-  return readJson(res, 'Failed to get dashboard summary');
+export async function getInstagramData(): Promise<ApiEnvelope> {
+  await delay();
+  return {
+    success: true,
+    data: {
+      account: MOCK_ACCOUNTS.instagram[0],
+      overview: IG_OVERVIEW,
+      audience: IG_AUDIENCE,
+      content: IG_CONTENT_POSTS,
+    }
+  };
 }
 
-// Platform-specific fetchers
-export async function getGitHubData() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/data/github/all`, { headers });
-  return readJson(res, 'Failed to get GitHub data');
+export async function getXData(): Promise<ApiEnvelope> {
+  await delay();
+  return {
+    success: true,
+    data: {
+      account: MOCK_ACCOUNTS.x[0],
+      overview: { impressions: 12000, retweets: 150, likes: 500 },
+      tweets: []
+    }
+  };
 }
 
-export async function getInstagramData() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/data/instagram/all`, { headers });
-  return readJson(res, 'Failed to get Instagram data');
+export async function getLeetCodeData(): Promise<ApiEnvelope> {
+  await delay();
+  return {
+    success: true,
+    data: {
+      account: MOCK_ACCOUNTS.leetcode[0],
+      overview: { solved: 250, easy: 100, medium: 120, hard: 30 },
+      recentSubmissions: []
+    }
+  };
 }
 
-export async function getXData() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/data/x/all`, { headers });
-  return readJson(res, 'Failed to get X data');
+export async function getLinkedInData(): Promise<ApiEnvelope> {
+  await delay();
+  return {
+    success: true,
+    data: {
+      account: MOCK_ACCOUNTS.linkedin[0],
+      overview: { connections: 500, profileViews: 120 },
+      posts: []
+    }
+  };
 }
 
-export async function getLeetCodeData() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/data/leetcode/all`, { headers });
-  return readJson(res, 'Failed to get LeetCode data');
+export async function connectLeetCode(username: string): Promise<ApiEnvelope> {
+  await delay();
+  return { success: true };
 }
-
-export async function getLinkedInData() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/data/linkedin/all`, { headers });
-  return readJson(res, 'Failed to get LinkedIn data');
-}
-
-// Connect LeetCode (special — just username, no OAuth)
-export async function connectLeetCode(username: string) {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/data/leetcode/connect`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ username }),
-  });
-  return readJson(res, 'Failed to connect LeetCode');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  AI RECOMMENDATIONS
-// ═══════════════════════════════════════════════════════════════════════════
 
 export async function generateRecommendations(options?: {
   forceRefresh?: boolean;
   focusCategory?: string;
-}) {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/recommendations/generate`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(options || {}),
-  });
-  const body = await res.json().catch(() => null);
-  if (!res.ok || !body?.success) throw new Error(getErrorMessage(body, 'Failed to generate recommendations'));
-  return body;
+}): Promise<ApiEnvelope> {
+  await delay(1500);
+  return {
+    success: true,
+    data: {
+      recommendations: [
+        {
+          id: 'rec_1',
+          type: 'content',
+          title: 'Post a new Reel',
+          description: 'Your audience is most active on Tuesdays. Post a new reel to maximize reach.',
+          status: 'pending'
+        }
+      ]
+    }
+  };
 }
 
-export async function getRecommendationHistory() {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/recommendations/history`, { headers });
-  return readJson(res, 'Failed to get recommendation history');
+export async function getRecommendationHistory(): Promise<ApiEnvelope> {
+  await delay();
+  return {
+    success: true,
+    data: []
+  };
 }
 
-export async function completeRecommendation(id: string) {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/recommendations/${id}/complete`, {
-    method: 'PATCH',
-    headers,
-  });
-  return readJson(res, 'Failed to complete recommendation');
+export async function completeRecommendation(id: string): Promise<ApiEnvelope> {
+  await delay();
+  return { success: true };
 }
 
-export async function dismissRecommendation(id: string) {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BACKEND}/api/recommendations/${id}/dismiss`, {
-    method: 'PATCH',
-    headers,
-  });
-  return readJson(res, 'Failed to dismiss recommendation');
+export async function dismissRecommendation(id: string): Promise<ApiEnvelope> {
+  await delay();
+  return { success: true };
 }

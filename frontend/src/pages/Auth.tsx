@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Github, Twitter, Chrome, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { useAppContext } from '../context/AppContext';
 
 export default function Auth() {
   const navigate = useNavigate();
+  const { login } = useAppContext();
   const [isSignUp, setIsSignUp] = useState(true);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
@@ -17,26 +18,11 @@ export default function Auth() {
     setMsg('');
     setLoading(true);
 
-    const form = e.target as HTMLFormElement;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-
     try {
-      if (isSignUp) {
-        const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
-        if (signUpError) throw signUpError;
-        
-        if (data.session) {
-          navigate('/app');
-        } else {
-          setMsg('Account created successfully! Please check your email to verify your account.');
-          setIsSignUp(false);
-        }
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-        navigate('/app');
-      }
+      // Simulate network request
+      await new Promise(r => setTimeout(r, 800));
+      login();
+      navigate('/app');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     } finally {
@@ -46,15 +32,14 @@ export default function Auth() {
 
   const handleGithubLogin = async () => {
     try {
-      const { error: githubError } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          redirectTo: window.location.origin + '/app',
-        }
-      });
-      if (githubError) throw githubError;
+      setLoading(true);
+      await new Promise(r => setTimeout(r, 800));
+      login();
+      navigate('/app');
     } catch (err: any) {
       setError(err.message || 'Failed to authenticate with GitHub');
+    } finally {
+      setLoading(false);
     }
   };
 

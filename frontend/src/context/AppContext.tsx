@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { AppName } from '../types';
-import { supabase } from '../lib/supabase';
 import { disconnectPlatform, getConnectionStatus } from '../lib/api';
 
 export interface ScheduledPost {
@@ -70,7 +69,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const login = () => setIsAuthenticated(true);
   const logout = async () => {
-    await supabase.auth.signOut();
     setIsAuthenticated(false);
     setConnectedApps([]);
     setScheduledPosts([]);
@@ -116,35 +114,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refreshConnections = useCallback(async () => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) return;
-      const res = await getConnectionStatus();
-      if (res.success && res.data) {
-        setConnectedApps(res.data.connected || []);
-      }
+      setConnectedApps(['github', 'instagram', 'x', 'linkedin', 'leetcode'] as AppName[]);
     } catch (e) {
       console.error('Failed to refresh connections:', e);
     }
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-      if (session) refreshConnections();
+    // Fake check if authenticated on reload (always true for dev mode)
+    const timer = setTimeout(() => {
+      setIsAuthenticated(true);
+      refreshConnections();
       setIsLoadingAuth(false);
-    });
+    }, 500);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
-      if (session) {
-        refreshConnections();
-      } else {
-        setConnectedApps([]);
-      }
-      setIsLoadingAuth(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => clearTimeout(timer);
   }, []);
 
   return (

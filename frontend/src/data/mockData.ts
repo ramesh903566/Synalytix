@@ -13,7 +13,8 @@ export const MOCK_ACCOUNTS: Record<string, any[]> = {
     { id: 'ig_1', username: '@ramesh988025', avatarUrl: 'https://i.pravatar.cc/150?u=ig_ramesh', type: 'creator' },
   ],
   x: [
-    { id: 'x_1', username: '@ramesh903566', avatarUrl: 'https://i.pravatar.cc/150?u=x_ramesh', type: 'personal' },
+    { id: 'x_1', username: '@ramesh903566', avatarUrl: 'https://i.pravatar.cc/150?u=x_ramesh', type: 'personal', isPremium: true },
+    { id: 'x_2', username: '@free_user', avatarUrl: 'https://i.pravatar.cc/150?u=x_free', type: 'personal', isPremium: false },
   ],
   linkedin: [
     { id: 'li_1', username: 'Ramesh Kumar', avatarUrl: 'https://i.pravatar.cc/150?u=li_ramesh', type: 'professional' },
@@ -102,3 +103,128 @@ export const IG_CONTENT_POSTS = [
   { id: 'c12', title: 'DRAFT ☝️ 💖', age: '3w', likes: 151, reposts: 0, shares: 1, views: 2300, accountsReached: 1200, follows: 2, saves: 2, comments: 0 },
   { id: 'c13', title: 'DARLING 😘✨💖', age: '3w', likes: 149, reposts: 1, shares: 0, views: 1900, accountsReached: 643, follows: 1, saves: 0, comments: 0 },
 ];
+
+import { PlatformAnalyticsData, PlatformType, CrossPlatformInsights } from '../types/analytics';
+import { UniversalAIEngine } from '../utils/aiAnalyticsEngine';
+
+export const UNIVERSAL_MOCK_DATA: Record<PlatformType, PlatformAnalyticsData | null> = {
+  instagram: {
+    platform: 'instagram',
+    aggregatedMetrics: {
+      views: 53607,
+      engagements: 3344,
+      followers: 488,
+      reach: 20394,
+    },
+    accounts: [
+      {
+        id: 'ig_1',
+        platform: 'instagram',
+        handle: '@ramesh988025',
+        name: 'Ramesh',
+        profileImageUrl: 'https://i.pravatar.cc/150?u=ig_ramesh',
+        overview: {
+          views: 53607,
+          engagements: 3344,
+          followers: 488,
+          reach: 20394,
+        },
+        growthHistory: IG_AUDIENCE.followerGrowthHistory.map(d => ({ date: d.date, value: d.val })),
+        audience: IG_AUDIENCE,
+        content: IG_CONTENT_POSTS.map(c => ({
+          id: c.id,
+          platform: 'instagram',
+          accountId: 'ig_1',
+          type: c.emoji ? 'Story' : 'Reel',
+          title: c.title || c.emoji || 'Post',
+          publishedAt: c.age,
+          metrics: {
+            views: c.views,
+            engagements: c.likes + c.comments + c.shares,
+            likes: c.likes,
+            comments: c.comments,
+            shares: c.shares,
+            saves: c.saves,
+            reach: c.accountsReached,
+          }
+        })),
+        lastSynced: '2 mins ago',
+      }
+    ],
+  },
+  x: {
+    platform: 'x',
+    aggregatedMetrics: {
+      views: 12500,
+      engagements: 890,
+      followers: 1200,
+      reach: 8500,
+    },
+    accounts: [
+      {
+        id: 'x_1',
+        platform: 'x',
+        handle: '@ramesh903566',
+        name: 'Ramesh Kumar',
+        profileImageUrl: 'https://i.pravatar.cc/150?u=x_ramesh',
+        overview: {
+          views: 12500,
+          engagements: 890,
+          followers: 1200,
+          reach: 8500,
+        },
+        growthHistory: [
+          { date: '1 May', value: 10 }, { date: '2 May', value: -2 }, { date: '3 May', value: 15 }
+        ],
+        content: [],
+        lastSynced: '1 hour ago',
+      }
+    ],
+  },
+  linkedin: null,
+  github: {
+    platform: 'github',
+    aggregatedMetrics: {
+      views: 0,
+      engagements: 450, // commits/PRs
+      followers: 45,
+    },
+    accounts: [
+      {
+        id: 'gh_1',
+        platform: 'github',
+        handle: 'ramesh988025',
+        name: 'Ramesh Developer',
+        profileImageUrl: 'https://i.pravatar.cc/150?u=gh_ramesh',
+        overview: {
+          views: 0,
+          engagements: 450,
+          followers: 45,
+        },
+        growthHistory: [],
+        content: [],
+        lastSynced: '10 mins ago',
+      }
+    ],
+  },
+  youtube: null,
+  leetcode: null,
+  hackerrank: null,
+  codeforces: null,
+  devto: null,
+  medium: null,
+  reddit: null,
+  stackoverflow: null
+};
+
+// Generate AI Insights dynamically for mock data
+Object.values(UNIVERSAL_MOCK_DATA).forEach(platformData => {
+  if (platformData) {
+    platformData.aiInsights = UniversalAIEngine.generateInsights(platformData.aggregatedMetrics);
+    platformData.accounts.forEach(account => {
+      account.aiInsights = UniversalAIEngine.generateInsights(account.overview);
+    });
+  }
+});
+
+export const MOCK_CROSS_PLATFORM_INSIGHTS: CrossPlatformInsights = UniversalAIEngine.generateCrossPlatformInsights(UNIVERSAL_MOCK_DATA);

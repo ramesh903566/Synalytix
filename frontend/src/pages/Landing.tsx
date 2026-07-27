@@ -12,20 +12,20 @@ export default function Landing() {
   return (
     <div className="min-h-screen selection:bg-brand-primary selection:text-white overflow-hidden font-label">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 p-6 flex justify-between items-center z-50 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm">
+      <nav className="fixed top-0 left-0 right-0 p-6 flex justify-between items-center z-50 bg-white/40 backdrop-blur-md border-b border-white/50 shadow-sm">
         <div className="flex items-center cursor-pointer rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-          <img src="/icons/Synalytixlogo1.png" alt="Synalytix" className="h-12 w-auto object-cover scale-[1.15]" />
+          <img src="/icons/synalytix-logo.svg" alt="Synalytix" className="h-10 w-auto" />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <button
-            onClick={() => navigate('/auth')}
-            className="text-slate-600 hover:text-slate-900 text-sm font-label tracking-wider font-bold transition-colors"
+            onClick={() => navigate('/app')}
+            className="text-slate-600 hover:text-brand-primary text-sm font-medium tracking-wide transition-colors"
           >
             LOGIN
           </button>
           <button
-            onClick={() => navigate('/auth')}
-            className="px-6 py-2.5 bg-brand-primary text-white text-sm font-label tracking-wider font-bold rounded-xl hover:bg-brand-primary/90 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg shadow-brand-primary/30"
+            onClick={() => navigate('/app')}
+            className="px-6 py-2.5 bg-brand-primary text-white text-sm font-medium tracking-wide rounded-xl hover:bg-brand-primary/90 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg shadow-brand-primary/25"
           >
             START NOW
           </button>
@@ -33,8 +33,8 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <main className="w-full h-[calc(100vh-2rem)] pt-28 pb-12 px-6 sm:px-12 flex items-center justify-center">
-        <div className="w-full h-full max-w-[100rem] mx-auto relative rounded-[3rem] overflow-hidden shadow-2xl shadow-brand-tertiary/10 border border-white/40 bg-white/20 backdrop-blur-2xl">
+      <main className="w-full h-[calc(100vh-2rem)] pt-32 pb-16 px-6 sm:px-12 flex items-center justify-center">
+        <div className="w-full h-full max-w-[100rem] mx-auto relative rounded-[3rem] overflow-hidden shadow-2xl shadow-brand-primary/5 border border-white/60 bg-white/30 backdrop-blur-2xl">
           {/* Symmetrical negative inset to push the watermark out of bounds while keeping the 3D scene centered */}
           <div className="absolute -inset-24 z-10 pointer-events-auto">
             <Suspense fallback={
