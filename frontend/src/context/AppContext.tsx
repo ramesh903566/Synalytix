@@ -155,8 +155,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const connectCalendar = async (provider: ExternalCalendarProvider) => {
     if (provider === 'google') {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin;
-      window.location.href = `${backendUrl}/api/auth/connect/google-calendar`;
+      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+      window.location.href = `${apiBase}/api/auth/connect/google-calendar`;
     }
   };
 
@@ -175,8 +175,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           try {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin;
-            const res = await fetch(`${backendUrl}/api/data/google-calendar/events`, {
+            const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+            const res = await fetch(`${apiBase}/api/data/google-calendar/events`, {
               headers: {
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {})
               }

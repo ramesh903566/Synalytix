@@ -1,6 +1,6 @@
 import { getAuthToken } from "../lib/auth-token";
 
-const API_BASE = "/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 async function authHeaders(): Promise<Record<string, string>> {
   const token = await getAuthToken();

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { GenerateInput, GenerateOutput } from "../types/recommendations";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 

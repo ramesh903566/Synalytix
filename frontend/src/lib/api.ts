@@ -7,7 +7,7 @@ type ApiEnvelope<T = unknown> = {
   message?: string;
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE || '';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 async function getToken(): Promise<string | null> {
   const { data: { session } } = await supabase.auth.getSession();
