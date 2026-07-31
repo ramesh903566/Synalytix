@@ -102,13 +102,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const login = () => setIsAuthenticated(true);
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Auth is bypassed for review — signOut may fail with no session
+    }
     setIsAuthenticated(false);
     setConnectedApps([]);
     setScheduledPosts([]);
     setSavedDrafts([]);
     setCalendarConnections([]);
     setExternalEvents([]);
+    window.location.href = '/auth';
   };
 
   const connectApp = (app: AppName) => {
