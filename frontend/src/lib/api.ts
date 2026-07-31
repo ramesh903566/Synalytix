@@ -1,163 +1,114 @@
-import { 
-  IG_OVERVIEW, IG_AUDIENCE, IG_CONTENT_POSTS,
-  MOCK_ACCOUNTS, MOCK_APPS
-} from '../data/mockData';
+import { supabase } from './supabase';
 
-type ApiEnvelope<T = any> = {
+type ApiEnvelope<T = unknown> = {
   success: boolean;
   data?: T;
   error?: string | { message?: string };
   message?: string;
 };
 
-// Simulate network delay
-const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
-export async function connectPlatform(platform: string): Promise<ApiEnvelope> {
-  await delay();
-  console.log(`Connected to ${platform}`);
-  return { success: true };
+async function getToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
 }
 
-export async function getConnectionStatus(): Promise<ApiEnvelope<{ connected: string[] }>> {
-  await delay();
-  return {
-    success: true,
-    data: { connected: ['instagram', 'x', 'github', 'linkedin', 'leetcode'] }
-  };
+async function apiFetch<T = unknown>(
+  path: string,
+  options: RequestInit = {}
+): Promise<ApiEnvelope<T>> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || `Request failed (${res.status})` };
+    }
+    return data;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Network error';
+    return { success: false, error: message };
+  }
+}
+
+export async function connectPlatform(platform: string): Promise<void> {
+  const result = await apiFetch<{ url: string }>(`/api/auth/connect/${platform}?format=json`);
+  if (result.success && result.data?.url) {
+    window.location.href = result.data.url;
+  } else {
+    throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to start connection');
+  }
+}
+
+export async function getConnectionStatus(): Promise<ApiEnvelope<{ connected: string[]; connections: Array<{ platform: string; username: string; connected_at: string; expires_at: string | null }> }>> {
+  return apiFetch('/api/auth/status');
 }
 
 export async function disconnectPlatform(platform: string): Promise<ApiEnvelope> {
-  await delay();
-  return { success: true };
+  return apiFetch(`/api/auth/disconnect/${platform}`, { method: 'DELETE' });
 }
 
 export async function getDashboardSummary(): Promise<ApiEnvelope> {
-  await delay();
-  return {
-    success: true,
-    data: {
-      totalInteractions: 8200,
-      totalReach: 45000,
-      recentActivity: [],
-      // Mock some summary data based on MOCK_ACCOUNTS
-    }
-  };
+  return apiFetch('/api/data/summary');
 }
 
 export async function getGitHubData(): Promise<ApiEnvelope> {
-  await delay();
-  return {
-    success: true,
-    data: {
-      profile: {
-        username: 'ramesh988025',
-        avatar_url: 'https://i.pravatar.cc/150?u=gh_ramesh',
-        public_repos: 42
-      },
-      contributions: {
-        total_this_year: 450
-      },
-      stats: {
-        total_stars: 120
-      },
-      repos: [
-        { name: 'synalytix', html_url: '#', description: 'AI analytics dashboard', language: 'TypeScript', stargazers_count: 50, is_private: false },
-        { name: 'portfolio', html_url: '#', description: 'My developer portfolio', language: 'React', stargazers_count: 70, is_private: false }
-      ]
-    }
-  };
+  return apiFetch('/api/data/github/all');
 }
 
 export async function getInstagramData(): Promise<ApiEnvelope> {
-  await delay();
-  return {
-    success: true,
-    data: {
-      account: MOCK_ACCOUNTS.instagram[0],
-      overview: IG_OVERVIEW,
-      audience: IG_AUDIENCE,
-      content: IG_CONTENT_POSTS,
-    }
-  };
+  return apiFetch('/api/data/instagram/all');
 }
 
 export async function getXData(): Promise<ApiEnvelope> {
-  await delay();
-  return {
-    success: true,
-    data: {
-      account: MOCK_ACCOUNTS.x[0],
-      overview: { impressions: 12000, retweets: 150, likes: 500 },
-      tweets: []
-    }
-  };
+  return apiFetch('/api/data/x/all');
 }
 
 export async function getLeetCodeData(): Promise<ApiEnvelope> {
-  await delay();
-  return {
-    success: true,
-    data: {
-      account: MOCK_ACCOUNTS.leetcode[0],
-      overview: { solved: 250, easy: 100, medium: 120, hard: 30 },
-      recentSubmissions: []
-    }
-  };
+  return apiFetch('/api/data/leetcode/all');
 }
 
 export async function getLinkedInData(): Promise<ApiEnvelope> {
-  await delay();
-  return {
-    success: true,
-    data: {
-      account: MOCK_ACCOUNTS.linkedin[0],
-      overview: { connections: 500, profileViews: 120 },
-      posts: []
-    }
-  };
+  return apiFetch('/api/data/linkedin/all');
 }
 
 export async function connectLeetCode(username: string): Promise<ApiEnvelope> {
-  await delay();
-  return { success: true };
+  const result = await apiFetch('/api/data/leetcode/connect', {
+    method: 'POST',
+    body: JSON.stringify({ username }),
+  });
+  if (!result.success) {
+    throw new Error(typeof result.error === 'string' ? result.error : 'Failed to connect LeetCode');
+  }
+  return result;
 }
 
 export async function generateRecommendations(options?: {
   forceRefresh?: boolean;
   focusCategory?: string;
 }): Promise<ApiEnvelope> {
-  await delay(1500);
-  return {
-    success: true,
-    data: {
-      recommendations: [
-        {
-          id: 'rec_1',
-          type: 'content',
-          title: 'Post a new Reel',
-          description: 'Your audience is most active on Tuesdays. Post a new reel to maximize reach.',
-          status: 'pending'
-        }
-      ]
-    }
-  };
+  return apiFetch('/api/recommendations/generate', {
+    method: 'POST',
+    body: JSON.stringify(options || {}),
+  });
 }
 
 export async function getRecommendationHistory(): Promise<ApiEnvelope> {
-  await delay();
-  return {
-    success: true,
-    data: []
-  };
+  return apiFetch('/api/recommendations');
 }
 
 export async function completeRecommendation(id: string): Promise<ApiEnvelope> {
-  await delay();
-  return { success: true };
+  return apiFetch(`/api/recommendations/${id}/complete`, { method: 'POST' });
 }
 
 export async function dismissRecommendation(id: string): Promise<ApiEnvelope> {
-  await delay();
-  return { success: true };
+  return apiFetch(`/api/recommendations/${id}/dismiss`, { method: 'POST' });
 }

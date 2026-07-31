@@ -1,10 +1,10 @@
-export type Platform = 'github' | 'instagram' | 'x' | 'linkedin' | 'leetcode';
+export type Platform = 'github' | 'instagram' | 'x' | 'linkedin' | 'leetcode' | 'google-calendar';
 
 export interface PlatformConnection {
   id: string;
   user_id: string;
   platform: Platform;
-  access_token: string;
+  access_token: string | null;
   refresh_token: string | null;
   expires_at: string | null;
   platform_user_id: string;
@@ -145,6 +145,22 @@ export interface LeetCodeRecentSubmission {
   timestamp: string;
   status_display: string;
   lang: string;
+}
+
+export interface LeetCodeProfileSnapshot {
+  id: string;
+  user_id: string;
+  timestamp: string;
+  ranking: number | null;
+  contest_rating: number | null;
+  global_ranking: number | null;
+  easy_solved: number | null;
+  medium_solved: number | null;
+  hard_solved: number | null;
+  acceptance_rate: number | null;
+  reputation: number | null;
+  streak: number | null;
+  activity_summary: any | null;
 }
 
 declare global {

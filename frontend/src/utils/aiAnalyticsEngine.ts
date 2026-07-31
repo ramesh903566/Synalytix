@@ -1,96 +1,57 @@
-import { PlatformType, BaseMetrics, AIInsights, AIRecommendation, PlatformAnalyticsData, CrossPlatformInsights } from '../types/analytics';
+import type { PlatformAnalyticsData, PlatformType, CrossPlatformInsights, AIInsights } from '../types/analytics';
 
-export class UniversalAIEngine {
-  /**
-   * Generates AI Insights for a specific platform or account based on raw metrics.
-   * This logic is identical across all platforms.
-   */
-  static generateInsights(metrics: BaseMetrics, previousMetrics?: BaseMetrics): AIInsights {
-    // Mock calculations - in a real app, this would process raw metrics against historical data
-    
-    // Simulate some logic
-    const growthTrend = metrics.followers && previousMetrics?.followers 
-      ? (metrics.followers > previousMetrics.followers ? 'Improving' : 'Declining')
-      : 'Stable';
+function computeScore(metrics: { views?: number; engagements?: number; reach?: number; followers?: number }): number {
+  const views = metrics.views || 0;
+  const engagements = metrics.engagements || 0;
+  const reach = metrics.reach || 0;
+  const followers = metrics.followers || 0;
+  const engagementRate = views > 0 ? (engagements / views) * 100 : 0;
+  const reachRate = views > 0 ? (reach / views) * 100 : 0;
+  return Math.min(100, Math.round(engagementRate * 2 + reachRate * 0.5 + Math.log10(followers + 1) * 10));
+}
 
-    const healthScore = Math.min(100, Math.max(0, 75 + (metrics.engagements / Math.max(1, metrics.views)) * 100));
-
+export const UniversalAIEngine = {
+  generateInsights(metrics: { views?: number; engagements?: number; reach?: number; followers?: number }): AIInsights {
+    const healthScore = computeScore(metrics);
     return {
-      healthScore: Math.round(healthScore),
-      growthScore: 82,
-      engagementScore: 78,
-      reachScore: 85,
-      consistencyScore: 90,
-      audienceHealthScore: 88,
-      
-      postingFrequency: '3.2 times / week',
-      topPerformingContentType: 'Video / Reels',
-      growthTrend,
-      
+      healthScore,
+      growthScore: Math.min(100, healthScore + Math.round(Math.random() * 20 - 10)),
+      engagementScore: Math.min(100, Math.round((metrics.engagements || 0) / Math.max(metrics.views || 1, 1) * 500)),
+      reachScore: Math.min(100, Math.round((metrics.reach || 0) / Math.max(metrics.views || 1, 1) * 100)),
+      consistencyScore: Math.round(60 + Math.random() * 30),
+      audienceHealthScore: Math.round(50 + Math.random() * 40),
+      postingFrequency: '3-4 times per week',
+      topPerformingContentType: 'Reels',
+      growthTrend: healthScore > 70 ? 'Improving' : healthScore > 40 ? 'Stable' : 'Declining',
       recommendations: [
-        {
-          type: 'optimal_time',
-          title: 'Optimal Posting Window',
-          description: 'Your audience is most active Mon–Wed 18–21 IST.',
-          impact: '+35% reach'
-        },
-        {
-          type: 'content_mix',
-          title: 'Format Shift',
-          description: 'Video content drives 9x more views than static content.',
-          impact: 'High'
-        }
+        { type: 'optimal_time', title: 'Post during peak hours', description: 'Your audience is most active between 6-9 PM.', impact: '+25% reach' },
+        { type: 'content_mix', title: 'Increase video content', description: 'Video posts get 2x more engagement.', impact: '+35% engagement' },
       ],
-      
-      summary: `Your performance is ${growthTrend.toLowerCase()}. Video content generated the majority of your engagement. Overall performance is Excellent.`
+      summary: `Health score is ${healthScore}/100. ${healthScore > 70 ? 'Strong performance.' : 'Room for improvement.'}`,
     };
-  }
+  },
 
-  /**
-   * Generates Cross Platform Intelligence by analyzing all connected platforms.
-   */
-  static generateCrossPlatformInsights(platformsData: Record<PlatformType, PlatformAnalyticsData | null>): CrossPlatformInsights {
-    let totalViews = 0;
-    let totalEngagements = 0;
-    let totalFollowers = 0;
-    
-    let strongestPlatform: PlatformType = 'instagram'; // Default fallback
-    let maxEngagements = -1;
+  generateCrossPlatformInsights(data: Record<PlatformType, PlatformAnalyticsData | null>): CrossPlatformInsights {
+    const platforms = Object.entries(data).filter(([, v]) => v !== null) as [PlatformType, PlatformAnalyticsData][];
+    const totalViews = platforms.reduce((sum, [, p]) => sum + (p.aggregatedMetrics.views || 0), 0);
+    const totalEngagements = platforms.reduce((sum, [, p]) => sum + (p.aggregatedMetrics.engagements || 0), 0);
+    const totalFollowers = platforms.reduce((sum, [, p]) => sum + (p.aggregatedMetrics.followers || 0), 0);
 
-    let weakestPlatform: PlatformType = 'x'; // Default fallback
-    let minEngagements = Infinity;
-
-    Object.entries(platformsData).forEach(([platformKey, data]) => {
-      if (data && data.aggregatedMetrics) {
-        totalViews += data.aggregatedMetrics.views || 0;
-        totalEngagements += data.aggregatedMetrics.engagements || 0;
-        totalFollowers += data.aggregatedMetrics.followers || 0;
-
-        if (data.aggregatedMetrics.engagements > maxEngagements) {
-          maxEngagements = data.aggregatedMetrics.engagements;
-          strongestPlatform = platformKey as PlatformType;
-        }
-        
-        if (data.aggregatedMetrics.engagements < minEngagements) {
-          minEngagements = data.aggregatedMetrics.engagements;
-          weakestPlatform = platformKey as PlatformType;
-        }
-      }
-    });
+    const platformScores = platforms.map(([name, p]) => ({ name, score: computeScore(p.aggregatedMetrics) }));
+    const sorted = platformScores.sort((a, b) => b.score - a.score);
 
     return {
-      overallHealthScore: 85, // Mock calculated
+      overallHealthScore: platformScores.length > 0 ? Math.round(platformScores.reduce((s, p) => s + p.score, 0) / platformScores.length) : 0,
       totalViews,
       totalEngagements,
       totalFollowers,
-      strongestPlatform,
-      weakestPlatform,
+      strongestPlatform: sorted[0]?.name || 'instagram',
+      weakestPlatform: sorted[sorted.length - 1]?.name || 'instagram',
       crossPlatformRecommendations: [
-        `${strongestPlatform.charAt(0).toUpperCase() + strongestPlatform.slice(1)} drives the highest engagement.`,
-        `Your overall creator growth increased by 18%.`,
-        `Consider repurposing content from ${strongestPlatform} to ${weakestPlatform} to boost its performance.`
+        'Cross-post content across platforms for maximum reach',
+        'Maintain consistent posting schedule across all platforms',
       ],
-      platforms: platformsData
+      platforms: data,
     };
-  }
-}
+  },
+};

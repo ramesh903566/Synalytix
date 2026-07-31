@@ -11,7 +11,7 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { EmptyState } from '../shared/EmptyState';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../../lib/utils';
 
 interface AnalyticsTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

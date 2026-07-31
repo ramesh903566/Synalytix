@@ -16,7 +16,7 @@ export const ConnectionService = {
   async upsert(params: {
     user_id: string;
     platform: Platform;
-    access_token: string;
+    access_token?: string | null;
     refresh_token?: string | null;
     expires_at?: string | null;
     platform_user_id: string;
@@ -29,7 +29,7 @@ export const ConnectionService = {
         {
           user_id: params.user_id,
           platform: params.platform,
-          access_token: encrypt(params.access_token),         // always encrypted
+          access_token: params.access_token ? encrypt(params.access_token) : null,
           refresh_token: params.refresh_token ? encrypt(params.refresh_token) : null,
           expires_at: params.expires_at ?? null,
           platform_user_id: params.platform_user_id,
@@ -56,7 +56,7 @@ export const ConnectionService = {
   async getByUserAndPlatform(
     user_id: string,
     platform: Platform
-  ): Promise<(PlatformConnection & { decrypted_access_token: string; decrypted_refresh_token: string | null }) | null> {
+  ): Promise<(PlatformConnection & { decrypted_access_token: string | null; decrypted_refresh_token: string | null }) | null> {
     const { data, error } = await supabase
       .from('platform_connections')
       .select('*')
@@ -73,7 +73,7 @@ export const ConnectionService = {
 
     return {
       ...data,
-      decrypted_access_token: decrypt(data.access_token),
+      decrypted_access_token: data.access_token ? decrypt(data.access_token) : null,
       decrypted_refresh_token: data.refresh_token ? decrypt(data.refresh_token) : null,
     };
   },

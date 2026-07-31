@@ -1,18 +1,14 @@
-import { getAIProvider } from "../ai/provider";
+import { providerRegistry } from "../ai/provider";
 import { ALL_CONNECTORS } from "./connectors";
 import { buildUnifiedProfile, computeCareerScores } from "./profile-builder";
 import { buildSystemPrompt, buildUserPrompt } from "./prompt-builder";
-import { parseAIResponse } from "./parsers";
 import { CACHE_TTL_SECONDS, CONFIDENCE_THRESHOLD, RATE_LIMIT_PER_HOUR } from "./constants";
 import { supabase as db } from "../supabase";
 import { redis } from "../redis";
 import { logger } from "../logger";
 import type { GenerateOutput } from "../../types/recommendations";
 
-const MAX_RETRIES = 2;
-
 export class RecommendationEngine {
-  private ai = getAIProvider();
 
   async generateForUser(userId: string, orgId: string, forceRefresh = false): Promise<GenerateOutput["data"]> {
     const rateKey = `rate:recs:${userId}`;
@@ -40,43 +36,49 @@ export class RecommendationEngine {
     const profile = await buildUnifiedProfile(userId, ALL_CONNECTORS);
     const scores = computeCareerScores(profile.scores);
 
-    // 4. Generate prompts
+    // 4. Fetch Custom Instructions
+    const { data: customInst } = await db
+      .from("ai_custom_instructions")
+      .select("instructions")
+      .eq("user_id", userId)
+      .eq("provider", "global")
+      .single();
+    
+    const instructions = customInst?.instructions || "";
+
+    // 5. Generate prompts
     const systemPrompt = buildSystemPrompt();
     const userPrompt = buildUserPrompt(profile);
 
-    // 5. Call AI with retry
-    let rawResponse = "";
-    let lastError: Error | null = null;
+    // 6. Define fallback chain (Gemini 3.1 Pro first)
+    const providers = [
+      { name: "gemini", config: { model: "gemini-3.1-pro" } },
+      { name: "anthropic", config: { model: "claude-3-opus-20240229" } },
+      { name: "openai", config: { model: "gpt-4o" } }
+    ];
 
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        rawResponse = await this.ai.complete(systemPrompt, userPrompt);
-        lastError = null;
-        break; // Success
-      } catch (err) {
-        lastError = err as Error;
-        if (attempt < MAX_RETRIES) {
-          const delay = Math.pow(2, attempt) * 1000;
-          logger.warn(`AI call failed, retrying in ${delay}ms`, {
-            attempt,
-            error: lastError.message,
-          });
-          await new Promise((r) => setTimeout(r, delay));
-        }
-      }
+    // 7. Call AI with fallback and validation built-in
+    let aiOutput;
+    let providerUsed = "gemini";
+    try {
+      const result = await providerRegistry.executeWithFallback(
+        userId,
+        providers,
+        instructions,
+        systemPrompt,
+        userPrompt
+      );
+      aiOutput = result.output;
+      providerUsed = result.providerUsed;
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      logger.error("AI generation failed", { userId, error: errMsg });
+      throw new Error(`AI generation failed: ${errMsg}`);
     }
 
-    if (lastError) {
-      logger.error("AI generation failed after retries", { userId, error: lastError.message });
-      throw new Error(`AI generation failed: ${lastError.message}`);
-    }
-
-    // 6. Parse response
-    const aiOutput = parseAIResponse(rawResponse);
-
-    // 7. Filter low confidence
+    // 8. Filter low confidence (assuming 'high' and 'medium' are valid, dropping 'low')
     const filteredRecs = aiOutput.recommendations.filter(
-      (r) => r.confidence_score >= CONFIDENCE_THRESHOLD
+      (r) => r.confidence_level === 'high' || r.confidence_level === 'medium'
     );
 
     // 8. DB Transaction: save the run, recs, score, and alerts
@@ -86,7 +88,7 @@ export class RecommendationEngine {
         userId,
         orgId,
         profileSnapshot: profile,
-        modelUsed: "claude-3-opus-20240229",
+        modelUsed: providerUsed,
       })
       .select("id")
       .single();
@@ -110,15 +112,17 @@ export class RecommendationEngine {
       orgId,
       title: r.title,
       description: r.description,
-      reason: r.reason,
+      reasoning: r.reasoning,
       category: r.category,
       priority: r.priority,
       impactScore: r.impact_score,
       difficulty: r.difficulty,
-      estimatedTime: r.estimated_time,
+      estimated_time_value: r.estimated_time.value,
+      estimated_time_unit: r.estimated_time.unit,
       expectedOutcome: r.expected_outcome,
       actionSteps: r.action_steps,
-      confidenceScore: r.confidence_score,
+      confidence_level: r.confidence_level,
+      provider_used: providerUsed,
     }));
 
     if (recsToInsert.length > 0) {

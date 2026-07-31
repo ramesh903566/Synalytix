@@ -4,7 +4,7 @@ import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { KPI } from '../../types/xAnalytics';
 import { TrendBadge } from '../shared/TrendBadge';
 import { scaleIn } from '../../animations/variants';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../../lib/utils';
 
 interface MetricCardProps {
   kpi: KPI;

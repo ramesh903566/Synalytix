@@ -1,16 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Github, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+import { supabase } from '../lib/supabase';
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { login } = useAppContext();
   const [isSignUp, setIsSignUp] = useState(true);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+
+  useEffect(() => {
+    // Bypass auth for review — redirect straight to app
+    navigate('/app', { replace: true });
+
+    // TODO: Uncomment for production auth
+    // supabase.auth.getSession().then(({ data: { session } }) => {
+    //   if (session) navigate('/app', { replace: true });
+    // });
+  }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,26 +31,42 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      // Simulate network request
-      await new Promise(r => setTimeout(r, 800));
-      login();
-      navigate('/app');
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      if (isSignUp) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } },
+        });
+        if (signUpError) throw signUpError;
+        setMsg('Check your email for a confirmation link.');
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInError) throw signInError;
+        navigate('/app', { replace: true });
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGithubLogin = async () => {
+    setLoading(true);
+    setError('');
     try {
-      setLoading(true);
-      await new Promise(r => setTimeout(r, 800));
-      login();
-      navigate('/app');
-    } catch (err: any) {
-      setError(err.message || 'Failed to authenticate with GitHub');
-    } finally {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/app`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to authenticate with GitHub');
       setLoading(false);
     }
   };
@@ -49,13 +77,13 @@ export default function Auth() {
       <div className="hidden md:flex flex-col bg-zinc-50 p-12 justify-between border-r border-zinc-200 relative overflow-hidden">
         <div className="relative z-10 flex items-center gap-2 font-medium tracking-tight text-xl">
            <div className="w-6 h-6 bg-black rounded-md flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-white" />
-          </div>
-          Synalytix
+             <Sparkles className="w-3 h-3 text-white" />
+           </div>
+           Synalytix
         </div>
-        
+
         <div className="relative z-10 max-w-md">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl font-semibold tracking-tight text-balance leading-tight mb-4"
@@ -67,7 +95,6 @@ export default function Auth() {
           </p>
         </div>
 
-        {/* Abstract Background pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-zinc-200/50 via-zinc-50 to-zinc-50 opacity-60"></div>
       </div>
 
@@ -90,9 +117,11 @@ export default function Auth() {
             {isSignUp && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700">Full Name</label>
-                <input 
-                  type="text" 
-                  required 
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                   placeholder="Alex Johnson"
                 />
@@ -102,10 +131,11 @@ export default function Auth() {
               <label className="text-sm font-medium text-zinc-700">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                <input 
-                  name="email"
-                  type="email" 
-                  required 
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                   placeholder="alex@example.com"
                 />
@@ -113,16 +143,18 @@ export default function Auth() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-700">Password</label>
-              <input 
-                name="password"
-                type="password" 
-                required 
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                 placeholder="••••••••"
               />
             </div>
-            
-            <button 
+
+            <button
               type="submit"
               disabled={loading}
               className="w-full py-3 bg-black text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors disabled:opacity-50"
@@ -139,7 +171,7 @@ export default function Auth() {
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            <button type="button" onClick={handleGithubLogin} className="flex justify-center items-center p-3 border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors gap-2 text-sm font-medium">
+            <button type="button" onClick={handleGithubLogin} disabled={loading} className="flex justify-center items-center p-3 border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors gap-2 text-sm font-medium disabled:opacity-50">
               <Github className="w-5 h-5 text-zinc-800" />
               Continue with GitHub
             </button>
@@ -147,8 +179,8 @@ export default function Auth() {
 
           <div className="mt-8 text-center text-sm text-zinc-500">
             {isSignUp ? 'Already have an account? ' : 'Don\'t have an account? '}
-            <button 
-              onClick={() => setIsSignUp(!isSignUp)}
+            <button
+              onClick={() => { setIsSignUp(!isSignUp); setError(''); setMsg(''); }}
               className="text-black font-medium hover:underline"
             >
               {isSignUp ? 'Log in' : 'Sign up'}

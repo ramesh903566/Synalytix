@@ -2,7 +2,7 @@ import React from 'react';
 import { Calendar, Download, RefreshCw, LayoutTemplate, Database } from 'lucide-react';
 import { useXAnalyticsStore } from '../../store/useXAnalyticsStore';
 import { DateRange } from '../../types/xAnalytics';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../../lib/utils';
 
 export const GlobalToolbar: React.FC = () => {
   const { dateRange, setDateRange, dataSourceMode, setDataSourceMode } = useXAnalyticsStore();

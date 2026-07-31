@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { slideUp } from '../../animations/variants';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../../lib/utils';
 
 interface ChartCardProps {
   title: string;

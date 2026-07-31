@@ -62,7 +62,7 @@ export default function ExplainabilityDrawer({ recommendation, onClose }: Explai
                   Why am I seeing this?
                 </h4>
                 <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-100">
-                  <p className="text-xs text-[#1A1A1A] leading-relaxed">{rec.reason}</p>
+                  <p className="text-xs text-[#1A1A1A] leading-relaxed whitespace-pre-wrap">{rec.reasoning}</p>
                 </div>
               </section>
 
@@ -134,11 +134,11 @@ export default function ExplainabilityDrawer({ recommendation, onClose }: Explai
 
               {/* Meta info */}
               <div className="border-t border-[#EFEFEF] pt-4 flex items-center gap-4 text-[10px] text-[#999]">
-                <span>Confidence: {Math.round(rec.confidenceScore * 100)}%</span>
+                <span>Confidence: {rec.confidenceLevel.toUpperCase()}</span>
                 <span>•</span>
                 <span>Difficulty: {rec.difficulty}</span>
                 <span>•</span>
-                <span>Est. {rec.estimatedTime}</span>
+                <span>Est. {rec.estimatedTime.value} {rec.estimatedTime.unit}</span>
               </div>
             </div>
           </motion.div>

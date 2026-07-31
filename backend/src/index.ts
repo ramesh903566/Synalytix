@@ -7,11 +7,18 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth';
 import dataRoutes from './routes/data';
 import recommendationsRoutes from './routes/recommendations';
+import settingsRoutes from './routes/settings';
+import accountsRoutes from './routes/accounts';
+import studioRoutes from './routes/studio';
+import chatRoutes from './routes/chat';
+import aiProviderRoutes from './routes/ai-providers';
 import { errorHandler, requestLogger, notFoundHandler } from './middleware/errorHandler';
 import { startTokenRefreshScheduler } from './services/tokenRefresh';
+import { startLeetCodeSyncScheduler } from './services/leetcodeCron';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
 
 // ─── Security Middleware ──────────────────────────────────────────────────────
 
@@ -19,8 +26,18 @@ const PORT = process.env.PORT || 4000;
 app.use(helmet());
 
 // CORS — only allow your frontend origin
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map(o => o.trim());
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -67,6 +84,11 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/accounts', accountsRoutes);
+app.use('/api/studio', studioRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/ai', aiProviderRoutes);
 
 // ─── 404 + Error Handling ─────────────────────────────────────────────────────
 app.use(notFoundHandler);
@@ -100,11 +122,15 @@ app.listen(PORT, () => {
   console.log('  GET  /api/recommendations/history');
   console.log('  PATCH /api/recommendations/:id/complete');
   console.log('  PATCH /api/recommendations/:id/dismiss');
+  console.log('  GET  /api/settings/ai-instructions');
+  console.log('  POST /api/settings/ai-instructions');
+  console.log('  GET  /api/accounts');
   console.log('');
 
-  // Start the token refresh background job
+  // Start background jobs
   if (process.env.NODE_ENV !== 'test') {
     startTokenRefreshScheduler();
+    startLeetCodeSyncScheduler();
   }
 });
 

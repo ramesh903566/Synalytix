@@ -187,4 +187,108 @@ export const GitHubService = {
       return false;
     }
   },
+
+  /**
+   * Create a new repository for the authenticated user.
+   */
+  async createRepo(
+    accessToken: string,
+    data: {
+      name: string;
+      description?: string;
+      private?: boolean;
+      auto_init?: boolean;
+      gitignore_template?: string;
+      license_template?: string;
+    }
+  ) {
+    const { data: responseData } = await axios.post(`${GITHUB_API}/user/repos`, data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+    return responseData;
+  },
+
+  /**
+   * Commit multiple files to a repository in a single commit.
+   */
+  async commitFiles(
+    accessToken: string,
+    owner: string,
+    repo: string,
+    branch: string,
+    message: string,
+    files: { path: string; content: string; encoding?: 'utf-8' | 'base64' }[]
+  ) {
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+
+    // 1. Get the current commit SHA of the branch
+    const { data: refData } = await axios.get(`${GITHUB_API}/repos/${owner}/${repo}/git/refs/heads/${branch}`, { headers });
+    const latestCommitSha = refData.object.sha;
+
+    // 2. Get the base tree SHA
+    const { data: commitData } = await axios.get(`${GITHUB_API}/repos/${owner}/${repo}/git/commits/${latestCommitSha}`, { headers });
+    const baseTreeSha = commitData.tree.sha;
+
+    // 3. Create blobs for each file
+    const treeItems = await Promise.all(
+      files.map(async (file) => {
+        const { data: blobData } = await axios.post(
+          `${GITHUB_API}/repos/${owner}/${repo}/git/blobs`,
+          {
+            content: file.content,
+            encoding: file.encoding || 'utf-8',
+          },
+          { headers }
+        );
+        return {
+          path: file.path,
+          mode: '100644', // 100644 for blob (file)
+          type: 'blob',
+          sha: blobData.sha,
+        };
+      })
+    );
+
+    // 4. Create a new tree
+    const { data: treeData } = await axios.post(
+      `${GITHUB_API}/repos/${owner}/${repo}/git/trees`,
+      {
+        base_tree: baseTreeSha,
+        tree: treeItems,
+      },
+      { headers }
+    );
+    const newTreeSha = treeData.sha;
+
+    // 5. Create a new commit
+    const { data: newCommitData } = await axios.post(
+      `${GITHUB_API}/repos/${owner}/${repo}/git/commits`,
+      {
+        message,
+        tree: newTreeSha,
+        parents: [latestCommitSha],
+      },
+      { headers }
+    );
+    const newCommitSha = newCommitData.sha;
+
+    // 6. Update the reference (branch)
+    const { data: updatedRefData } = await axios.patch(
+      `${GITHUB_API}/repos/${owner}/${repo}/git/refs/heads/${branch}`,
+      {
+        sha: newCommitSha,
+      },
+      { headers }
+    );
+
+    return updatedRefData;
+  }
 };

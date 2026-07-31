@@ -1,63 +1,124 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area } from 'recharts';
+import { Calendar, TrendingUp } from 'lucide-react';
 
 const DATA = [
-  { day: 'Mon', commits: 120, avgSize: 45 },
-  { day: 'Tue', commits: 250, avgSize: 80 },
-  { day: 'Wed', commits: 210, avgSize: 65 },
-  { day: 'Thu', commits: 180, avgSize: 55 },
-  { day: 'Fri', commits: 190, avgSize: 70 },
-  { day: 'Sat', commits: 40, avgSize: 20 },
-  { day: 'Sun', commits: 20, avgSize: 10 },
+  { day: 'Mon', commits: 12, avgSize: 45, lines: 120 },
+  { day: 'Tue', commits: 25, avgSize: 80, lines: 450 },
+  { day: 'Wed', commits: 21, avgSize: 65, lines: 310 },
+  { day: 'Thu', commits: 18, avgSize: 55, lines: 250 },
+  { day: 'Fri', commits: 30, avgSize: 70, lines: 600 },
+  { day: 'Sat', commits: 4, avgSize: 20, lines: 40 },
+  { day: 'Sun', commits: 2, avgSize: 10, lines: 15 },
 ];
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-zinc-900/90 backdrop-blur-md border border-border-light p-4 rounded-xl shadow-xl z-50">
+        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">{label}</p>
+        <div className="flex flex-col gap-2">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                <span className="text-zinc-300">{entry.name === 'commits' ? 'Commits' : entry.name === 'lines' ? 'Lines Changed' : 'Avg LOC'}</span>
+              </div>
+              <span className="font-bold text-zinc-50">{entry.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const ProductivityAnalytics: React.FC = () => {
+  const [timeframe, setTimeframe] = useState<'weekly' | 'monthly'>('weekly');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-text-primary">Productivity</h2>
-        <select className="bg-bg-elevated border border-border rounded-lg text-sm text-text-secondary px-3 py-1 outline-none">
-          <option>Weekly</option>
-          <option>Monthly</option>
-        </select>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
-          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Most Productive Day</p>
-          <p className="text-xl font-bold text-text-primary">Tuesday</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-xl font-semibold text-zinc-50 tracking-tight">Productivity Patterns</h2>
+          <p className="text-sm text-zinc-400 mt-1">Analyze when you write the most code</p>
         </div>
-        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
-          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Consistency Score</p>
-          <p className="text-xl font-bold text-text-primary">92/100</p>
-        </div>
-        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
-          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Avg Commit Size</p>
-          <p className="text-xl font-bold text-text-primary">54 LOC</p>
-        </div>
-        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
-          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Longest Gap</p>
-          <p className="text-xl font-bold text-text-primary">4 days</p>
+        
+        <div className="flex bg-zinc-900/50 border border-border-light rounded-lg p-1 w-fit">
+          <button 
+            onClick={() => setTimeframe('weekly')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${timeframe === 'weekly' ? 'bg-zinc-700 text-zinc-50 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'}`}
+          >
+            Weekly
+          </button>
+          <button 
+            onClick={() => setTimeframe('monthly')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${timeframe === 'monthly' ? 'bg-zinc-700 text-zinc-50 shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'}`}
+          >
+            Monthly
+          </button>
         </div>
       </div>
 
-      <div className="h-64 w-full">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div className="p-5 bg-zinc-900/50 rounded-2xl border border-border-light hover:border-zinc-700 transition-colors group cursor-default relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Calendar className="w-12 h-12" />
+          </div>
+          <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Most Productive Day</p>
+          <p className="text-2xl font-bold text-zinc-50 group-hover:text-blue-400 transition-colors">Friday</p>
+        </div>
+        <div className="p-5 bg-zinc-900/50 rounded-2xl border border-border-light hover:border-zinc-700 transition-colors group cursor-default relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <TrendingUp className="w-12 h-12" />
+          </div>
+          <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Consistency Score</p>
+          <div className="flex items-end gap-2">
+            <p className="text-2xl font-bold text-zinc-50 group-hover:text-emerald-400 transition-colors">92</p>
+            <p className="text-sm font-medium text-zinc-500 mb-1">/100</p>
+          </div>
+        </div>
+        <div className="p-5 bg-zinc-900/50 rounded-2xl border border-border-light hover:border-zinc-700 transition-colors group cursor-default">
+          <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Avg Commit Size</p>
+          <div className="flex items-end gap-2">
+            <p className="text-2xl font-bold text-zinc-50 group-hover:text-purple-400 transition-colors">54</p>
+            <p className="text-sm font-medium text-zinc-500 mb-1">LOC</p>
+          </div>
+        </div>
+        <div className="p-5 bg-zinc-900/50 rounded-2xl border border-border-light hover:border-zinc-700 transition-colors group cursor-default">
+          <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Longest Gap</p>
+          <div className="flex items-end gap-2">
+            <p className="text-2xl font-bold text-zinc-50 group-hover:text-rose-400 transition-colors">4</p>
+            <p className="text-sm font-medium text-zinc-500 mb-1">days</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={DATA} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-            <XAxis dataKey="day" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
-            <Tooltip 
-              contentStyle={{ backgroundColor: '#18181B', border: '1px solid #27272A', borderRadius: '8px' }}
-              cursor={{ fill: '#27272a', opacity: 0.4 }}
-            />
-            <Bar dataKey="commits" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-          </BarChart>
+          <ComposedChart data={DATA} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorLines" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="4 4" stroke="#27272a" vertical={false} />
+            <XAxis dataKey="day" stroke="#71717A" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+            <YAxis yAxisId="left" stroke="#71717A" fontSize={12} tickLine={false} axisLine={false} />
+            <YAxis yAxisId="right" orientation="right" stroke="#71717A" fontSize={12} tickLine={false} axisLine={false} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#27272a', opacity: 0.3 }} />
+            
+            <Bar yAxisId="left" dataKey="commits" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+            <Area yAxisId="right" type="monotone" dataKey="lines" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorLines)" />
+            <Line yAxisId="left" type="monotone" dataKey="avgSize" stroke="#A855F7" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6, strokeWidth: 0 }} />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </motion.div>

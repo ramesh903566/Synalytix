@@ -3,30 +3,27 @@ import { motion } from 'framer-motion';
 
 interface CircularProgressProps {
   value: number;
-  max?: number;
-  size?: number;
-  strokeWidth?: number;
   label: string;
   color?: string;
+  size?: number;
+  strokeWidth?: number;
 }
 
 export const CircularProgress: React.FC<CircularProgressProps> = ({
   value,
-  max = 100,
-  size = 60,
-  strokeWidth = 6,
   label,
-  color = '#3B82F6'
+  color = '#3B82F6',
+  size = 80,
+  strokeWidth = 6,
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const percent = Math.min(Math.max(value / max, 0), 1);
-  const offset = circumference - percent * circumference;
+  const strokeDashoffset = circumference - (value / 100) * circumference;
 
   return (
     <div className="flex flex-col items-center justify-center gap-2">
       <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-        {/* Background circle */}
+        {/* Background track */}
         <svg width={size} height={size} className="transform -rotate-90">
           <circle
             cx={size / 2}
@@ -37,7 +34,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
             strokeWidth={strokeWidth}
             className="text-zinc-800"
           />
-          {/* Animated progress circle */}
+          {/* Animated progress ring */}
           <motion.circle
             cx={size / 2}
             cy={size / 2}
@@ -45,21 +42,21 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
             fill="transparent"
             stroke={color}
             strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
             strokeLinecap="round"
             initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            style={{ strokeDasharray: circumference }}
+            animate={{ strokeDashoffset }}
+            transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+            className="drop-shadow-lg"
+            style={{ filter: `drop-shadow(0 0 4px ${color}80)` }}
           />
         </svg>
         {/* Value text in center */}
-        <div className="absolute flex items-center justify-center text-xs font-semibold text-text-primary">
-          {Math.round(percent * 100)}%
+        <div className="absolute text-sm font-bold text-zinc-100 tabular-nums tracking-tight">
+          {Math.round(value)}%
         </div>
       </div>
-      <span className="text-[10px] uppercase tracking-wider text-text-secondary font-medium text-center leading-tight">
-        {label}
-      </span>
+      <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">{label}</span>
     </div>
   );
 };

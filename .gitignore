@@ -7,4 +7,25 @@ stitch_initial_project_build.zip
 andrej-karpathy-skills/
 CLAUDE.md
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Build outputs
+dist/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
 

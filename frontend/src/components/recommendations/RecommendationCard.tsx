@@ -70,7 +70,7 @@ export default function RecommendationCard({ rec, onComplete, onDismiss, onExpla
         </span>
         <span className="flex items-center gap-1 text-[10px] text-[#999]">
           <Clock className="w-3 h-3" />
-          {rec.estimatedTime}
+          <span>{rec.estimatedTime.value} {rec.estimatedTime.unit}</span>
         </span>
 
         <div className="ml-auto flex items-center gap-1.5">

@@ -6,11 +6,16 @@ import { InstagramService } from '../services/instagramService';
 import { XService, LinkedInService } from '../services/platformServices';
 import { generateState, generateCodeVerifier, generateCodeChallenge } from '../lib/supabase';
 import { Platform } from '../types';
+import { GoogleCalendarService } from '../services/googleCalendarService';
 
 const router = Router();
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const BACKEND_URL = process.env.BACKEND_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+if (!BACKEND_URL || !FRONTEND_URL) {
+  console.warn('[Auth] BACKEND_URL and FRONTEND_URL env vars are required for OAuth redirects');
+}
 
 function wantsJson(req: Request) {
   return req.get('accept')?.includes('application/json') || req.query.format === 'json';
@@ -40,7 +45,7 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
   const platform = req.params.platform as Platform;
   const userId = req.userId!;
 
-  const validPlatforms: Platform[] = ['github', 'instagram', 'x', 'linkedin'];
+  const validPlatforms: Platform[] = ['github', 'instagram', 'x', 'linkedin', 'leetcode', 'google-calendar'];
   if (!validPlatforms.includes(platform)) {
     res.status(400).json({ success: false, error: `Unknown platform: ${platform}` });
     return;
@@ -99,17 +104,18 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
       authUrl = `https://twitter.com/i/oauth2/authorize?${params}`;
 
     } else if (platform === 'linkedin') {
-      // LinkedIn OAuth 2.0
       await OAuthStateService.save({ user_id: userId, platform, state_token: stateToken });
-
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: process.env.LINKEDIN_CLIENT_ID!,
         redirect_uri: `${BACKEND_URL}/api/auth/callback/linkedin`,
-        scope: 'openid profile email r_liteprofile r_emailaddress w_member_social',
         state: stateToken,
+        scope: 'openid profile email w_member_social',
       });
-      authUrl = `https://www.linkedin.com/oauth/v2/authorization?${params}`;
+      authUrl = `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
+    } else if (platform === 'google-calendar') {
+      await OAuthStateService.save({ user_id: userId, platform, state_token: stateToken });
+      authUrl = GoogleCalendarService.getAuthUrl(stateToken);
     }
 
     if (wantsJson(req)) {
@@ -373,6 +379,51 @@ router.get('/callback/linkedin', async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('[OAuth Callback] LinkedIn error:', err.response?.data ?? err.message);
     return redirectWithError(res, 'linkedin', 'Failed to complete LinkedIn authorization');
+  }
+});
+// ═══════════════════════════════════════════════════════════════════════════════
+// GET /api/auth/callback/google-calendar
+// Google redirects here after user approves Calendar access.
+// ═══════════════════════════════════════════════════════════════════════════════
+router.get('/callback/google-calendar', async (req: Request, res: Response) => {
+  const { code, state, error } = req.query as Record<string, string>;
+
+  if (error) {
+    return redirectWithError(res, 'google-calendar', 'User denied access to Google Calendar');
+  }
+
+  if (!code || !state) {
+    return redirectWithError(res, 'google-calendar', 'Missing code or state from Google');
+  }
+
+  const savedState = await OAuthStateService.getAndDelete(state);
+  if (!savedState) {
+    return redirectWithError(res, 'google-calendar', 'Invalid or expired state token');
+  }
+
+  try {
+    const tokens = await GoogleCalendarService.getTokens(code);
+    
+    // For Google Calendar, we might not have a specific "username", so we just use their email if available in id_token or generic string
+    // Let's use a generic username since we didn't ask for profile scope, just calendar
+    const platformUserId = 'google_user_' + savedState.user_id; 
+    const platformUsername = 'Google Calendar';
+
+    await ConnectionService.upsert({
+      user_id: savedState.user_id,
+      platform: 'google-calendar',
+      access_token: tokens.access_token || null,
+      refresh_token: tokens.refresh_token || null,
+      expires_at: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
+      platform_user_id: platformUserId,
+      platform_username: platformUsername,
+      scope: tokens.scope || 'https://www.googleapis.com/auth/calendar.readonly',
+    });
+
+    redirectWithSuccess(res, 'google-calendar');
+  } catch (err: any) {
+    console.error('[OAuth Callback] Google Calendar error:', err.message);
+    redirectWithError(res, 'google-calendar', 'Failed to exchange token with Google');
   }
 });
 

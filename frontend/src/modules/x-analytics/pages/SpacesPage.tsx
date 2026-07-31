@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useSpaces } from '../hooks/useXData';
 import { Space } from '../types/xAnalytics';
 import { AnalyticsTable } from '../components/tables/AnalyticsTable';
-import { cn } from '../utils/cn';
+import { cn } from '../../../lib/utils';
 
 export const SpacesPage: React.FC = () => {
   const columns = useMemo<ColumnDef<Space>[]>(

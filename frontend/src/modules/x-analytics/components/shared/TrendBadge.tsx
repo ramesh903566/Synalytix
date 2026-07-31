@@ -1,7 +1,7 @@
 import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../../lib/utils';
 
 const trendBadgeVariants = cva(
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors',

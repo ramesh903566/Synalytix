@@ -10,7 +10,7 @@ import { LivePage } from './pages/LivePage';
 import { SpacesPage } from './pages/SpacesPage';
 import { AnalyticsErrorBoundary } from './components/shared/AnalyticsErrorBoundary';
 import { ErrorBoundary } from 'react-error-boundary';
-import { cn } from './utils/cn';
+import { cn } from '../../lib/utils';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,27 +62,6 @@ export const XAnalyticsModule: React.FC<XAnalyticsModuleProps> = ({ appInfo, acc
   return (
     <QueryClientProvider client={queryClient}>
       <div className="w-full max-w-[1400px] mx-auto px-6 pb-24">
-        {/* Account Info Header */}
-        <div className="flex items-center gap-4 mb-8 bg-bg-elevated p-4 rounded-xl border border-border-light backdrop-blur-sm">
-          <img
-            src={account.avatar || account.profileImageUrl}
-            alt={account.handle}
-            className="w-12 h-12 rounded-full border-2 border-border"
-          />
-          <div>
-            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-              {account.name || account.handle}
-              {account.isPremium && (
-                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white" title="Premium Verified">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              )}
-            </h2>
-            <p className="text-sm text-text-secondary">{account.handle} · Viewing analytics for {appInfo.name}</p>
-          </div>
-        </div>
 
         {/* Tabs Navigation */}
         <div className="flex space-x-6 border-b border-border mb-6 relative overflow-x-auto hide-scrollbar">

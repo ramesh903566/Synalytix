@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { FolderX } from 'lucide-react';
 import { scaleIn } from '../../animations/variants';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../../lib/utils';
 
 interface EmptyStateProps {
   title?: string;

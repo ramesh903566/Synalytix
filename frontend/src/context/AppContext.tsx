@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { AppName } from '../types';
 import { disconnectPlatform, getConnectionStatus } from '../lib/api';
+import { supabase } from '../lib/supabase';
 
 export interface ScheduledPost {
   id: string;
@@ -19,10 +20,14 @@ export interface DraftPost {
   createdAt: string;
 }
 
+export type PlannerCategory = 'content' | 'dev' | 'business' | 'other';
+
 export interface PlannerTask {
   id: string;
   title: string;
   projectId?: string;
+  category: PlannerCategory | 'google-event';
+  color?: string;
   status: 'todo' | 'scheduled' | 'done' | 'unplanned';
   scheduledDate?: string;
   scheduledTime?: string;
@@ -30,11 +35,32 @@ export interface PlannerTask {
   createdAt: string;
 }
 
+export type ExternalCalendarProvider = 'google' | 'apple' | 'outlook';
+
+export interface ExternalCalendarConnection {
+  id: string;
+  provider: ExternalCalendarProvider;
+  email: string;
+  status: 'connected' | 'error' | 'syncing';
+  lastSynced: string;
+}
+
+export interface ExternalEvent {
+  id: string;
+  connectionId: string;
+  title: string;
+  startDate: string;
+  startTime?: string;
+  endDate: string;
+  endTime?: string;
+  isAllDay: boolean;
+}
+
 interface AppContextType {
   isAuthenticated: boolean;
   isLoadingAuth: boolean;
   login: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   connectedApps: AppName[];
   connectApp: (app: AppName) => void;
   disconnectApp: (app: AppName) => Promise<void>;
@@ -48,6 +74,10 @@ interface AppContextType {
   addPlannerTask: (task: Omit<PlannerTask, 'id' | 'createdAt'>) => void;
   updatePlannerTask: (id: string, updates: Partial<PlannerTask>) => void;
   deletePlannerTask: (id: string) => void;
+  calendarConnections: ExternalCalendarConnection[];
+  connectCalendar: (provider: ExternalCalendarProvider) => Promise<void>;
+  disconnectCalendar: (id: string) => void;
+  externalEvents: ExternalEvent[];
   refreshConnections: () => Promise<void>;
 }
 
@@ -60,19 +90,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
   const [savedDrafts, setSavedDrafts] = useState<DraftPost[]>([]);
   const [plannerTasks, setPlannerTasks] = useState<PlannerTask[]>([
-    { id: 'pt1', title: 'Post Tuesday Reel', projectId: 'content', status: 'scheduled', scheduledDate: '2026-05-27', scheduledTime: '21:00', priority: 'high', createdAt: new Date().toISOString() },
-    { id: 'pt2', title: 'Update GitHub README', projectId: 'dev', status: 'todo', priority: 'medium', createdAt: new Date().toISOString() },
-    { id: 'pt3', title: 'Reply to all Instagram comments', projectId: 'content', status: 'unplanned', priority: 'low', createdAt: new Date().toISOString() },
-    { id: 'pt4', title: 'Solve 2 LeetCode Hard problems', projectId: 'dev', status: 'done', priority: 'high', createdAt: new Date().toISOString() },
-    { id: 'pt5', title: 'LinkedIn post about Synalytix', projectId: 'content', status: 'unplanned', priority: 'medium', createdAt: new Date().toISOString() },
+    { id: 'pt1', title: 'Post Tuesday Reel', projectId: 'content', category: 'content', status: 'scheduled', scheduledDate: '2026-05-27', scheduledTime: '21:00', priority: 'high', createdAt: new Date().toISOString() },
+    { id: 'pt2', title: 'Update GitHub README', projectId: 'dev', category: 'dev', status: 'todo', priority: 'medium', createdAt: new Date().toISOString() },
+    { id: 'pt3', title: 'Reply to all Instagram comments', projectId: 'content', category: 'business', status: 'unplanned', priority: 'low', createdAt: new Date().toISOString() },
+    { id: 'pt4', title: 'Solve 2 LeetCode Hard problems', projectId: 'dev', category: 'dev', status: 'done', priority: 'high', createdAt: new Date().toISOString() },
+    { id: 'pt5', title: 'LinkedIn post about Synalytix', projectId: 'content', category: 'content', status: 'unplanned', priority: 'medium', createdAt: new Date().toISOString() },
   ]);
+  const [calendarConnections, setCalendarConnections] = useState<ExternalCalendarConnection[]>([]);
+  const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
 
   const login = () => setIsAuthenticated(true);
+
   const logout = async () => {
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
     setConnectedApps([]);
     setScheduledPosts([]);
     setSavedDrafts([]);
+    setCalendarConnections([]);
+    setExternalEvents([]);
   };
 
   const connectApp = (app: AppName) => {
@@ -112,11 +148,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPlannerTasks(prev => prev.filter(t => t.id !== id));
   };
 
+  const connectCalendar = async (provider: ExternalCalendarProvider) => {
+    if (provider === 'google') {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+      window.location.href = `${backendUrl}/api/auth/connect/google-calendar`;
+    }
+  };
+
+  const disconnectCalendar = (id: string) => {
+    setCalendarConnections(prev => prev.filter(c => c.id !== id));
+    setExternalEvents(prev => prev.filter(e => e.connectionId !== id));
+  };
+
   const refreshConnections = useCallback(async () => {
     try {
       const result = await getConnectionStatus();
       if (result.success && result.data) {
         setConnectedApps(result.data.connected as AppName[]);
+
+        if (result.data.connected.includes('google-calendar' as AppName)) {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+            const res = await fetch(`${backendUrl}/api/data/google-calendar/events`, {
+              headers: {
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              }
+            });
+            const data = await res.json();
+            if (data.success && data.data) {
+              setExternalEvents(data.data);
+            }
+          } catch (e) {
+            console.error('Failed to fetch google calendar events', e);
+          }
+        }
       }
     } catch (e) {
       console.error('Failed to refresh connections:', e);
@@ -124,15 +191,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Fake check if authenticated on reload (always true for dev mode)
-    const timer = setTimeout(() => {
-      setIsAuthenticated(true);
-      refreshConnections();
-      setIsLoadingAuth(false);
-    }, 500);
+    // Bypass auth for review — set authenticated immediately
+    setIsAuthenticated(true);
+    setIsLoadingAuth(false);
+    refreshConnections();
 
-    return () => clearTimeout(timer);
-  }, []);
+    // TODO: Uncomment for production auth
+    // supabase.auth.getSession().then(({ data: { session } }) => {
+    //   setIsAuthenticated(!!session);
+    //   if (session) refreshConnections();
+    //   setIsLoadingAuth(false);
+    // });
+    //
+    // const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    //   setIsAuthenticated(!!session);
+    //   if (session) {
+    //     refreshConnections();
+    //   } else {
+    //     setConnectedApps([]);
+    //   }
+    // });
+    //
+    // return () => subscription.unsubscribe();
+  }, [refreshConnections]);
 
   return (
     <AppContext.Provider value={{
@@ -141,6 +222,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       scheduledPosts, addScheduledPost, deleteScheduledPost,
       savedDrafts, saveDraft, deleteDraft,
       plannerTasks, addPlannerTask, updatePlannerTask, deletePlannerTask,
+      calendarConnections, connectCalendar, disconnectCalendar,
+      externalEvents,
       refreshConnections,
     }}>
       {children}

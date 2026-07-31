@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useLiveBroadcasts } from '../hooks/useXData';
 import { LiveBroadcast } from '../types/xAnalytics';
 import { AnalyticsTable } from '../components/tables/AnalyticsTable';
-import { cn } from '../utils/cn';
+import { cn } from '../../../lib/utils';
 
 export const LivePage: React.FC = () => {
   const columns = useMemo<ColumnDef<LiveBroadcast>[]>(

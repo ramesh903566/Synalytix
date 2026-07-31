@@ -2,18 +2,17 @@ import * as React from "react"
 import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "../../lib/utils"
-import { SearchBar } from "../dashboard/search-bar"
 import { NotificationPopover, type Notification } from "../dashboard/notification-popover"
 import { Avatar, AvatarFallback } from "../ui/avatar"
-import { getGreeting } from "../../lib/theme"
-import { Menu } from "lucide-react"
+import { Menu, MessageSquare, Search } from "lucide-react"
 import { MOCK_APPS } from "../../data/mockData"
-import toast from "react-hot-toast"
 import { useAppContext } from "../../context/AppContext"
+import { useChatStore } from "../../store/chatStore"
 
 export interface TopBarProps {
   onMenuClick?: () => void
   showMenu?: boolean
+  onSearchOpen?: () => void
 }
 
 const pageTitles: Record<string, string> = {
@@ -26,12 +25,12 @@ const pageTitles: Record<string, string> = {
   "/app/settings": "Settings",
 }
 
-export function TopBar({ onMenuClick, showMenu }: TopBarProps) {
+export function TopBar({ onMenuClick, showMenu, onSearchOpen }: TopBarProps) {
   const { connectedApps: connectedAppIds } = useAppContext()
   const connectedApps = MOCK_APPS.filter(app => connectedAppIds.includes(app.id as any))
   const navigate = useNavigate()
   const location = useLocation()
-  const [search, setSearch] = useState("")
+  const { isOpen: isChatOpen, togglePanel: toggleChat } = useChatStore()
   const [notifications, setNotifications] = useState<Notification[]>([
     { id: 1, title: "Post Published", subtitle: "X (Twitter)", time: "5m ago", read: false },
     { id: 2, title: "Insight Generated", subtitle: "Instagram", time: "12m ago", read: false },
@@ -41,15 +40,6 @@ export function TopBar({ onMenuClick, showMenu }: TopBarProps) {
   const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
   const isHome = location.pathname === "/app"
   const pageTitle = pageTitles[location.pathname] || "Synalytix"
-
-  const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      if (search.trim()) {
-        toast.success(`Searching for "${search}"...`);
-        setSearch("");
-      }
-    }
-  }
 
   return (
     <header className="h-[var(--topbar-height)] border-b border-border bg-bg-elevated flex items-center px-6 gap-4 shrink-0">
@@ -80,36 +70,59 @@ export function TopBar({ onMenuClick, showMenu }: TopBarProps) {
 
       {/* Connected Apps Circles */}
       <div className="flex flex-1 items-center gap-2 overflow-x-auto no-scrollbar mask-gradient-right pl-2">
-        {connectedApps.map((app) => (
-          <button 
-            key={app.id}
-            onClick={() => navigate(`/app/apps/${app.id}`)}
-            className="flex-shrink-0 w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-[#10b981] to-[#34d399] transition-transform hover:scale-110 focus:outline-none"
-            title={`View ${app.name} analytics`}
-          >
-            <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-[2px]">
-              <img 
-                src={app.iconUrl} 
-                alt={app.name} 
-                className="w-full h-full object-cover rounded-full" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${app.name}&background=random`;
-                }}
-              />
-            </div>
-          </button>
-        ))}
+        {connectedApps.map((app) => {
+          const isActive = location.pathname.split('/').includes(app.id);
+          return (
+            <button 
+              key={app.id}
+              onClick={() => navigate(`/app/apps/${app.id}`)}
+              className={cn(
+                "flex-shrink-0 rounded-full p-[2px] transition-all hover:scale-110 focus:outline-none",
+                isActive 
+                  ? "w-11 h-11 bg-gradient-to-tr from-[#10b981] to-[#34d399] shadow-sm shadow-[#10b981]/40" 
+                  : "w-8 h-8 bg-border hover:bg-[#10b981]/60 opacity-70 hover:opacity-100"
+              )}
+              title={`View ${app.name} analytics`}
+            >
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-[2px]">
+                <img 
+                  src={app.iconUrl} 
+                  alt={app.name} 
+                  className="w-full h-full object-cover rounded-full" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${app.name}&background=random`;
+                  }}
+                />
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Search */}
-      <div className="hidden md:flex items-center">
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          onKeyDown={handleSearchSubmit}
-          className="w-64 lg:w-80"
-        />
-      </div>
+      <button
+        onClick={onSearchOpen}
+        className="hidden md:flex items-center gap-2 h-9 px-3 rounded-[var(--radius-card-inner)] border border-border bg-bg-sunken text-sm text-text-muted hover:text-text-secondary hover:border-border-light transition-colors w-64 lg:w-80"
+      >
+        <Search className="w-3.5 h-3.5 shrink-0" />
+        <span className="flex-1 text-left">Search...</span>
+        <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-bg-elevated border border-border">⌘K</kbd>
+      </button>
+
+      {/* Chat Toggle */}
+      <button
+        onClick={toggleChat}
+        className={cn(
+          "w-9 h-9 rounded-[var(--radius-card-inner)] flex items-center justify-center transition-colors",
+          isChatOpen
+            ? "bg-brand-light text-brand"
+            : "hover:bg-bg-sunken text-text-secondary"
+        )}
+        title="Toggle AI Chat (⌘K)"
+        aria-label="Toggle AI Chat panel"
+      >
+        <MessageSquare className="w-[18px] h-[18px]" />
+      </button>
 
       {/* Notifications */}
       <NotificationPopover notifications={notifications} onMarkAllRead={markAllRead} />

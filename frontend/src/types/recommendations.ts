@@ -32,19 +32,23 @@ export const RecommendationSchema = z.object({
   id: z.string(),
   title: z.string().min(1).max(120),
   description: z.string().min(1).max(600),
-  reason: z.string().min(1).max(400),
+  reasoning: z.string().min(20).max(400),
   category: CategorySchema,
   priority: PrioritySchema,
   impactScore: z.number().int().min(0).max(100),
   difficulty: DifficultySchema,
-  estimatedTime: z.string(),
+  estimatedTime: z.object({
+    value: z.number(),
+    unit: z.enum(['days', 'weeks', 'months'])
+  }),
   expectedOutcome: z.string(),
   actionSteps: z.array(z.string()).min(1).max(7),
   dataSources: z.array(z.string()),
-  confidenceScore: z.number().min(0).max(1),
+  confidenceLevel: z.enum(['low', 'medium', 'high']),
   completedAt: z.string().nullable(),
   dismissedAt: z.string().nullable(),
   createdAt: z.string(),
+  providerUsed: z.string().default('anthropic'),
 });
 
 export const CareerScoreSchema = z.object({
@@ -72,15 +76,18 @@ export const GapAnalysisSchema = z.object({
 export const AIRecommendationRawSchema = z.object({
   title: z.string(),
   description: z.string(),
-  reason: z.string(),
+  reasoning: z.string().min(20),
   category: CategorySchema,
   priority: PrioritySchema,
   impact_score: z.number().int().min(0).max(100),
   difficulty: DifficultySchema,
-  estimated_time: z.string(),
+  estimated_time: z.object({
+    value: z.number(),
+    unit: z.enum(['days', 'weeks', 'months'])
+  }),
   expected_outcome: z.string(),
   action_steps: z.array(z.string()),
-  confidence_score: z.number().min(0).max(1),
+  confidence_level: z.enum(['low', 'medium', 'high']),
 });
 
 export const AIOutputSchema = z.object({

@@ -1,10 +1,17 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
 import { authenticate } from '../middleware/auth';
 import { ConnectionService } from '../services/connectionService';
 import { GitHubService } from '../services/githubService';
 import { InstagramService } from '../services/instagramService';
-import { XService, LinkedInService, LeetCodeService } from '../services/platformServices';
+import { XService, LinkedInService } from '../services/platformServices';
+import { LeetCodeService } from '../services/leetcodeService';
+import { GoogleCalendarService } from '../services/googleCalendarService';
 import { supabase } from '../lib/supabase';
+
+const LeetCodeConnectSchema = z.object({
+  username: z.string().min(1).max(50).trim(),
+});
 
 const router = Router();
 
@@ -19,6 +26,14 @@ async function getConnection(userId: string, platform: string, res: Response) {
     return null;
   }
   return conn;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getToken(conn: { decrypted_access_token: string | null; [k: string]: any }): string {
+  if (!conn.decrypted_access_token) {
+    throw new Error('No access token available for this connection');
+  }
+  return conn.decrypted_access_token;
 }
 
 // ─── Helper: cache data in Supabase to avoid hammering platform APIs ──────────
@@ -67,7 +82,7 @@ router.get('/github/profile', authenticate, async (req: Request, res: Response) 
     const data = await getCached(
       `github_profile_${req.userId}`,
       30, // cache for 30 minutes
-      () => GitHubService.getProfile(conn.decrypted_access_token)
+      () => GitHubService.getProfile(getToken(conn))
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -87,7 +102,7 @@ router.get('/github/repos', authenticate, async (req: Request, res: Response) =>
     const data = await getCached(
       `github_repos_${req.userId}_p${page}`,
       30,
-      () => GitHubService.getRepos(conn.decrypted_access_token, page, perPage)
+      () => GitHubService.getRepos(getToken(conn), page, perPage)
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -104,7 +119,7 @@ router.get('/github/contributions', authenticate, async (req: Request, res: Resp
     const data = await getCached(
       `github_contributions_${req.userId}`,
       60, // contributions change less often
-      () => GitHubService.getContributions(conn.decrypted_access_token, conn.platform_username)
+      () => GitHubService.getContributions(getToken(conn), conn.platform_username)
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -118,11 +133,11 @@ router.get('/github/languages', authenticate, async (req: Request, res: Response
   if (!conn) return;
 
   try {
-    const repos = await GitHubService.getRepos(conn.decrypted_access_token);
+    const repos = await GitHubService.getRepos(getToken(conn));
     const data = await getCached(
       `github_languages_${req.userId}`,
       120,
-      () => GitHubService.getLanguageBreakdown(conn.decrypted_access_token, repos)
+      () => GitHubService.getLanguageBreakdown(getToken(conn), repos)
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -138,11 +153,11 @@ router.get('/github/all', authenticate, async (req: Request, res: Response) => {
   try {
     const [profile, repos, contributions] = await Promise.all([
       getCached(`github_profile_${req.userId}`, 30, () =>
-        GitHubService.getProfile(conn.decrypted_access_token)
+        GitHubService.getProfile(getToken(conn))
       ),
-      GitHubService.getAllRepos(conn.decrypted_access_token),
+      GitHubService.getAllRepos(getToken(conn)),
       getCached(`github_contributions_${req.userId}`, 60, () =>
-        GitHubService.getContributions(conn.decrypted_access_token, conn.platform_username)
+        GitHubService.getContributions(getToken(conn), conn.platform_username)
       ),
     ]);
 
@@ -170,7 +185,7 @@ router.get('/instagram/profile', authenticate, async (req: Request, res: Respons
     const data = await getCached(
       `ig_profile_${req.userId}`,
       30,
-      () => InstagramService.getProfile(conn.decrypted_access_token, conn.platform_user_id)
+      () => InstagramService.getProfile(getToken(conn), conn.platform_user_id)
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -190,7 +205,7 @@ router.get('/instagram/insights', authenticate, async (req: Request, res: Respon
       `ig_insights_${req.userId}_${period}`,
       60,
       () => InstagramService.getAccountInsights(
-        conn.decrypted_access_token,
+        getToken(conn),
         conn.platform_user_id,
         period
       )
@@ -213,7 +228,7 @@ router.get('/instagram/media', authenticate, async (req: Request, res: Response)
       `ig_media_${req.userId}_${limit}`,
       30,
       () => InstagramService.getMedia(
-        conn.decrypted_access_token,
+        getToken(conn),
         conn.platform_user_id,
         limit
       )
@@ -232,17 +247,17 @@ router.get('/instagram/all', authenticate, async (req: Request, res: Response) =
   try {
     const [profile, insights, media] = await Promise.all([
       getCached(`ig_profile_${req.userId}`, 30, () =>
-        InstagramService.getProfile(conn.decrypted_access_token, conn.platform_user_id)
+        InstagramService.getProfile(getToken(conn), conn.platform_user_id)
       ),
       getCached(`ig_insights_${req.userId}_month`, 60, () =>
         InstagramService.getAccountInsights(
-          conn.decrypted_access_token,
+          getToken(conn),
           conn.platform_user_id,
           'month'
         )
       ),
       getCached(`ig_media_${req.userId}_20`, 30, () =>
-        InstagramService.getMedia(conn.decrypted_access_token, conn.platform_user_id, 20)
+        InstagramService.getMedia(getToken(conn), conn.platform_user_id, 20)
       ),
     ]);
 
@@ -265,7 +280,7 @@ router.get('/x/profile', authenticate, async (req: Request, res: Response) => {
     const data = await getCached(
       `x_profile_${req.userId}`,
       30,
-      () => XService.getProfile(conn.decrypted_access_token)
+      () => XService.getProfile(getToken(conn))
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -284,7 +299,7 @@ router.get('/x/tweets', authenticate, async (req: Request, res: Response) => {
     const data = await getCached(
       `x_tweets_${req.userId}_${limit}`,
       30,
-      () => XService.getRecentTweets(conn.decrypted_access_token, conn.platform_user_id, limit)
+      () => XService.getRecentTweets(getToken(conn), conn.platform_user_id, limit)
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -300,10 +315,10 @@ router.get('/x/all', authenticate, async (req: Request, res: Response) => {
   try {
     const [profile, tweets] = await Promise.all([
       getCached(`x_profile_${req.userId}`, 30, () =>
-        XService.getProfile(conn.decrypted_access_token)
+        XService.getProfile(getToken(conn))
       ),
       getCached(`x_tweets_${req.userId}_10`, 30, () =>
-        XService.getRecentTweets(conn.decrypted_access_token, conn.platform_user_id, 10)
+        XService.getRecentTweets(getToken(conn), conn.platform_user_id, 10)
       ),
     ]);
 
@@ -326,7 +341,7 @@ router.get('/linkedin/profile', authenticate, async (req: Request, res: Response
     const data = await getCached(
       `li_profile_${req.userId}`,
       60,
-      () => LinkedInService.getProfile(conn.decrypted_access_token)
+      () => LinkedInService.getProfile(getToken(conn))
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -343,7 +358,7 @@ router.get('/linkedin/posts', authenticate, async (req: Request, res: Response) 
     const data = await getCached(
       `li_posts_${req.userId}`,
       60,
-      () => LinkedInService.getPostAnalytics(conn.decrypted_access_token, conn.platform_user_id)
+      () => LinkedInService.getPostAnalytics(getToken(conn), conn.platform_user_id)
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -359,10 +374,10 @@ router.get('/linkedin/all', authenticate, async (req: Request, res: Response) =>
   try {
     const [profile, posts] = await Promise.all([
       getCached(`li_profile_${req.userId}`, 60, () =>
-        LinkedInService.getProfile(conn.decrypted_access_token)
+        LinkedInService.getProfile(getToken(conn))
       ),
       getCached(`li_posts_${req.userId}`, 60, () =>
-        LinkedInService.getPostAnalytics(conn.decrypted_access_token, conn.platform_user_id)
+        LinkedInService.getPostAnalytics(getToken(conn), conn.platform_user_id)
       ),
     ]);
 
@@ -379,14 +394,13 @@ router.get('/linkedin/all', authenticate, async (req: Request, res: Response) =>
 
 // POST /api/data/leetcode/connect  — user submits their username
 router.post('/leetcode/connect', authenticate, async (req: Request, res: Response) => {
-  const { username } = req.body;
-
-  if (!username || typeof username !== 'string' || username.trim().length === 0) {
-    res.status(400).json({ success: false, error: 'Username is required' });
+  const parsed = LeetCodeConnectSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.issues[0].message });
     return;
   }
 
-  const cleanUsername = username.trim();
+  const cleanUsername = parsed.data.username;
 
   try {
     // 1. Validate the username exists on LeetCode
@@ -394,30 +408,45 @@ router.post('/leetcode/connect', authenticate, async (req: Request, res: Respons
     if (!isValid) {
       res.status(404).json({
         success: false,
-        error: `LeetCode user "${cleanUsername}" not found`,
+        error: `LeetCode user "${cleanUsername}" not found or profile is private`,
       });
       return;
     }
 
-    // 2. Fetch their stats to store initial data
-    const stats = await LeetCodeService.getStats(cleanUsername);
+    // 2. Fetch their profile to store initial data
+    const profile = await LeetCodeService.getProfile(cleanUsername);
 
-    // 3. Save to platform_connections (no real token — we store username as the identifier)
+    // 3. Save to platform_connections
     await ConnectionService.upsert({
       user_id: req.userId!,
       platform: 'leetcode',
-      access_token: cleanUsername, // LeetCode uses public username, not a real token
+      access_token: null, // No token needed for LeetCode
       refresh_token: null,
       expires_at: null,
       platform_user_id: cleanUsername,
       platform_username: cleanUsername,
       scope: null,
     });
+    
+    // 4. Save initial snapshot
+    await supabase.from('leetcode_profile_snapshots').insert({
+      user_id: req.userId!,
+      ranking: profile.ranking,
+      contest_rating: profile.contest_rating,
+      global_ranking: profile.global_ranking,
+      easy_solved: profile.easy_solved,
+      medium_solved: profile.medium_solved,
+      hard_solved: profile.hard_solved,
+      acceptance_rate: profile.acceptance_rate,
+      reputation: profile.reputation,
+      streak: profile.streak,
+      activity_summary: profile.activity_summary
+    });
 
     res.json({
       success: true,
       message: `LeetCode account @${cleanUsername} connected successfully`,
-      data: stats,
+      data: profile,
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -429,14 +458,13 @@ router.get('/leetcode/stats', authenticate, async (req: Request, res: Response) 
   const conn = await getConnection(req.userId!, 'leetcode', res);
   if (!conn) return;
 
-  // For LeetCode the "access_token" is actually the username
   const username = conn.platform_username;
 
   try {
     const data = await getCached(
-      `lc_stats_${username}`,
+      `lc_profile_${username}`,
       60,
-      () => LeetCodeService.getStats(username)
+      () => LeetCodeService.getProfile(username)
     );
     res.json({ success: true, data });
   } catch (err: any) {
@@ -472,14 +500,74 @@ router.get('/leetcode/all', authenticate, async (req: Request, res: Response) =>
   const username = conn.platform_username;
 
   try {
-    const [stats, submissions] = await Promise.all([
-      getCached(`lc_stats_${username}`, 60, () => LeetCodeService.getStats(username)),
+    const [profile, submissions] = await Promise.all([
+      getCached(`lc_profile_${username}`, 60, () => LeetCodeService.getProfile(username)),
       getCached(`lc_submissions_${username}_15`, 30, () =>
         LeetCodeService.getRecentSubmissions(username, 15)
       ),
     ]);
 
+    const stats = {
+      leetcode_username: username,
+      total_solved: (profile.easy_solved || 0) + (profile.medium_solved || 0) + (profile.hard_solved || 0),
+      easy_solved: profile.easy_solved || 0,
+      medium_solved: profile.medium_solved || 0,
+      hard_solved: profile.hard_solved || 0,
+      acceptance_rate: profile.acceptance_rate || 0,
+      ranking: profile.ranking || 0,
+      reputation: profile.reputation || 0,
+      timestamp: new Date().toISOString()
+    };
+
     res.json({ success: true, data: { stats, submissions } });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/data/leetcode/sync
+router.post('/leetcode/sync', authenticate, async (req: Request, res: Response) => {
+  const conn = await getConnection(req.userId!, 'leetcode', res);
+  if (!conn) return;
+
+  const username = conn.platform_username;
+  
+  // Rate limit: check if last snapshot was within 15 minutes
+  const { data: lastSnapshot } = await supabase
+    .from('leetcode_profile_snapshots')
+    .select('timestamp')
+    .eq('user_id', req.userId!)
+    .order('timestamp', { ascending: false })
+    .limit(1)
+    .single();
+    
+  if (lastSnapshot) {
+    const age = Date.now() - new Date(lastSnapshot.timestamp).getTime();
+    if (age < 15 * 60 * 1000) {
+      res.status(429).json({ success: false, error: 'Manual sync is rate limited to once per 15 minutes.' });
+      return;
+    }
+  }
+
+  try {
+    const profile = await LeetCodeService.getProfile(username);
+    
+    // Save new snapshot
+    await supabase.from('leetcode_profile_snapshots').insert({
+      user_id: req.userId!,
+      ranking: profile.ranking,
+      contest_rating: profile.contest_rating,
+      global_ranking: profile.global_ranking,
+      easy_solved: profile.easy_solved,
+      medium_solved: profile.medium_solved,
+      hard_solved: profile.hard_solved,
+      acceptance_rate: profile.acceptance_rate,
+      reputation: profile.reputation,
+      streak: profile.streak,
+      activity_summary: profile.activity_summary
+    });
+
+    res.json({ success: true, data: profile });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -513,18 +601,18 @@ router.get('/summary', authenticate, async (req: Request, res: Response) => {
         switch (platform) {
           case 'github':
             summary.github = await getCached(`github_profile_${userId}`, 30, () =>
-              GitHubService.getProfile(conn.decrypted_access_token)
+              GitHubService.getProfile(getToken(conn))
             );
             break;
 
           case 'instagram':
             const [igProfile, igInsights] = await Promise.all([
               getCached(`ig_profile_${userId}`, 30, () =>
-                InstagramService.getProfile(conn.decrypted_access_token, conn.platform_user_id)
+                InstagramService.getProfile(getToken(conn), conn.platform_user_id)
               ),
               getCached(`ig_insights_${userId}_month`, 60, () =>
                 InstagramService.getAccountInsights(
-                  conn.decrypted_access_token,
+                  getToken(conn),
                   conn.platform_user_id,
                   'month'
                 )
@@ -535,19 +623,19 @@ router.get('/summary', authenticate, async (req: Request, res: Response) => {
 
           case 'x':
             summary.x = await getCached(`x_profile_${userId}`, 30, () =>
-              XService.getProfile(conn.decrypted_access_token)
+              XService.getProfile(getToken(conn))
             );
             break;
 
           case 'linkedin':
             summary.linkedin = await getCached(`li_profile_${userId}`, 60, () =>
-              LinkedInService.getProfile(conn.decrypted_access_token)
+              LinkedInService.getProfile(getToken(conn))
             );
             break;
 
           case 'leetcode':
             summary.leetcode = await getCached(`lc_stats_${conn.platform_username}`, 60, () =>
-              LeetCodeService.getStats(conn.platform_username)
+              LeetCodeService.getProfile(conn.platform_username)
             );
             break;
         }
@@ -562,6 +650,58 @@ router.get('/summary', authenticate, async (req: Request, res: Response) => {
     res.json({ success: true, data: summary });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GET /api/data/google-calendar/events
+// ═══════════════════════════════════════════════════════════════════════════════
+router.get('/google-calendar/events', authenticate, async (req: Request, res: Response) => {
+  const userId = req.userId!;
+  try {
+    const conn = await getConnection(userId, 'google-calendar', res);
+    if (!conn) return;
+
+    if (!conn.access_token) {
+      res.status(401).json({ success: false, error: 'Google Calendar access token is missing' });
+      return;
+    }
+
+    const events = await GoogleCalendarService.getEvents(conn.access_token, conn.refresh_token);
+
+    // Normalize events for frontend
+    const normalizedEvents = events.map(event => {
+      const isAllDay = !!event.start?.date;
+      const startStr = event.start?.dateTime || event.start?.date || '';
+      
+      let date = '';
+      let time = undefined;
+      
+      if (startStr) {
+        const d = new Date(startStr);
+        // Format YYYY-MM-DD local time
+        date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        
+        if (!isAllDay) {
+          time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+      }
+
+      return {
+        id: event.id,
+        title: event.summary || '(No title)',
+        date,
+        time,
+        category: 'google-event', // Used for rendering later
+        status: 'todo', // By default not done
+        color: '#4285F4', // Google Blue
+      };
+    }).filter(e => e.date); // Filter out events without a date
+
+    res.json({ success: true, data: normalizedEvents });
+  } catch (err: any) {
+    console.error('[Google Calendar API Error]:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to fetch calendar events' });
   }
 });
 

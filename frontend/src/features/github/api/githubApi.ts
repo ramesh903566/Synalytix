@@ -1,10 +1,17 @@
+import { z } from 'zod';
 import {
   GithubProfile,
   GithubContributions,
   GithubActivity,
   GithubRepository,
   GithubLanguage,
-  GithubTimelineEvent
+  GithubTimelineEvent,
+  GithubProfileSchema,
+  GithubContributionsSchema,
+  GithubActivitySchema,
+  GithubRepositorySchema,
+  GithubLanguageSchema,
+  GithubTimelineEventSchema
 } from '../types/github.types';
 import {
   GITHUB_PROFILE_MOCK,
@@ -15,42 +22,56 @@ import {
   GITHUB_TIMELINE_MOCK
 } from './mockData';
 
-// Simulated network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// Fetch helper with fallback to mock data if API fails or returns 404
+const fetchWithFallback = async <T>(
+  url: string,
+  schema: z.ZodType<T>,
+  fallback: T,
+  delayMs: number = 800
+): Promise<T> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    const data = await response.json();
+    return schema.parse(data);
+  } catch (error) {
+    console.warn(`Falling back to mock data for ${url}:`, error);
+    // Simulate network delay for fallback
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+    return fallback;
+  }
+};
 
 export const fetchGithubProfile = async (username: string): Promise<GithubProfile> => {
-  await delay(800);
-  return {
+  const fallback = {
     ...GITHUB_PROFILE_MOCK,
     login: username,
     name: username === 'ramesh903566' ? 'Ramesh Kumar' : username
   };
+  return fetchWithFallback(`/api/github/${username}/profile`, GithubProfileSchema, fallback, 800);
 };
 
 export const fetchGithubContributions = async (username: string): Promise<GithubContributions> => {
-  await delay(1000);
-  return GITHUB_CONTRIBUTIONS_MOCK;
+  return fetchWithFallback(`/api/github/${username}/contributions`, GithubContributionsSchema, GITHUB_CONTRIBUTIONS_MOCK, 1000);
 };
 
 export const fetchGithubActivity = async (username: string): Promise<GithubActivity> => {
-  await delay(700);
-  return GITHUB_ACTIVITY_MOCK;
+  return fetchWithFallback(`/api/github/${username}/activity`, GithubActivitySchema, GITHUB_ACTIVITY_MOCK, 700);
 };
 
 export const fetchGithubRepositories = async (username: string): Promise<GithubRepository[]> => {
-  await delay(1200);
-  return GITHUB_REPOS_MOCK;
+  return fetchWithFallback(`/api/github/${username}/repositories`, z.array(GithubRepositorySchema), GITHUB_REPOS_MOCK, 1200);
 };
 
 export const fetchGithubLanguages = async (username: string): Promise<GithubLanguage[]> => {
-  await delay(900);
-  return GITHUB_LANGUAGES_MOCK;
+  return fetchWithFallback(`/api/github/${username}/languages`, z.array(GithubLanguageSchema), GITHUB_LANGUAGES_MOCK, 900);
 };
 
 export const fetchGithubTimeline = async (username: string, page: number = 1): Promise<GithubTimelineEvent[]> => {
-  await delay(600);
-  // Return different subsets to simulate pagination
   const start = (page - 1) * 2;
   const end = start + 2;
-  return GITHUB_TIMELINE_MOCK.slice(start, end);
+  const fallbackPage = GITHUB_TIMELINE_MOCK.slice(start, end);
+  return fetchWithFallback(`/api/github/${username}/timeline?page=${page}`, z.array(GithubTimelineEventSchema), fallbackPage, 600);
 };

@@ -16,8 +16,8 @@ Your task: analyse the developer's unified career profile and return structured,
 
 STRICT RULES — violating any rule means the response will be rejected:
 1. Respond ONLY with a single valid JSON object. No preamble, no markdown code fences, no trailing text.
-2. Every recommendation must include a "confidence_score" from 0.0 to 1.0. Omit recommendations below 0.70.
-3. Prioritise by real-world career ROI. Be specific: reference actual numbers from the profile in "reason".
+2. Every recommendation must include a "confidence_level" of "low", "medium", or "high". Omit recommendations below "medium" if possible.
+3. Prioritise by real-world career ROI. Be specific: reference actual numbers from the profile in "reasoning".
 4. "action_steps" must be concrete, imperative, time-bound tasks (e.g. "Publish a blog post on dev.to about X by Friday" not "Write more content").
 5. "weekly_plan" must contain exactly 5 strings derived from CRITICAL or HIGH priority recommendations.
 6. "monthly_roadmap" must have exactly 4 objects with week numbers 1–4, each with a "goal" string and 2–4 "milestones".
@@ -43,15 +43,18 @@ Return a JSON object with this exact structure (no deviations):
     {
       "title": "string (max 120 chars)",
       "description": "string (max 600 chars)",
-      "reason": "string referencing specific data points",
+      "reasoning": "string referencing specific data points",
       "category": "CAREER_GROWTH | PERSONAL_BRANDING | TECHNICAL_SKILLS | NETWORKING | OPEN_SOURCE | ENTREPRENEURSHIP",
       "priority": "CRITICAL | HIGH | MEDIUM | LOW",
       "impact_score": 0-100,
       "difficulty": "EASY | MEDIUM | HARD",
-      "estimated_time": "e.g. 3 hours",
+      "estimated_time": {
+        "value": 3,
+        "unit": "weeks"
+      },
       "expected_outcome": "string",
       "action_steps": ["step 1", "step 2", "step 3"],
-      "confidence_score": 0.0-1.0
+      "confidence_level": "low | medium | high"
     }
   ],
   "weekly_plan": ["action 1", "action 2", "action 3", "action 4", "action 5"],

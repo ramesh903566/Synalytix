@@ -20,10 +20,6 @@ function getBearerToken(req: Request): string {
     return authHeader.slice('Bearer '.length).trim();
   }
 
-  if (req.query.token && typeof req.query.token === 'string') {
-    return req.query.token;
-  }
-
   return '';
 }
 

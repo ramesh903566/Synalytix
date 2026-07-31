@@ -1,0 +1,80 @@
+import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
+import { ConnectionService } from '../services/connectionService';
+import { GitHubService } from '../services/githubService';
+
+const router = Router();
+
+// Retrieve GitHub Token Helper
+const getGitHubToken = async (userId: string) => {
+  const conn = await ConnectionService.getByUserAndPlatform(userId, 'github');
+  if (!conn?.decrypted_access_token) {
+    throw new Error('GitHub account not connected');
+  }
+  return conn.decrypted_access_token;
+};
+
+// GET /api/studio/github/repos
+// List user repositories
+router.get('/github/repos', authenticate, async (req, res) => {
+  try {
+    const accessToken = await getGitHubToken(req.userId!);
+    const repos = await GitHubService.getAllRepos(accessToken);
+    res.json(repos);
+  } catch (error: any) {
+    if (error.message === 'GitHub account not connected') {
+      res.status(401).json({ success: false, error: error.message });
+    } else {
+      console.error('Error fetching GitHub repos:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch repositories' });
+    }
+  }
+});
+
+// POST /api/studio/github/repos
+// Create a new repository
+router.post('/github/repos', authenticate, async (req, res) => {
+  try {
+    const accessToken = await getGitHubToken(req.userId!);
+    const newRepo = await GitHubService.createRepo(accessToken, req.body);
+    res.json({ success: true, repo: newRepo });
+  } catch (error: any) {
+    console.error('Error creating GitHub repo:', error?.response?.data || error);
+    res.status(500).json({ 
+      success: false, 
+      error: error?.response?.data?.message || 'Failed to create repository' 
+    });
+  }
+});
+
+// POST /api/studio/github/publish
+// Publish files to a GitHub repository
+router.post('/github/publish', authenticate, async (req, res) => {
+  try {
+    const accessToken = await getGitHubToken(req.userId!);
+    const { owner, repo, branch = 'main', message, files } = req.body;
+    
+    if (!owner || !repo || !message || !files || !Array.isArray(files)) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const commitResult = await GitHubService.commitFiles(
+      accessToken,
+      owner,
+      repo,
+      branch,
+      message,
+      files
+    );
+
+    res.json({ success: true, commit: commitResult });
+  } catch (error: any) {
+    console.error('Error publishing to GitHub:', error?.response?.data || error);
+    res.status(500).json({ 
+      success: false, 
+      error: error?.response?.data?.message || 'Failed to publish to GitHub' 
+    });
+  }
+});
+
+export default router;

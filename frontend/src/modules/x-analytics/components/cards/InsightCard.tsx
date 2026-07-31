@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Sparkles, ArrowRight, TrendingUp, AlertTriangle, Lightbulb } from 'lucide-react';
 import { KPI, AIInsight } from '../../types/xAnalytics';
 import { scaleIn } from '../../animations/variants';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../../lib/utils';
 
 interface InsightCardProps {
   insight: AIInsight;

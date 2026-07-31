@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
-import { Plus, ChevronLeft, ChevronRight, X, Check, Trash2 } from 'lucide-react';
-import { useAppContext, PlannerTask } from '../context/AppContext';
+import { AnimatePresence, motion } from 'motion/react';
+import { Plus, ChevronLeft, ChevronRight, X, Check, Trash2, Calendar, Link as LinkIcon, Edit, Clock, GripVertical } from 'lucide-react';
+import { useAppContext, PlannerTask, PlannerCategory, ExternalCalendarProvider } from '../context/AppContext';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -17,19 +17,22 @@ function getFirstDayOfMonth(year: number, month: number) {
 type PlannerView = 'unplanned' | 'planned' | 'all';
 
 export default function Planner() {
-  const { plannerTasks, addPlannerTask, updatePlannerTask, deletePlannerTask } = useAppContext();
+  const { plannerTasks, addPlannerTask, updatePlannerTask, deletePlannerTask, calendarConnections, connectCalendar, externalEvents } = useAppContext();
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [view, setView] = useState<PlannerView>('unplanned');
+  const [categoryFilter, setCategoryFilter] = useState<PlannerCategory | 'all'>('all');
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskProject, setNewTaskProject] = useState('content');
+  const [newTaskCategory, setNewTaskCategory] = useState<PlannerCategory>('content');
   const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [newTaskStatus, setNewTaskStatus] = useState<PlannerTask['status']>('unplanned');
   const [newTaskDate, setNewTaskDate] = useState('');
   const [newTaskTime, setNewTaskTime] = useState('');
+  const [newTaskColor, setNewTaskColor] = useState('');
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
@@ -48,9 +51,14 @@ export default function Planner() {
   const tasksOnDate = (day: number) => plannerTasks.filter(t => t.scheduledDate === getDateStr(day));
 
   const filteredTasks = plannerTasks.filter(t => {
-    if (view === 'unplanned') return t.status === 'unplanned';
-    if (view === 'planned') return t.status === 'scheduled' || t.status === 'todo';
-    return true;
+    let statusMatch = true;
+    if (view === 'unplanned') statusMatch = t.status === 'unplanned';
+    if (view === 'planned') statusMatch = t.status === 'scheduled' || t.status === 'todo';
+    
+    let categoryMatch = true;
+    if (categoryFilter !== 'all') categoryMatch = t.category === categoryFilter;
+
+    return statusMatch && categoryMatch;
   });
 
   const selectedDateTasks = selectedDate ? plannerTasks.filter(t => t.scheduledDate === selectedDate) : [];
@@ -60,14 +68,18 @@ export default function Planner() {
     addPlannerTask({
       title: newTaskTitle,
       projectId: newTaskProject,
+      category: newTaskCategory,
       status: newTaskDate ? 'scheduled' : newTaskStatus,
       scheduledDate: newTaskDate || undefined,
       scheduledTime: newTaskTime || undefined,
       priority: newTaskPriority,
+      color: newTaskColor || undefined,
     });
     setNewTaskTitle('');
     setNewTaskDate('');
     setNewTaskTime('');
+    setNewTaskColor('');
+    setNewTaskCategory('content');
     setShowAddTask(false);
   };
 
@@ -84,7 +96,41 @@ export default function Planner() {
     return 'bg-success';
   };
 
+  const getCategoryColor = (c: PlannerCategory) => {
+    if (c === 'content') return 'bg-brand/10 text-brand border-brand/20';
+    if (c === 'dev') return 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
+    if (c === 'business') return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+  };
+
+  const getCategoryDotColor = (c: PlannerCategory | 'google-event', customColor?: string) => {
+    if (customColor) return customColor; // If custom color is provided, we use it as style bg, not Tailwind class
+    if (c === 'content') return 'var(--color-brand)';
+    if (c === 'dev') return '#6366f1';
+    if (c === 'business') return '#10b981';
+    if (c === 'google-event') return '#4285F4';
+    return '#6b7280';
+  };
+
   const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, dateStr: string) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    if (taskId) {
+      updatePlannerTask(taskId, { scheduledDate: dateStr, status: 'scheduled' });
+    }
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto pb-12">
@@ -97,32 +143,25 @@ export default function Planner() {
         {/* LEFT: Todo List Panel */}
         <div className="col-span-5 flex flex-col gap-4">
           {/* View Selector */}
-          <div className="bg-bg-elevated border border-border rounded-[var(--radius-card)] p-2 shadow-level-1">
-            {(['unplanned', 'planned', 'all'] as PlannerView[]).map(v => (
-              <button key={v} onClick={() => setView(v)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-[var(--radius-card-inner)] text-sm font-medium transition-all ${view === v ? 'bg-bg-sunken text-text-primary' : 'text-text-secondary hover:bg-bg-canvas'}`}>
-                <span className={`w-5 h-5 rounded-[var(--radius-badge)] border flex items-center justify-center flex-shrink-0 transition-colors ${view === v ? 'border-brand bg-brand' : 'border-border'}`}>
-                  {view === v && <Check className="w-3 h-3 text-white" />}
-                </span>
-                {v === 'unplanned' ? (
-                  <span className="flex items-center gap-2 flex-1">
-                    <span>Unplanned</span>
-                    <span className="ml-auto text-xs font-bold bg-bg-canvas px-2 py-0.5 rounded-[var(--radius-badge)] text-text-muted border border-border-light">
-                      {plannerTasks.filter(t => t.status === 'unplanned').length}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-text-muted/50" />
-                  </span>
-                ) : v === 'planned' ? (
-                  <span className="flex items-center gap-2 flex-1">
-                    <Check className="w-4 h-4 text-text-muted/50" /> Planned
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2 flex-1">
-                    <span className="text-base">≡</span> All
-                  </span>
-                )}
-              </button>
-            ))}
+          {/* View & Category Selectors */}
+          <div className="bg-bg-elevated border border-border rounded-[var(--radius-card)] p-2 shadow-level-1 flex flex-col gap-2">
+            <div className="flex gap-2">
+              {(['unplanned', 'planned', 'all'] as PlannerView[]).map(v => (
+                <button key={v} onClick={() => setView(v)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-[var(--radius-card-inner)] text-sm font-medium transition-all ${view === v ? 'bg-bg-sunken text-text-primary' : 'text-text-secondary hover:bg-bg-canvas'}`}>
+                  {v === 'unplanned' ? 'Unplanned' : v === 'planned' ? 'Planned' : 'All Tasks'}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar border-t border-border/50 pt-2">
+              {(['all', 'content', 'dev', 'business', 'other'] as (PlannerCategory | 'all')[]).map(c => (
+                <button key={c} onClick={() => setCategoryFilter(c)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${categoryFilter === c ? 'bg-text-primary text-text-inverse border border-transparent' : 'bg-bg-canvas text-text-secondary hover:bg-bg-sunken border border-border/50'}`}>
+                  {c !== 'all' && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getCategoryDotColor(c as PlannerCategory) }} />}
+                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Add Task */}
@@ -137,13 +176,19 @@ export default function Planner() {
                   placeholder="Task title…"
                   className="w-full text-sm p-3 bg-bg-canvas border border-border rounded-[var(--radius-input)] outline-none focus:border-brand transition-all text-text-primary"
                 />
-                <div className="grid grid-cols-2 gap-2">
-                  <select value={newTaskProject} onChange={e => setNewTaskProject(e.target.value)}
+                <div className="grid grid-cols-3 gap-2">
+                  <select value={newTaskCategory} onChange={e => setNewTaskCategory(e.target.value as PlannerCategory)}
                     className="text-xs p-2 bg-bg-canvas border border-border rounded-[var(--radius-chip)] outline-none text-text-primary">
                     <option value="content">Content</option>
                     <option value="dev">Development</option>
-                    <option value="growth">Growth</option>
+                    <option value="business">Business</option>
                     <option value="other">Other</option>
+                  </select>
+                  <select value={newTaskProject} onChange={e => setNewTaskProject(e.target.value)}
+                    className="text-xs p-2 bg-bg-canvas border border-border rounded-[var(--radius-chip)] outline-none text-text-primary">
+                    <option value="none">No Project</option>
+                    <option value="synalytix">Synalytix</option>
+                    <option value="marketing">Marketing</option>
                   </select>
                   <select value={newTaskPriority} onChange={e => setNewTaskPriority(e.target.value as any)}
                     className="text-xs p-2 bg-bg-canvas border border-border rounded-[var(--radius-chip)] outline-none text-text-primary">
@@ -157,6 +202,18 @@ export default function Planner() {
                     className="text-xs p-2 bg-bg-canvas border border-border rounded-[var(--radius-chip)] outline-none text-text-primary" />
                   <input type="time" value={newTaskTime} onChange={e => setNewTaskTime(e.target.value)}
                     className="text-xs p-2 bg-bg-canvas border border-border rounded-[var(--radius-chip)] outline-none text-text-primary" />
+                </div>
+                <div className="flex gap-2 items-center mb-3">
+                  <span className="text-xs text-text-muted">Color:</span>
+                  {['', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'].map(color => (
+                    <button
+                      key={color || 'default'}
+                      onClick={() => setNewTaskColor(color)}
+                      className={`w-5 h-5 rounded-full flex-shrink-0 border-2 transition-all ${newTaskColor === color ? 'border-text-primary scale-110' : 'border-transparent hover:scale-110'}`}
+                      style={{ backgroundColor: color || getCategoryDotColor(newTaskCategory) }}
+                      title={color ? 'Custom color' : 'Default category color'}
+                    />
+                  ))}
                 </div>
                 <div className="flex gap-2">
                   <button onClick={handleAddTask} className="flex-1 py-2 bg-brand text-text-inverse text-xs font-bold rounded-[var(--radius-button)] hover:bg-brand-hover transition-colors shadow-level-1">Add Task</button>
@@ -186,35 +243,64 @@ export default function Planner() {
               </div>
             )}
 
-            <div className="divide-y divide-border-light">
-              {filteredTasks.length === 0 ? (
-                <div className="p-8 text-center text-xs text-text-muted font-medium">
-                  {view === 'unplanned' ? 'No unplanned tasks! Great work.' : 'Nothing here.'}
-                </div>
-              ) : (
-                filteredTasks.map(task => (
-                  <div key={task.id} className="flex items-center gap-3 p-4 hover:bg-bg-canvas transition-colors group">
-                    <button onClick={() => updatePlannerTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' })}
-                      className={`w-5 h-5 rounded-[var(--radius-badge)] border flex-shrink-0 flex items-center justify-center transition-all ${task.status === 'done' ? 'bg-brand border-brand' : 'border-border hover:border-brand'}`}>
-                      {task.status === 'done' && <Check className="w-3 h-3 text-white" />}
-                    </button>
-                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${getPriorityDot(task.priority)}`} />
-                    <div className="flex-1 min-w-0">
-                      <span className={`text-sm ${task.status === 'done' ? 'line-through text-text-muted' : 'text-text-primary font-medium'}`}>{task.title}</span>
-                      {task.scheduledDate && (
-                        <div className="text-[10px] text-text-secondary mt-0.5">{task.scheduledDate} {task.scheduledTime || ''}</div>
-                      )}
-                      {task.projectId && (
-                        <div className="text-[9px] font-bold uppercase tracking-wider text-text-muted/70 mt-0.5">{task.projectId}</div>
-                      )}
-                    </div>
-                    <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-[var(--radius-badge)] flex-shrink-0 ${getStatusColor(task.status)}`}>{task.status}</span>
-                    <button onClick={() => deletePlannerTask(task.id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-error-text text-text-muted/50">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))
-              )}
+            <div className="divide-y divide-border-light overflow-hidden">
+              <AnimatePresence>
+                {filteredTasks.length === 0 ? (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-8 text-center text-xs text-text-muted font-medium">
+                    {view === 'unplanned' ? 'No unplanned tasks! Great work.' : 'Nothing here.'}
+                  </motion.div>
+                ) : (
+                  filteredTasks.map(task => (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      key={task.id}
+                      draggable
+                      onDragStart={(e: any) => handleDragStart(e, task.id)}
+                      className="flex items-center gap-3 p-4 hover:bg-bg-canvas transition-colors group cursor-grab active:cursor-grabbing border-b border-border-light last:border-b-0"
+                    >
+                      <div className="text-text-muted/30 group-hover:text-text-muted/60 flex-shrink-0 cursor-grab">
+                        <GripVertical className="w-4 h-4" />
+                      </div>
+                      <button onClick={() => updatePlannerTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' })}
+                        className={`w-5 h-5 rounded-[var(--radius-badge)] border flex-shrink-0 flex items-center justify-center transition-all ${task.status === 'done' ? 'bg-brand border-brand' : 'border-border hover:border-brand'}`}>
+                        {task.status === 'done' && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm ${task.status === 'done' ? 'line-through text-text-muted' : 'text-text-primary font-medium'}`}>{task.title}</span>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-[var(--radius-badge)] border ${getCategoryColor(task.category as PlannerCategory)}`}>
+                              {task.category}
+                            </span>
+                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getCategoryDotColor(task.category as PlannerCategory, task.color) }} />
+                          </div>
+                          {task.scheduledDate && (
+                            <span className="text-[10px] text-text-secondary flex items-center gap-1.5 ml-1 whitespace-nowrap">
+                              <Calendar className="w-3 h-3 text-text-muted" />
+                              {task.scheduledDate} {task.scheduledTime || ''}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-[var(--radius-badge)] flex-shrink-0 ${getStatusColor(task.status)}`}>{task.status}</span>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                          <button className="p-1 hover:text-brand transition-colors text-text-muted/70" title="Schedule">
+                            <Clock className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => deletePlannerTask(task.id)} className="p-1 hover:text-error-text transition-colors text-text-muted/70" title="Delete">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -261,7 +347,21 @@ export default function Planner() {
           {/* Calendar */}
           <div className="bg-bg-elevated border border-border rounded-[var(--radius-card)] p-5 shadow-level-1">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-text-primary">{MONTHS[currentMonth]} {currentYear}</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-sm font-semibold text-text-primary">{MONTHS[currentMonth]} {currentYear}</h3>
+                {calendarConnections.some(c => c.provider === 'google') ? (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-info/10 border border-info/20 rounded-[var(--radius-chip)] text-[10px] font-bold text-info">
+                    <LinkIcon className="w-3 h-3" /> Connected
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => connectCalendar('google')}
+                    className="flex items-center gap-1.5 px-2 py-1 bg-bg-sunken hover:bg-bg-canvas border border-border rounded-[var(--radius-chip)] text-[10px] font-bold text-text-secondary transition-colors"
+                  >
+                    <LinkIcon className="w-3 h-3" /> Connect
+                  </button>
+                )}
+              </div>
               <div className="flex gap-1">
                 <button onClick={prevMonth} className="w-7 h-7 rounded-[var(--radius-chip)] hover:bg-bg-sunken flex items-center justify-center transition-colors">
                   <ChevronLeft className="w-4 h-4 text-text-secondary" />
@@ -282,44 +382,88 @@ export default function Planner() {
                 const isToday = dateStr === todayStr;
                 const isSelected = selectedDate === dateStr;
                 const dayTasks = tasksOnDate(day);
+                const dayExternalEvents = externalEvents.filter(e => e.startDate === dateStr);
+                
                 return (
-                  <button key={day} onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-                    className={`relative p-2 rounded-[var(--radius-card-inner)] text-sm font-medium transition-all text-center ${isSelected ? 'bg-brand text-text-inverse shadow-level-1' : isToday ? 'bg-text-primary text-text-inverse' : 'hover:bg-bg-sunken text-text-primary'}`}>
-                    {day}
-                    {dayTasks.length > 0 && (
-                      <div className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full ${isSelected || isToday ? 'bg-white' : 'bg-brand'}`} />
-                    )}
-                  </button>
+                  <div key={day}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, dateStr)}
+                    onClick={() => setSelectedDate(isSelected ? null : dateStr)}
+                    className={`relative p-2 rounded-[var(--radius-card-inner)] text-sm font-medium transition-all text-center cursor-pointer min-h-[40px] flex flex-col items-center justify-start
+                      ${isSelected ? 'bg-brand text-text-inverse shadow-level-1' : isToday ? 'bg-text-primary text-text-inverse' : 'hover:bg-bg-sunken text-text-primary border border-transparent hover:border-brand/30'}`}
+                  >
+                    <span>{day}</span>
+                    <div className="flex gap-0.5 mt-1 flex-wrap justify-center max-w-full px-1">
+                      {dayTasks.map((t, idx) => (
+                        <div key={t.id} className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: isSelected || isToday ? 'rgba(255,255,255,0.8)' : getCategoryDotColor(t.category, t.color) }} title={t.title} />
+                      ))}
+                      {dayExternalEvents.map((e, idx) => (
+                        <div key={e.id} className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{ backgroundColor: isSelected || isToday ? 'rgba(255,255,255,0.5)' : '#4285F4' }} title={e.title} />
+                      ))}
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </div>
 
           {/* Selected date tasks */}
-          {selectedDate && (
-            <div className="bg-bg-elevated border border-border rounded-[var(--radius-card)] overflow-hidden shadow-level-1">
-              <div className="p-4 border-b border-border-light flex items-center justify-between bg-bg-canvas/50">
-                <span className="text-sm font-semibold text-text-primary">Tasks for {selectedDate}</span>
-                <button onClick={() => setSelectedDate(null)} className="p-1 hover:bg-bg-sunken rounded-[var(--radius-chip)] transition-colors">
-                  <X className="w-4 h-4 text-text-muted" />
-                </button>
-              </div>
-              {selectedDateTasks.length === 0 ? (
-                <div className="p-6 text-center text-xs text-text-muted font-medium">No tasks scheduled for this day.</div>
-              ) : (
-                <div className="divide-y divide-border-light">
-                  {selectedDateTasks.map(task => (
-                    <div key={task.id} className="flex items-center gap-3 p-4">
-                      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${getPriorityDot(task.priority)}`} />
-                      <span className="flex-1 text-sm text-text-primary font-medium">{task.title}</span>
-                      {task.scheduledTime && <span className="text-xs text-text-muted">{task.scheduledTime}</span>}
-                      <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-[var(--radius-badge)] ${getStatusColor(task.status)}`}>{task.status}</span>
-                    </div>
-                  ))}
+          <AnimatePresence>
+            {selectedDate && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-bg-elevated border border-border rounded-[var(--radius-card)] overflow-hidden shadow-level-1 mt-2"
+              >
+                <div className="p-4 border-b border-border-light flex items-center justify-between bg-bg-canvas/50">
+                  <span className="text-sm font-semibold text-text-primary">Tasks for {selectedDate}</span>
+                  <button onClick={() => setSelectedDate(null)} className="p-1 hover:bg-bg-sunken rounded-[var(--radius-chip)] transition-colors">
+                    <X className="w-4 h-4 text-text-muted" />
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
+                {selectedDateTasks.length === 0 && externalEvents.filter(e => e.startDate === selectedDate).length === 0 ? (
+                  <div className="p-6 text-center text-xs text-text-muted font-medium">No tasks or events scheduled for this day.</div>
+                ) : (
+                  <div className="divide-y divide-border-light max-h-[300px] overflow-y-auto">
+                    {selectedDateTasks.map(task => (
+                      <div key={task.id} className="flex items-center gap-3 p-4 hover:bg-bg-canvas transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-text-primary font-medium">{task.title}</span>
+                          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-[var(--radius-badge)] border ${getCategoryColor(task.category as PlannerCategory)}`}>
+                                {task.category}
+                              </span>
+                              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getCategoryDotColor(task.category, task.color) }} />
+                            </div>
+                            {task.scheduledTime && (
+                              <span className="text-[10px] text-text-secondary whitespace-nowrap ml-1">{task.scheduledTime}</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-[var(--radius-badge)] ${getStatusColor(task.status)}`}>{task.status}</span>
+                      </div>
+                    ))}
+                    {externalEvents.filter(e => e.startDate === selectedDate).map(e => (
+                      <div key={e.id} className="flex items-center gap-3 p-4 bg-info/5 opacity-90 border-l-2 border-info">
+                        <div className="w-1.5 h-1.5 rounded-sm flex-shrink-0 bg-info" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-text-primary font-medium">{e.title}</span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-[var(--radius-badge)] border border-info/20 text-info bg-info/10">
+                              Google Calendar
+                            </span>
+                            {e.startTime && <span className="text-[10px] text-text-muted">{e.startTime}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Todos section */}
           <div className="bg-bg-elevated border border-border rounded-[var(--radius-card)] overflow-hidden shadow-level-1">
