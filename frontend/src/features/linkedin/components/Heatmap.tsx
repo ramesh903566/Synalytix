@@ -11,7 +11,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
   const maxValue = Math.max(...data.map(d => d.value));
 
   const getColor = (value: number) => {
-    if (value === 0) return 'bg-[#1A222C]';
+    if (value === 0) return 'bg-bg-sunken';
     const intensity = value / maxValue;
     // Map to blue color scale
     if (intensity < 0.2) return 'bg-[#0A66C2]/20';
@@ -22,10 +22,10 @@ export const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
   };
 
   return (
-    <div className="bg-[#11161D] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6 overflow-x-auto">
+    <div className="bg-bg-elevated border border-border-light rounded-2xl p-6 overflow-x-auto">
       <div className="mb-6">
-        <h3 className="text-lg font-bold text-white">Engagement Heatmap</h3>
-        <p className="text-sm text-zinc-500 mt-1">Engagements grouped by publish day and hour</p>
+        <h3 className="text-lg font-bold text-text-primary">Engagement Heatmap</h3>
+        <p className="text-sm text-text-muted mt-1">Engagements grouped by publish day and hour</p>
       </div>
       
       <div className="min-w-[700px]">
@@ -34,7 +34,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
           <div className="w-12 shrink-0"></div>
           <div className="flex-1 flex justify-between px-1">
             {hours.map((h, i) => (
-              <div key={i} className="text-[10px] text-zinc-500 w-6 text-center">{i % 3 === 0 ? h : ''}</div>
+              <div key={i} className="text-[10px] text-text-muted w-6 text-center">{i % 3 === 0 ? h : ''}</div>
             ))}
           </div>
         </div>
@@ -43,7 +43,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
         <div className="flex flex-col gap-1">
           {days.map((day, dIdx) => (
             <div key={day} className="flex items-center">
-              <div className="w-12 shrink-0 text-xs font-bold text-zinc-400">{day}</div>
+              <div className="w-12 shrink-0 text-xs font-bold text-text-secondary">{day}</div>
               <div className="flex-1 flex justify-between gap-1">
                 {Array.from({ length: 24 }).map((_, hIdx) => {
                   const cellData = data.find(d => d.day === dIdx && d.hour === hIdx);
@@ -62,10 +62,10 @@ export const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
         </div>
         
         {/* Legend */}
-        <div className="mt-6 flex items-center justify-end gap-2 text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+        <div className="mt-6 flex items-center justify-end gap-2 text-[10px] text-text-muted font-bold uppercase tracking-wider">
           <span>Less</span>
           <div className="flex gap-1">
-            <div className="w-4 h-4 rounded-sm bg-[#1A222C]"></div>
+            <div className="w-4 h-4 rounded-sm bg-bg-sunken"></div>
             <div className="w-4 h-4 rounded-sm bg-[#0A66C2]/20"></div>
             <div className="w-4 h-4 rounded-sm bg-[#0A66C2]/40"></div>
             <div className="w-4 h-4 rounded-sm bg-[#0A66C2]/60"></div>

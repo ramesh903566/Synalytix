@@ -63,34 +63,36 @@ export const XAnalyticsModule: React.FC<XAnalyticsModuleProps> = ({ appInfo, acc
     <QueryClientProvider client={queryClient}>
       <div className="w-full max-w-[1400px] mx-auto px-6 pb-24">
         {/* Account Info Header */}
-        <div className="flex items-center gap-4 mb-8 bg-zinc-900/30 p-4 rounded-xl border border-zinc-800/50 backdrop-blur-sm">
+        <div className="flex items-center gap-4 mb-8 bg-bg-elevated p-4 rounded-xl border border-border-light backdrop-blur-sm">
           <img
-            src={account.avatar}
+            src={account.avatar || account.profileImageUrl}
             alt={account.handle}
-            className="w-12 h-12 rounded-full border-2 border-zinc-800"
+            className="w-12 h-12 rounded-full border-2 border-border"
           />
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              {account.handle}
+            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
+              {account.name || account.handle}
               {account.isPremium && (
-                <span className="bg-blue-500/20 text-blue-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">
-                  Premium
-                </span>
+                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white" title="Premium Verified">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
               )}
             </h2>
-            <p className="text-sm text-zinc-400">Viewing analytics for {appInfo.name}</p>
+            <p className="text-sm text-text-secondary">{account.handle} · Viewing analytics for {appInfo.name}</p>
           </div>
         </div>
 
         {/* Tabs Navigation */}
-        <div className="flex space-x-6 border-b border-zinc-800 mb-6 relative overflow-x-auto hide-scrollbar">
+        <div className="flex space-x-6 border-b border-border mb-6 relative overflow-x-auto hide-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
                 "pb-4 text-sm font-medium transition-colors relative whitespace-nowrap",
-                activeTab === tab.id ? "text-white" : "text-zinc-400 hover:text-zinc-200"
+                activeTab === tab.id ? "text-text-primary" : "text-text-secondary hover:text-text-primary"
               )}
             >
               {tab.label}

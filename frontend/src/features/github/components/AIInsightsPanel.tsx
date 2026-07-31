@@ -15,29 +15,29 @@ export const AIInsightsPanel: React.FC<{ username: string }> = ({ username }) =>
         <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400">
           <Sparkles className="w-5 h-5" />
         </div>
-        <h2 className="text-lg font-semibold text-zinc-100">AI Analyst Insights</h2>
+        <h2 className="text-lg font-semibold text-text-primary">AI Analyst Insights</h2>
       </div>
 
       <div className="space-y-4 relative z-10">
-        <div className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-5 flex gap-4">
+        <div className="bg-bg-canvas/50 backdrop-blur-sm border border-border-light rounded-2xl p-5 flex gap-4">
           <div className="mt-1">
             <TrendingUp className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-zinc-100 mb-1">High TypeScript Adoption</h4>
-            <p className="text-xs text-zinc-400 leading-relaxed">
+            <h4 className="text-sm font-semibold text-text-primary mb-1">High TypeScript Adoption</h4>
+            <p className="text-xs text-text-secondary leading-relaxed">
               Your repositories show a 40% shift towards TypeScript in the last 6 months. Projects using TS have 3x fewer issues reported on average.
             </p>
           </div>
         </div>
 
-        <div className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-5 flex gap-4">
+        <div className="bg-bg-canvas/50 backdrop-blur-sm border border-border-light rounded-2xl p-5 flex gap-4">
           <div className="mt-1">
             <Lightbulb className="w-4 h-4 text-amber-400" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-zinc-100 mb-1">Contribution Sweet Spot</h4>
-            <p className="text-xs text-zinc-400 leading-relaxed">
+            <h4 className="text-sm font-semibold text-text-primary mb-1">Contribution Sweet Spot</h4>
+            <p className="text-xs text-text-secondary leading-relaxed">
               You are most productive on Tuesdays and Wednesdays between 2 PM and 5 PM. Consider scheduling deep work during these high-focus hours.
             </p>
           </div>

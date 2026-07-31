@@ -49,7 +49,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
             onClick={() => toggleCategory(cat)}
             className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${
               filters.category === cat
-                ? 'bg-brand-primary text-white border-brand-primary'
+                ? 'bg-brand-primary text-text-primary border-brand-primary'
                 : 'bg-neutral-50 text-[#999] border-neutral-200 hover:border-neutral-300 hover:text-[#666]'
             }`}
           >
@@ -67,7 +67,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
             onClick={() => togglePriority(pri)}
             className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${
               filters.priority === pri
-                ? 'bg-brand-primary text-white border-brand-primary'
+                ? 'bg-brand-primary text-text-primary border-brand-primary'
                 : 'bg-neutral-50 text-[#999] border-neutral-200 hover:border-neutral-300 hover:text-[#666]'
             }`}
           >
@@ -84,7 +84,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
             onClick={() => toggleDifficulty(diff)}
             className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${
               filters.difficulty === diff
-                ? 'bg-brand-primary text-white border-brand-primary'
+                ? 'bg-brand-primary text-text-primary border-brand-primary'
                 : 'bg-neutral-50 text-[#999] border-neutral-200 hover:border-neutral-300 hover:text-[#666]'
             }`}
           >
@@ -98,7 +98,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
           onClick={() => onFilterChange({ ...filters, showCompleted: !filters.showCompleted })}
           className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${
             filters.showCompleted
-              ? 'bg-brand-primary text-white border-brand-primary'
+              ? 'bg-brand-primary text-text-primary border-brand-primary'
               : 'bg-neutral-50 text-[#999] border-neutral-200 hover:border-neutral-300 hover:text-[#666]'
           }`}
         >

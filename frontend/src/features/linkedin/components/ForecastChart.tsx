@@ -16,10 +16,10 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({
   height = 300 
 }) => {
   return (
-    <div className="bg-[#11161D] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6">
+    <div className="bg-bg-elevated border border-border-light rounded-2xl p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-bold text-white">{title}</h3>
-        {subtitle && <p className="text-sm text-zinc-500 mt-1">{subtitle}</p>}
+        <h3 className="text-lg font-bold text-text-primary">{title}</h3>
+        {subtitle && <p className="text-sm text-text-muted mt-1">{subtitle}</p>}
       </div>
       
       <div style={{ height: `${height}px` }} className="w-full">

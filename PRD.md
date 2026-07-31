@@ -283,7 +283,7 @@ sequenceDiagram
 | ID | Requirement | Status |
 |---|---|---|
 | AUTH-01 | Users shall register with email and password via Supabase Auth. | ✅ Backend |
-| AUTH-02 | Users shall log in via GitHub OAuth through Supabase. | ✅ Frontend |
+| AUTH-02 | Users shall log in via GitHub OAuth through Supabase. | ✅ Implemented |
 | AUTH-03 | Backend shall verify JWT on all protected routes. | ✅ |
 | AUTH-04 | JWT shall be sent in `Authorization: Bearer <token>` header. | ✅ |
 | AUTH-05 | `user_profiles` record shall be auto-created on signup via DB trigger. | ✅ |
@@ -309,10 +309,10 @@ sequenceDiagram
 |---|---|---|
 | ANA-01 | Analytics Hub shall display cross-platform metrics. | ⚠️ Mocked |
 | ANA-02 | Per-platform analytics shall show platform-specific metrics. | ⚠️ Mocked |
-| ANA-03 | GitHub analytics shall include repos, contributions, languages. | ✅ Backend |
+| ANA-03 | GitHub analytics shall include repos, contributions, languages. | ✅ Implemented |
 | ANA-04 | Instagram analytics shall include insights, audience, media. | ✅ Backend |
-| ANA-05 | X analytics shall include profile, tweets. | ✅ Backend |
-| ANA-06 | LinkedIn analytics shall include profile, posts. | ⚠️ Limited |
+| ANA-05 | X analytics shall include profile, tweets. | ✅ Implemented |
+| ANA-06 | LinkedIn analytics shall include profile, posts. | ✅ Implemented |
 | ANA-07 | LeetCode analytics shall include stats, submissions. | ✅ Backend |
 | ANA-08 | Analytics shall support drill-down to account and content level. | ⚠️ Mocked |
 

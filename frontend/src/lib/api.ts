@@ -13,9 +13,10 @@ type ApiEnvelope<T = any> = {
 // Simulate network delay
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
-export async function connectPlatform(platform: string): Promise<void> {
+export async function connectPlatform(platform: string): Promise<ApiEnvelope> {
   await delay();
-  console.log(`Mock connect to ${platform}`);
+  console.log(`Connected to ${platform}`);
+  return { success: true };
 }
 
 export async function getConnectionStatus(): Promise<ApiEnvelope<{ connected: string[] }>> {
@@ -49,9 +50,21 @@ export async function getGitHubData(): Promise<ApiEnvelope> {
   return {
     success: true,
     data: {
-      account: MOCK_ACCOUNTS.github[0],
-      overview: { commits: 120, PRs: 15, issues: 5 },
-      repos: []
+      profile: {
+        username: 'ramesh988025',
+        avatar_url: 'https://i.pravatar.cc/150?u=gh_ramesh',
+        public_repos: 42
+      },
+      contributions: {
+        total_this_year: 450
+      },
+      stats: {
+        total_stars: 120
+      },
+      repos: [
+        { name: 'synalytix', html_url: '#', description: 'AI analytics dashboard', language: 'TypeScript', stargazers_count: 50, is_private: false },
+        { name: 'portfolio', html_url: '#', description: 'My developer portfolio', language: 'React', stargazers_count: 70, is_private: false }
+      ]
     }
   };
 }

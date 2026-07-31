@@ -19,7 +19,7 @@ export default function Landing() {
         <div className="flex items-center gap-6">
           <button
             onClick={() => navigate('/app')}
-            className="text-slate-600 hover:text-brand-primary text-sm font-medium tracking-wide transition-colors"
+            className="px-6 py-2.5 bg-white text-slate-900 border border-slate-200 hover:border-brand-primary hover:text-brand-primary text-sm font-medium tracking-wide rounded-xl transition-all duration-300 shadow-sm"
           >
             LOGIN
           </button>

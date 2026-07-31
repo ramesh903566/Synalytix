@@ -10,7 +10,7 @@ const trendBadgeVariants = cva(
       trend: {
         up: 'bg-green-500/10 text-green-500',
         down: 'bg-red-500/10 text-red-500',
-        neutral: 'bg-zinc-500/10 text-zinc-400',
+        neutral: 'bg-bg-canvas text-text-secondary',
       },
     },
     defaultVariants: {

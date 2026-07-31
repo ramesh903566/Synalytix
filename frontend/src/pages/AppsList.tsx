@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_APPS } from '../data/mockData';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
@@ -47,19 +47,19 @@ export default function AppsList() {
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-5xl mx-auto"
+      className="max-w-5xl mx-auto pb-12"
     >
       <div className="flex justify-between items-end mb-10">
         <header>
-          <h1 className="text-xl font-semibold tracking-tight mb-2 text-[#1A1A1A]">Applications</h1>
-          <p className="text-[#666] text-sm font-light">Connect your platforms to manage and analyze your digital presence.</p>
+          <h1 className="text-xl font-semibold tracking-tight mb-2 text-text-primary">Applications</h1>
+          <p className="text-text-muted text-sm">Connect your platforms to manage and analyze your digital presence.</p>
         </header>
         
         {/* User requested new upcoming apps button upper right */}
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setShowUpcoming(!showUpcoming)}
-            className="px-5 py-2.5 bg-white text-[#1A1A1A] border border-[#EFEFEF] rounded-lg font-medium text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-neutral-50 transition-colors"
+            className="px-5 py-2.5 bg-bg-elevated text-text-primary border border-border rounded-[var(--radius-button)] font-medium text-[10px] uppercase tracking-wider flex items-center gap-2 hover:bg-bg-sunken transition-colors shadow-level-1"
           >
             <Plus className="w-3 h-3" />
             Request App
@@ -71,14 +71,13 @@ export default function AppsList() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#EFEFEF] rounded-xl shadow-xl z-50 p-4"
+                className="absolute right-0 top-full mt-2 w-56 bg-bg-elevated border border-border rounded-[var(--radius-card)] shadow-level-2 z-50 p-4"
               >
-                 <h3 className="font-bold text-[#999] uppercase tracking-widest text-[10px] mb-3">Upcoming Integrations</h3>
+                 <h3 className="font-bold text-text-muted uppercase tracking-wider text-[10px] mb-3">Upcoming Integrations</h3>
                  <div className="flex flex-col gap-2 opacity-50 grayscale">
-                    {/* Replaced TikTok with Pinterest since TikTok is now connected */}
-                    <div className="px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-lg text-xs font-medium text-[#1A1A1A]">Pinterest</div>
-                    <div className="px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-lg text-xs font-medium text-[#1A1A1A]">Hashnode</div>
-                    <div className="px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-lg text-xs font-medium text-[#1A1A1A]">Dev.to</div>
+                    <div className="px-3 py-2 bg-bg-sunken border border-border-light rounded-[var(--radius-card-inner)] text-xs font-medium text-text-primary">Pinterest</div>
+                    <div className="px-3 py-2 bg-bg-sunken border border-border-light rounded-[var(--radius-card-inner)] text-xs font-medium text-text-primary">Hashnode</div>
+                    <div className="px-3 py-2 bg-bg-sunken border border-border-light rounded-[var(--radius-card-inner)] text-xs font-medium text-text-primary">Dev.to</div>
                  </div>
               </motion.div>
             )}
@@ -93,39 +92,39 @@ export default function AppsList() {
           const meta = APP_META[app.id];
           return (
             <div key={app.id}
-              className={`p-6 rounded-2xl border transition-all group ${isSupported ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'} ${isConnected ? 'bg-white border-[#EFEFEF] hover:border-neutral-300' : 'bg-neutral-50 border-transparent hover:bg-white hover:border-[#EFEFEF]'}`}
+              className={`p-6 rounded-[var(--radius-card)] border transition-all group ${isSupported ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'} ${isConnected ? 'bg-bg-elevated border-border hover:border-border-strong shadow-level-1' : 'bg-bg-canvas border-transparent hover:bg-bg-elevated hover:border-border hover:shadow-level-1'}`}
               onClick={() => {
                 if (!isSupported) return;
                 navigate(isConnected ? `/app/apps/${app.id}` : `/app/apps/${app.id}/connect`);
               }}>
               <div className="flex justify-between items-start mb-8">
-                <div className="w-11 h-11 rounded-xl bg-white border border-[#EFEFEF] flex items-center justify-center text-xl shadow-sm overflow-hidden">
+                <div className="w-11 h-11 rounded-[var(--radius-badge)] bg-bg-elevated border border-border flex items-center justify-center text-xl shadow-sm overflow-hidden">
                   <img src={app.iconUrl} alt={app.name} className="w-full h-full object-cover scale-[1.15]" />
                 </div>
                 {isConnected ? (
-                  <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded text-[9px] font-bold uppercase tracking-widest border border-green-100">
+                  <span className="flex items-center gap-1.5 px-3 py-1 bg-success-light text-success-text rounded-[var(--radius-badge)] text-[9px] font-bold uppercase tracking-wider border border-success-text/20">
                     <Check className="w-3 h-3"/> Connected
                   </span>
                 ) : isSupported ? (
-                  <span className="px-3 py-1 bg-neutral-100 text-neutral-500 rounded text-[9px] font-bold uppercase tracking-widest border border-neutral-200">
+                  <span className="px-3 py-1 bg-bg-sunken text-text-secondary rounded-[var(--radius-badge)] text-[9px] font-bold uppercase tracking-wider border border-border">
                     Not Connected
                   </span>
                 ) : (
-                  <span className="px-3 py-1 bg-neutral-100 text-neutral-400 rounded text-[9px] font-bold uppercase tracking-widest border border-neutral-200">
+                  <span className="px-3 py-1 bg-bg-sunken text-text-muted rounded-[var(--radius-badge)] text-[9px] font-bold uppercase tracking-wider border border-border-light">
                     Soon
                   </span>
                 )}
               </div>
-              <h3 className="text-sm font-semibold mb-2 text-[#1A1A1A]">{app.name}</h3>
-              <p className="text-[#666] text-xs font-light leading-relaxed mb-3">{meta?.desc}</p>
+              <h3 className="text-sm font-semibold mb-2 text-text-primary group-hover:text-brand transition-colors">{app.name}</h3>
+              <p className="text-text-muted text-xs font-light leading-relaxed mb-3">{meta?.desc}</p>
               {isConnected && meta?.metrics && (
-                <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest border-t border-[#F5F5F5] pt-3 mt-3">{meta.metrics}</p>
+                <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider border-t border-border-light pt-3 mt-3">{meta.metrics}</p>
               )}
               {!isConnected && isSupported && (
-                <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">Click to authorize →</p>
+                <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Click to authorize →</p>
               )}
               {!isConnected && !isSupported && (
-                <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">Integration coming soon</p>
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Integration coming soon</p>
               )}
             </div>
           );

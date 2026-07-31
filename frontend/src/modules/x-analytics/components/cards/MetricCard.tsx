@@ -41,21 +41,21 @@ export const MetricCard: React.FC<MetricCardProps> = React.memo(({ kpi, icon, is
       aria-pressed={isActive}
       aria-label={`Metric ${kpi.label}, value ${formatNumber(kpi.value)}, trend ${kpi.trend}`}
       className={cn(
-        'group relative overflow-hidden rounded-xl border bg-zinc-900/40 p-5 backdrop-blur-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900',
-        isActive ? 'border-blue-500 bg-blue-500/5' : 'border-zinc-800/50 hover:bg-zinc-800/40 hover:border-zinc-700',
+        'group relative overflow-hidden rounded-xl border bg-bg-elevated p-5 backdrop-blur-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-canvas',
+        isActive ? 'border-blue-500 bg-blue-500/5' : 'border-border-light hover:bg-bg-sunken hover:border-border-strong',
         onClick ? 'cursor-pointer' : '',
         className
       )}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2">
-          {icon && <div className="text-zinc-400 group-hover:text-zinc-300 transition-colors">{icon}</div>}
-          <h4 className="text-sm font-medium text-zinc-400 group-hover:text-zinc-300 transition-colors">{kpi.label}</h4>
+          {icon && <div className="text-text-secondary group-hover:text-text-secondary transition-colors">{icon}</div>}
+          <h4 className="text-sm font-medium text-text-secondary group-hover:text-text-secondary transition-colors">{kpi.label}</h4>
         </div>
       </div>
 
       <div className="flex items-end justify-between">
-        <span className="text-3xl font-bold text-white tracking-tight">{formatNumber(kpi.value)}</span>
+        <span className="text-3xl font-bold text-text-primary tracking-tight">{formatNumber(kpi.value)}</span>
         <TrendBadge trend={kpi.trend} value={kpi.change} />
       </div>
 

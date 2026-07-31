@@ -7,7 +7,7 @@ export const LanguageAnalytics: React.FC<{ username: string }> = ({ username }) 
   const { data: languages, isLoading, isError } = useGithubLanguages(username);
 
   if (isLoading) {
-    return <div className="w-full h-80 animate-pulse bg-zinc-950 rounded-3xl border border-zinc-800/50" />;
+    return <div className="w-full h-80 animate-pulse bg-bg-canvas rounded-3xl border border-border-light" />;
   }
 
   if (isError || !languages) return null;
@@ -20,12 +20,12 @@ export const LanguageAnalytics: React.FC<{ username: string }> = ({ username }) 
       const data = payload[0].payload;
       const percentage = ((data.bytes / totalBytes) * 100).toFixed(1);
       return (
-        <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-xl shadow-xl">
+        <div className="bg-bg-elevated border border-border p-3 rounded-xl shadow-xl">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: data.color }} />
-            <span className="font-medium text-zinc-100">{data.name}</span>
+            <span className="font-medium text-text-primary">{data.name}</span>
           </div>
-          <div className="text-zinc-400 text-xs">
+          <div className="text-text-secondary text-xs">
             {percentage}% ({Math.round(data.bytes / 1024)} KB)
           </div>
         </div>
@@ -38,9 +38,9 @@ export const LanguageAnalytics: React.FC<{ username: string }> = ({ username }) 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-zinc-950 border border-zinc-800/50 rounded-3xl p-6 lg:p-8 flex flex-col h-full"
+      className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8 flex flex-col h-full"
     >
-      <h2 className="text-lg font-semibold text-zinc-100 mb-6">Language Distribution</h2>
+      <h2 className="text-lg font-semibold text-text-primary mb-6">Language Distribution</h2>
       
       <div className="flex-1 flex flex-col items-center justify-center relative min-h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -67,7 +67,7 @@ export const LanguageAnalytics: React.FC<{ username: string }> = ({ username }) 
         {/* Top language in center */}
         {languages[0] && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-bold text-zinc-100">
+            <span className="text-2xl font-bold text-text-primary">
               {((languages[0].bytes / totalBytes) * 100).toFixed(0)}%
             </span>
             <span className="text-xs font-medium uppercase tracking-wider" style={{ color: languages[0].color }}>
@@ -81,7 +81,7 @@ export const LanguageAnalytics: React.FC<{ username: string }> = ({ username }) 
         {languages.slice(0, 5).map((lang) => (
           <div key={lang.name} className="flex items-center gap-2 text-xs">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: lang.color }} />
-            <span className="text-zinc-300">{lang.name}</span>
+            <span className="text-text-secondary">{lang.name}</span>
           </div>
         ))}
       </div>

@@ -31,11 +31,11 @@ export const Achievements: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-zinc-950 border border-zinc-800/50 rounded-3xl p-6 lg:p-8"
+      className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8"
     >
       <div className="flex items-center gap-2 mb-6">
-        <Trophy className="w-5 h-5 text-zinc-400" />
-        <h2 className="text-lg font-semibold text-zinc-100">Achievements</h2>
+        <Trophy className="w-5 h-5 text-text-secondary" />
+        <h2 className="text-lg font-semibold text-text-primary">Achievements</h2>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -52,11 +52,11 @@ export const Achievements: React.FC = () => {
             </div>
             
             <div className="relative z-10">
-              <div className="w-12 h-12 rounded-full bg-zinc-950/50 backdrop-blur-md flex items-center justify-center border border-white/5 mb-4 shadow-xl">
+              <div className="w-12 h-12 rounded-full bg-bg-canvas/50 backdrop-blur-md flex items-center justify-center border border-white/5 mb-4 shadow-xl">
                 {achievement.icon}
               </div>
-              <h3 className="font-bold text-zinc-100 mb-1">{achievement.title}</h3>
-              <p className="text-xs text-zinc-400 font-medium">{achievement.description}</p>
+              <h3 className="font-bold text-text-primary mb-1">{achievement.title}</h3>
+              <p className="text-xs text-text-secondary font-medium">{achievement.description}</p>
             </div>
           </motion.div>
         ))}

@@ -3,59 +3,63 @@ import type { GenerateInput, GenerateOutput } from "../types/recommendations";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
+const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function fetchRecommendations(): Promise<GenerateOutput["data"] | null> {
-  const token = localStorage.getItem("token") || "";
-  const res = await fetch(`${API_BASE}/recommendations`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error("Failed to fetch recommendations");
-  }
-  const json = await res.json();
-  return json.data;
+  await delay();
+  return {
+    runId: 'run_123',
+    recommendations: [
+      {
+        id: 'rec_1',
+        title: 'Post a new Reel',
+        description: 'Your audience is most active on Tuesdays. Post a new reel to maximize reach.',
+        reason: 'Algorithm favors video content',
+        category: 'PERSONAL_BRANDING',
+        priority: 'HIGH',
+        impactScore: 85,
+        difficulty: 'MEDIUM',
+        estimatedTime: '2h',
+        expectedOutcome: 'Increased reach',
+        actionSteps: ['Record video', 'Edit', 'Post'],
+        dataSources: ['Instagram'],
+        confidenceScore: 0.9,
+        completedAt: null,
+        dismissedAt: null,
+        createdAt: new Date().toISOString()
+      }
+    ],
+    scores: { career: 80, employability: 85, branding: 75, technical: 90, computedAt: new Date().toISOString() },
+    scoreDelta: { career: 2, employability: 1, branding: 3, technical: 0 },
+    weeklyPlan: ['Learn React', 'Build project', 'Apply to jobs', 'Update resume', 'Network'],
+    monthlyRoadmap: [
+      { week: 1, goal: 'Learn basics', milestones: ['HTML', 'CSS'] },
+      { week: 2, goal: 'Learn JS', milestones: ['DOM', 'ES6'] },
+      { week: 3, goal: 'Learn React', milestones: ['Components', 'Hooks'] },
+      { week: 4, goal: 'Build project', milestones: ['Planning', 'Coding'] }
+    ],
+    gaps: { skills: ['System Design'], assets: ['Portfolio'], activities: [] },
+    opportunityAlerts: [
+      { id: 'alert_1', title: 'New Job Opening', description: 'Google is hiring', trigger: 'Match', detectedAt: new Date().toISOString(), dismissedAt: null }
+    ]
+  };
 }
 
 async function generateRecommendations(input: GenerateInput): Promise<GenerateOutput["data"]> {
-  const token = localStorage.getItem("token") || "";
-  const res = await fetch(`${API_BASE}/recommendations/generate`, {
-    method: "POST",
-    headers: { 
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) throw new Error("Failed to generate recommendations");
-  const json = await res.json();
-  return json.data;
+  await delay(1000);
+  return (await fetchRecommendations()) as GenerateOutput["data"];
 }
 
 async function markComplete(id: string): Promise<void> {
-  const token = localStorage.getItem("token") || "";
-  const res = await fetch(`${API_BASE}/recommendations/${id}/complete`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error("Failed to mark complete");
+  await delay();
 }
 
 async function dismissRecommendation(id: string): Promise<void> {
-  const token = localStorage.getItem("token") || "";
-  const res = await fetch(`${API_BASE}/recommendations/${id}/dismiss`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error("Failed to dismiss");
+  await delay();
 }
 
 async function dismissOpportunityAlert(id: string): Promise<void> {
-  const token = localStorage.getItem("token") || "";
-  const res = await fetch(`${API_BASE}/recommendations/alerts/${id}/dismiss`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error("Failed to dismiss alert");
+  await delay();
 }
 
 export function useRecommendations() {

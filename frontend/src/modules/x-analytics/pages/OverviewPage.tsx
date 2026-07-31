@@ -16,7 +16,7 @@ export const OverviewPage: React.FC = () => {
   const { data: insights, isLoading: isLoadingInsights } = useAIInsights(rawKpis);
 
   if (isLoadingKpis) {
-    return <div className="h-96 flex items-center justify-center text-zinc-500 animate-pulse">Loading overview data...</div>;
+    return <div className="h-96 flex items-center justify-center text-text-muted animate-pulse">Loading overview data...</div>;
   }
 
   if (kpiError || !rawKpis) {
@@ -42,11 +42,11 @@ export const OverviewPage: React.FC = () => {
       {/* AI Insights Section */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-xl font-semibold text-white tracking-tight">AI Insights</h2>
+          <h2 className="text-xl font-semibold text-text-primary tracking-tight">AI Insights</h2>
           <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500/20 text-blue-400">Powered by Synalytix AI</span>
         </div>
         {isLoadingInsights ? (
-          <div className="h-32 flex items-center justify-center text-zinc-500 animate-pulse bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+          <div className="h-32 flex items-center justify-center text-text-muted animate-pulse bg-bg-elevated rounded-xl border border-border-light">
             Generating AI insights...
           </div>
         ) : (
@@ -65,7 +65,7 @@ export const OverviewPage: React.FC = () => {
 
       {/* KPI Grid Section */}
       <section>
-        <h2 className="text-xl font-semibold text-white tracking-tight mb-4">Performance Overview</h2>
+        <h2 className="text-xl font-semibold text-text-primary tracking-tight mb-4">Performance Overview</h2>
         <motion.div 
           variants={staggerContainer}
           initial="hidden"
@@ -90,7 +90,7 @@ export const OverviewPage: React.FC = () => {
           subtitle="Showing daily performance based on selected metric"
           className="h-[400px]"
         >
-          <React.Suspense fallback={<div className="w-full h-full flex items-center justify-center text-zinc-500 animate-pulse">Loading chart...</div>}>
+          <React.Suspense fallback={<div className="w-full h-full flex items-center justify-center text-text-muted animate-pulse">Loading chart...</div>}>
             <LazyOverviewAreaChart data={chartData} />
           </React.Suspense>
         </ChartCard>

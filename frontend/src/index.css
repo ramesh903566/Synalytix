@@ -1,27 +1,116 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Calistoga", serif;
-  --font-stats: "Inter", sans-serif;
-  --font-label: "Inter", sans-serif;
+  /* ─── Font Families ─── */
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  --color-brand-primary: #7C3AED;
-  --color-brand-secondary: #EC4899;
-  --color-brand-tertiary: #2563EB;
-  --color-brand-bg: #FAF5FF;
+  /* ─── Brand Colors ─── */
+  --color-brand: #4F46E5;
+  --color-brand-hover: #4338CA;
+  --color-brand-light: #EEF2FF;
+  --color-brand-muted: #C7D2FE;
+  
+  --color-brand-primary: #4F46E5;
+  --color-brand-secondary: #8B5CF6;
+  --color-brand-tertiary: #EC4899;
+  --color-brand-bg: #F8FAFC;
+
+  /* ─── Background ─── */
+  --color-bg-canvas: #F8FAFC;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-sunken: #F1F5F9;
+  --color-bg-sidebar: #FFFFFF;
+  --color-bg-sidebar-hover: #F8FAFC;
+
+  /* ─── Text ─── */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #FFFFFF;
+  --color-text-link: #4F46E5;
+
+  /* ─── Borders ─── */
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
+  --color-border-strong: #CBD5E1;
+  --color-border-focus: #4F46E5;
+
+  /* ─── Semantic ─── */
+  --color-success: #10B981;
+  --color-success-light: #ECFDF5;
+  --color-success-text: #065F46;
+  --color-error: #EF4444;
+  --color-error-light: #FEF2F2;
+  --color-error-text: #991B1B;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FFFBEB;
+  --color-warning-text: #92400E;
+  --color-info: #3B82F6;
+  --color-info-light: #EFF6FF;
+  --color-info-text: #1E40AF;
+
+  /* ─── Chart Palette ─── */
+  --color-chart-1: #4F46E5;
+  --color-chart-2: #06B6D4;
+  --color-chart-3: #8B5CF6;
+  --color-chart-4: #EC4899;
+  --color-chart-5: #F97316;
+
+  /* ─── Radius ─── */
+  --radius-card: 16px;
+  --radius-card-inner: 12px;
+  --radius-button: 12px;
+  --radius-pill: 9999px;
+  --radius-input: 12px;
+  --radius-avatar: 9999px;
+  --radius-chip: 8px;
+  --radius-badge: 6px;
+  --radius-tooltip: 8px;
+
+  /* ─── Elevation / Shadows ─── */
+  --shadow-level-0: none;
+  --shadow-level-1: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-level-2: 0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-level-3: 0 12px 36px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  /* ─── Layout ─── */
+  --sidebar-width: 264px;
+  --sidebar-collapsed: 72px;
+  --topbar-height: 72px;
+  --content-max-width: 1200px;
+  --card-padding: 24px;
 }
 
 @layer base {
   body {
-    background-color: var(--color-brand-bg);
-    background-image: radial-gradient(rgba(124, 58, 237, 0.05) 1px, transparent 1px);
-    background-size: 32px 32px;
-    background-position: 0 0;
-    color: #0F172A;
+    font-family: var(--font-body);
+    background-color: var(--color-bg-canvas);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus ring utility */
+  *:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: var(--radius-badge);
   }
 }
 
-/* Completely Obliterate the Spline Watermark */
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ─── Spline Watermark Removal ─── */
 #spline-hero-container canvas + div,
 #spline-hero-container canvas + a,
 #spline-hero-container canvas ~ div {

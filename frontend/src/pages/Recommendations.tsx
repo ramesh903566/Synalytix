@@ -17,6 +17,7 @@ import ExplainabilityDrawer from '../components/recommendations/ExplainabilityDr
 import { Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Skeleton } from '../components/ui/skeleton';
 
 export default function Recommendations() {
   const { connectedApps, refreshConnections } = useAppContext();
@@ -44,14 +45,14 @@ export default function Recommendations() {
   const selectedRecommendation = recommendations.find(r => r.id === selectedRecommendationId) || null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative">
+    <div className="max-w-7xl mx-auto pb-12 space-y-8 relative">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#1A1A1A] flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-xl font-semibold tracking-tight text-text-primary flex items-center gap-2 mb-2">
+            <Sparkles className="w-5 h-5 text-brand" />
             AI Recommendations
           </h1>
-          <p className="text-[#666] mt-1">Your personalised, prioritised career intelligence feed.</p>
+          <p className="text-text-muted text-sm">Your personalised, prioritised career intelligence feed.</p>
         </div>
         <GenerateButton 
           isGenerating={isGenerating} 
@@ -65,28 +66,28 @@ export default function Recommendations() {
       {isLoading ? (
         <div className="space-y-8 animate-pulse">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-neutral-200 rounded-2xl"></div>)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 rounded-[var(--radius-card)]" />)}
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-7 space-y-4">
-              <div className="h-12 bg-neutral-200 rounded-lg w-full mb-6"></div>
-              {[1, 2, 3].map(i => <div key={i} className="h-32 bg-neutral-200 rounded-xl"></div>)}
+              <Skeleton className="h-12 rounded-[var(--radius-input)] w-full mb-6" />
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-[var(--radius-card)]" />)}
             </div>
             <div className="xl:col-span-5 space-y-6">
-              <div className="h-64 bg-neutral-200 rounded-2xl"></div>
-              <div className="h-48 bg-neutral-200 rounded-2xl"></div>
+              <Skeleton className="h-64 rounded-[var(--radius-card)]" />
+              <Skeleton className="h-48 rounded-[var(--radius-card)]" />
             </div>
           </div>
         </div>
       ) : showEmptyState ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white border border-[#EFEFEF] rounded-2xl">
-          <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
-            <Sparkles className="w-8 h-8 text-indigo-600" />
+        <div className="flex flex-col items-center justify-center py-20 bg-bg-elevated border border-border rounded-[var(--radius-card)] shadow-level-1">
+          <div className="w-16 h-16 bg-brand-light rounded-[var(--radius-badge)] flex items-center justify-center mb-6">
+            <Sparkles className="w-8 h-8 text-brand" />
           </div>
-          <h2 className="text-xl font-semibold text-[#1A1A1A] mb-2">
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
             {hasConnections ? "Ready to generate insights!" : "Connect your platforms to get started"}
           </h2>
-          <p className="text-[#666] max-w-md text-center mb-8">
+          <p className="text-text-muted max-w-md text-center mb-8">
             {hasConnections 
               ? "We've detected your connected platforms. Generate your first personalized career recommendations now."
               : "Synalytix analyses your GitHub, LinkedIn, LeetCode and more to generate personalised career recommendations."}
@@ -94,14 +95,14 @@ export default function Recommendations() {
           {hasConnections ? (
             <button 
               onClick={handleGenerate}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+              className="px-6 py-3 bg-brand hover:bg-brand-hover text-text-inverse rounded-[var(--radius-button)] font-medium transition-colors shadow-level-1"
             >
               Generate Recommendations
             </button>
           ) : (
             <button 
               onClick={() => navigate('/app/apps')}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+              className="px-6 py-3 bg-brand hover:bg-brand-hover text-text-inverse rounded-[var(--radius-button)] font-medium transition-colors shadow-level-1"
             >
               Connect Platforms
             </button>

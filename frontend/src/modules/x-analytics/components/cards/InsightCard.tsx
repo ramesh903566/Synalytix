@@ -22,7 +22,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, className }) 
     <motion.div
       variants={scaleIn}
       className={cn(
-        'relative group overflow-hidden bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 backdrop-blur-md shadow-xl transition-all duration-300',
+        'relative group overflow-hidden bg-bg-elevated border border-border rounded-xl p-5 backdrop-blur-md shadow-xl transition-all duration-300',
         borderColor,
         className
       )}
@@ -38,7 +38,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, className }) 
               <div className={cn("p-1.5 rounded-lg", colorClass)}>
                 <Icon className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{insight.type}</span>
+              <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{insight.type}</span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 tracking-wider">
                 🤖 AI Generated
               </span>
@@ -49,16 +49,16 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, className }) 
               </span>
             )}
           </div>
-          <h3 className="text-lg font-bold text-white mb-2">{insight.title}</h3>
-          <p className="text-sm text-zinc-400 leading-relaxed mb-4">{insight.description}</p>
+          <h3 className="text-lg font-bold text-text-primary mb-2">{insight.title}</h3>
+          <p className="text-sm text-text-secondary leading-relaxed mb-4">{insight.description}</p>
         </div>
         
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800/50">
-          <span className="text-xs font-medium text-zinc-500 flex items-center gap-1">
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-border-light">
+          <span className="text-xs font-medium text-text-muted flex items-center gap-1">
             {insight.confidence}% Confidence
           </span>
           {insight.actionText && (
-            <button className="flex items-center gap-1 text-xs font-semibold text-white hover:text-blue-400 transition-colors group/btn">
+            <button className="flex items-center gap-1 text-xs font-semibold text-text-primary hover:text-blue-400 transition-colors group/btn">
               {insight.actionText}
               <ArrowRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
             </button>

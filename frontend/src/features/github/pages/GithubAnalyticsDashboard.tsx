@@ -23,7 +23,7 @@ const ComparisonMode = React.lazy(() => import('../components/ComparisonMode').t
 
 // Skeleton fallback
 const SkeletonLoader = ({ height = "h-80" }) => (
-  <div className={`w-full ${height} animate-pulse bg-zinc-950 rounded-3xl border border-zinc-800/50`} />
+  <div className={`w-full ${height} animate-pulse bg-bg-canvas rounded-3xl border border-border-light`} />
 );
 
 // We hardcode the mock username for now
@@ -41,12 +41,12 @@ export const GithubAnalyticsDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#09090B] text-zinc-50 font-sans selection:bg-blue-500/30 pb-24">
       {/* Top Navigation Bar */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#09090B]/80 border-b border-zinc-800/50">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#09090B]/80 border-b border-border-light">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-zinc-800/50 rounded-lg transition-colors text-zinc-400 hover:text-zinc-100"
+              className="p-2 hover:bg-bg-sunken rounded-lg transition-colors text-text-secondary hover:text-text-primary"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -62,7 +62,7 @@ export const GithubAnalyticsDashboard: React.FC = () => {
           <div className="flex items-center gap-3">
             <button 
               onClick={handleRefresh}
-              className="p-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 rounded-lg transition-all"
+              className="p-2 text-text-secondary hover:text-text-primary hover:bg-bg-sunken rounded-lg transition-all"
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />

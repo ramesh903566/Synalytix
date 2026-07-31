@@ -14,12 +14,12 @@ export const ComparisonMode: React.FC<{ currentUsername: string }> = ({ currentU
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-zinc-950 border border-zinc-800/50 rounded-3xl p-6 lg:p-8"
+      className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8"
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <ArrowRightLeft className="w-5 h-5 text-zinc-400" />
-          <h2 className="text-lg font-semibold text-zinc-100">Compare Profiles</h2>
+          <ArrowRightLeft className="w-5 h-5 text-text-secondary" />
+          <h2 className="text-lg font-semibold text-text-primary">Compare Profiles</h2>
         </div>
         {!comparingWith && (
           <button 
@@ -32,12 +32,12 @@ export const ComparisonMode: React.FC<{ currentUsername: string }> = ({ currentU
       </div>
 
       {!comparingWith ? (
-        <div className="flex flex-col items-center justify-center py-8 px-4 text-center border border-dashed border-zinc-800 rounded-2xl">
+        <div className="flex flex-col items-center justify-center py-8 px-4 text-center border border-dashed border-border rounded-2xl">
           <div className="flex -space-x-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-zinc-800 border-2 border-zinc-950 flex items-center justify-center text-xs font-bold">You</div>
-            <div className="w-12 h-12 rounded-full bg-zinc-800 border-2 border-zinc-950 flex items-center justify-center text-zinc-500 text-lg">?</div>
+            <div className="w-12 h-12 rounded-full bg-bg-sunken border-2 border-zinc-950 flex items-center justify-center text-xs font-bold">You</div>
+            <div className="w-12 h-12 rounded-full bg-bg-sunken border-2 border-zinc-950 flex items-center justify-center text-text-muted text-lg">?</div>
           </div>
-          <p className="text-sm text-zinc-400 mb-6 max-w-sm">
+          <p className="text-sm text-text-secondary mb-6 max-w-sm">
             Select a peer from your network to benchmark your activity, language adoption, and open source impact.
           </p>
           <div className="flex gap-2">
@@ -46,10 +46,10 @@ export const ComparisonMode: React.FC<{ currentUsername: string }> = ({ currentU
                 key={friend.handle}
                 onClick={() => setComparingWith(friend.handle)}
                 aria-label={`Compare with ${friend.name}`}
-                className="flex items-center gap-2 p-2 pr-4 rounded-full border border-zinc-800/50 hover:border-zinc-700 bg-zinc-900/50 hover:bg-zinc-900 transition-colors group"
+                className="flex items-center gap-2 p-2 pr-4 rounded-full border border-border-light hover:border-border-strong bg-bg-elevated hover:bg-bg-elevated transition-colors group"
               >
                 <img src={friend.avatar} alt={friend.name} className="w-6 h-6 rounded-full" />
-                <span className="text-xs text-zinc-300 group-hover:text-zinc-100 font-medium">@{friend.handle}</span>
+                <span className="text-xs text-text-secondary group-hover:text-text-primary font-medium">@{friend.handle}</span>
               </button>
             ))}
           </div>
@@ -67,22 +67,22 @@ export const ComparisonMode: React.FC<{ currentUsername: string }> = ({ currentU
               <div className="flex items-center gap-6">
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs ring-2 ring-blue-500/50">You</div>
-                  <span className="text-[10px] text-zinc-500">@{currentUsername}</span>
+                  <span className="text-[10px] text-text-muted">@{currentUsername}</span>
                 </div>
-                <div className="text-zinc-600 text-xs uppercase tracking-widest font-bold">VS</div>
+                <div className="text-text-muted text-xs uppercase tracking-widest font-bold">VS</div>
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs ring-2 ring-emerald-500/50 relative">
                     <img src={`https://ui-avatars.com/api/?name=${comparingWith}&background=random`} alt={comparingWith} className="w-full h-full rounded-full absolute inset-0 object-cover opacity-80 mix-blend-screen" />
                     P
                   </div>
-                  <span className="text-[10px] text-zinc-500">@{comparingWith}</span>
+                  <span className="text-[10px] text-text-muted">@{comparingWith}</span>
                 </div>
               </div>
               
               <button 
                 onClick={() => setComparingWith(null)}
                 aria-label="Close comparison view"
-                className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 rounded-lg transition-colors"
+                className="p-2 text-text-muted hover:text-text-secondary hover:bg-bg-elevated rounded-lg transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -95,16 +95,16 @@ export const ComparisonMode: React.FC<{ currentUsername: string }> = ({ currentU
                 { label: 'Stars Earned', icon: <Star className="w-3.5 h-3.5" />, v1: 4520, v2: 12500, isBetter: false },
                 { label: 'Followers', icon: <Users className="w-3.5 h-3.5" />, v1: 150, v2: 450, isBetter: false },
               ].map((stat, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/30 border border-zinc-800/30">
+                <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-bg-elevated border border-border-light">
                   <div className="flex items-center gap-2 w-32">
-                    <span className="text-zinc-500">{stat.icon}</span>
-                    <span className="text-xs font-medium text-zinc-400">{stat.label}</span>
+                    <span className="text-text-muted">{stat.icon}</span>
+                    <span className="text-xs font-medium text-text-secondary">{stat.label}</span>
                   </div>
                   <div className="flex-1 grid grid-cols-2 gap-4">
-                    <div className={`text-right text-sm font-bold ${stat.isBetter ? 'text-blue-400' : 'text-zinc-300'}`}>
+                    <div className={`text-right text-sm font-bold ${stat.isBetter ? 'text-blue-400' : 'text-text-secondary'}`}>
                       {stat.v1}
                     </div>
-                    <div className={`text-left text-sm font-bold ${!stat.isBetter ? 'text-emerald-400' : 'text-zinc-300'}`}>
+                    <div className={`text-left text-sm font-bold ${!stat.isBetter ? 'text-emerald-400' : 'text-text-secondary'}`}>
                       {stat.v2}
                     </div>
                   </div>

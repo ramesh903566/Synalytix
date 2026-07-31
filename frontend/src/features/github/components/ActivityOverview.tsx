@@ -15,7 +15,7 @@ export const ActivityOverview: React.FC<{ username: string }> = ({ username }) =
   const { data: activity, isLoading, isError } = useGithubActivity(username);
 
   if (isLoading) {
-    return <div className="w-full h-80 animate-pulse bg-zinc-950 rounded-3xl border border-zinc-800/50" />;
+    return <div className="w-full h-80 animate-pulse bg-bg-canvas rounded-3xl border border-border-light" />;
   }
 
   if (isError || !activity) return null;
@@ -32,9 +32,9 @@ export const ActivityOverview: React.FC<{ username: string }> = ({ username }) =
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-zinc-950 border border-zinc-800/50 rounded-3xl p-6 lg:p-8 flex flex-col h-full"
+      className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8 flex flex-col h-full"
     >
-      <h2 className="text-lg font-semibold text-zinc-100 mb-6">Activity Overview</h2>
+      <h2 className="text-lg font-semibold text-text-primary mb-6">Activity Overview</h2>
       
       <div className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-8">
         <div className="w-full lg:w-1/2 h-[200px] lg:h-[250px] relative">
@@ -62,25 +62,25 @@ export const ActivityOverview: React.FC<{ username: string }> = ({ username }) =
           </ResponsiveContainer>
           {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-bold text-zinc-100">
+            <span className="text-2xl font-bold text-text-primary">
               {Object.values(activity).reduce((acc, curr) => acc + curr.count, 0)}
             </span>
-            <span className="text-xs text-zinc-500 uppercase tracking-wider">Total</span>
+            <span className="text-xs text-text-muted uppercase tracking-wider">Total</span>
           </div>
         </div>
 
         <div className="w-full lg:w-1/2 flex flex-col gap-3">
           {Object.entries(activity).map(([key, stat]) => (
-            <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/30 border border-zinc-800/50 hover:bg-zinc-900/50 transition-colors">
+            <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-bg-elevated border border-border-light hover:bg-bg-elevated transition-colors">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[key as keyof typeof COLORS] }} />
-                <span className="text-sm font-medium text-zinc-200 capitalize">
+                <span className="text-sm font-medium text-text-primary capitalize">
                   {key === 'prs' ? 'Pull Requests' : key}
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-zinc-100">{stat.count}</span>
-                <span className={`text-xs ${stat.delta.startsWith('+') ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                <span className="text-sm font-bold text-text-primary">{stat.count}</span>
+                <span className={`text-xs ${stat.delta.startsWith('+') ? 'text-emerald-400' : 'text-text-muted'}`}>
                   {stat.delta}
                 </span>
               </div>

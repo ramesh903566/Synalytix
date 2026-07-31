@@ -14,7 +14,7 @@ export default function GenerateButton({ isGenerating, lastGeneratedAt, onGenera
       <button
         onClick={onGenerate}
         disabled={isGenerating}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-primary to-brand-tertiary text-white text-xs font-bold uppercase tracking-widest transition-all hover:shadow-lg hover:shadow-brand-primary/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none"
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-primary to-brand-tertiary text-text-primary text-xs font-bold uppercase tracking-widest transition-all hover:shadow-lg hover:shadow-brand-primary/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none"
       >
         {isGenerating ? (
           <>

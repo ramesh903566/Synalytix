@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider, useAppContext } from './context/AppContext';
 
 import Landing from './pages/Landing';
@@ -58,12 +59,16 @@ function AppRoutes() {
   );
 }
 
+const queryClient = new QueryClient();
+
 export default function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AppProvider>
+    <QueryClientProvider client={queryClient}>
+      <AppProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AppProvider>
+    </QueryClientProvider>
   );
 }

@@ -44,8 +44,8 @@ export const Overview: React.FC = () => {
           />
         </div>
         <div className="lg:col-span-2 bg-gradient-to-r from-[#0A66C2]/10 to-transparent border border-[#0A66C2]/20 rounded-2xl p-6 flex flex-col justify-center">
-          <h3 className="text-xl font-bold text-white mb-2">AI Growth Trajectory Estimate</h3>
-          <p className="text-zinc-400">This score is modeled from engagement rate, follower velocity, and profile view growth. Current support: {overviewMetrics.contentMixLeader}.</p>
+          <h3 className="text-xl font-bold text-text-primary mb-2">AI Growth Trajectory Estimate</h3>
+          <p className="text-text-secondary">This score is modeled from engagement rate, follower velocity, and profile view growth. Current support: {overviewMetrics.contentMixLeader}.</p>
         </div>
       </motion.div>
 
@@ -94,7 +94,7 @@ export const Overview: React.FC = () => {
         </div>
         
         <div className="space-y-6">
-          <h3 className="text-lg font-bold text-white">Top Insights</h3>
+          <h3 className="text-lg font-bold text-text-primary">Top Insights</h3>
           <div className="space-y-4">
             {aiInsights.slice(0, 3).map(insight => (
               <InsightCard key={insight.id} insight={insight} />

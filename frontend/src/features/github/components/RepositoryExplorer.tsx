@@ -9,7 +9,7 @@ export const RepositoryExplorer: React.FC<{ username: string }> = ({ username })
   const [search, setSearch] = useState('');
 
   if (isLoading) {
-    return <div className="w-full h-96 animate-pulse bg-zinc-950 rounded-3xl border border-zinc-800/50" />;
+    return <div className="w-full h-96 animate-pulse bg-bg-canvas rounded-3xl border border-border-light" />;
   }
 
   const filteredRepos = repos?.filter(repo => repo.name.toLowerCase().includes(search.toLowerCase())) || [];
@@ -27,25 +27,25 @@ export const RepositoryExplorer: React.FC<{ username: string }> = ({ username })
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-zinc-950 border border-zinc-800/50 rounded-3xl p-6 lg:p-8 flex flex-col h-[500px]"
+      className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8 flex flex-col h-[500px]"
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <h2 className="text-lg font-semibold text-zinc-100">Repository Explorer</h2>
+        <h2 className="text-lg font-semibold text-text-primary">Repository Explorer</h2>
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+            <Search className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
             <input
               type="text"
               aria-label="Search repositories"
               placeholder="Find a repository..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-sm text-zinc-100 focus:outline-none focus:border-blue-500 transition-colors w-full md:w-64"
+              className="bg-bg-elevated border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-text-primary focus:outline-none focus:border-blue-500 transition-colors w-full md:w-64"
             />
           </div>
           <button 
             aria-label="Filter repositories"
-            className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-100 transition-colors"
+            className="p-2 bg-bg-elevated border border-border rounded-lg text-text-secondary hover:text-text-primary transition-colors"
           >
             <Filter className="w-4 h-4" />
           </button>
@@ -68,16 +68,16 @@ export const RepositoryExplorer: React.FC<{ username: string }> = ({ username })
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-zinc-900/30 border border-zinc-800/50 hover:bg-zinc-900/80 transition-colors gap-4 mx-1 my-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-bg-elevated border border-border-light hover:bg-bg-elevated transition-colors gap-4 mx-1 my-1">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-semibold text-zinc-100 truncate hover:text-blue-400 cursor-pointer">{repo.name}</h3>
-                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">Public</span>
+                      <h3 className="text-sm font-semibold text-text-primary truncate hover:text-blue-400 cursor-pointer">{repo.name}</h3>
+                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-bg-sunken text-text-secondary">Public</span>
                     </div>
-                    <p className="text-xs text-zinc-500 truncate">{repo.description}</p>
+                    <p className="text-xs text-text-muted truncate">{repo.description}</p>
                   </div>
                   
-                  <div className="flex items-center gap-6 flex-shrink-0 text-xs text-zinc-400">
+                  <div className="flex items-center gap-6 flex-shrink-0 text-xs text-text-secondary">
                     {repo.primaryLanguage && (
                       <div className="flex items-center gap-1.5 w-24">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: repo.primaryLanguage.color }} />
@@ -99,7 +99,7 @@ export const RepositoryExplorer: React.FC<{ username: string }> = ({ username })
             );
           })}
           {filteredRepos.length === 0 && (
-            <div className="text-center py-12 text-zinc-500 text-sm">
+            <div className="text-center py-12 text-text-muted text-sm">
               No repositories found matching "{search}"
             </div>
           )}

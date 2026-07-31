@@ -11,11 +11,11 @@ export const AudiencePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-white tracking-tight">Audience Insights</h2>
+        <h2 className="text-xl font-semibold text-text-primary tracking-tight">Audience Insights</h2>
       </div>
       
       {isLoading ? (
-        <div className="h-96 flex items-center justify-center text-zinc-500 animate-pulse">Loading audience data...</div>
+        <div className="h-96 flex items-center justify-center text-text-muted animate-pulse">Loading audience data...</div>
       ) : error || !demographics ? (
         <div className="h-96 flex items-center justify-center text-red-500">Failed to load audience data.</div>
       ) : (
@@ -25,7 +25,7 @@ export const AudiencePage: React.FC = () => {
           animate="visible"
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          <React.Suspense fallback={<div className="col-span-1 md:col-span-2 h-96 flex items-center justify-center text-zinc-500 animate-pulse">Loading charts...</div>}>
+          <React.Suspense fallback={<div className="col-span-1 md:col-span-2 h-96 flex items-center justify-center text-text-muted animate-pulse">Loading charts...</div>}>
             <LazyAudienceCharts data={demographics} />
           </React.Suspense>
         </motion.div>

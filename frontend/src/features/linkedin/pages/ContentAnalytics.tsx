@@ -21,7 +21,7 @@ export const ContentAnalytics: React.FC = () => {
             className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
               activeTab === tab 
                 ? 'bg-white text-black' 
-                : 'bg-[#1A222C] text-zinc-400 hover:text-white hover:bg-[#2A3441]'
+                : 'bg-bg-sunken text-text-secondary hover:text-text-primary hover:bg-bg-sunken hover:bg-border'
             }`}
           >
             {tab}

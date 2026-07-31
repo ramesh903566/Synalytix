@@ -16,18 +16,18 @@ export const AIInsights: React.FC = () => {
       <div className="bg-gradient-to-br from-[#0A66C2]/20 to-transparent border border-[#0A66C2]/30 rounded-2xl p-8">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-[#0A66C2] flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
+            <Sparkles className="w-5 h-5 text-text-primary" />
           </div>
-          <h2 className="text-2xl font-bold text-white">AI Analyst</h2>
+          <h2 className="text-2xl font-bold text-text-primary">AI Analyst</h2>
         </div>
-        <p className="text-zinc-300 max-w-2xl text-sm leading-relaxed">
+        <p className="text-text-secondary max-w-2xl text-sm leading-relaxed">
           AI estimates are generated from obtainable LinkedIn metrics such as impressions, reactions, comments, shares,
           clicks, follower trend, publish time, and audience demographics. Each recommendation includes supporting metrics and confidence.
         </p>
       </div>
 
       <div>
-        <h3 className="text-xl font-bold text-white mb-6">Premium AI Scores</h3>
+        <h3 className="text-xl font-bold text-text-primary mb-6">Premium AI Scores</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PremiumScoreCard 
             title={premiumScores.audienceQualityScore.title}
@@ -45,7 +45,7 @@ export const AIInsights: React.FC = () => {
       </div>
 
       <div>
-        <h3 className="text-xl font-bold text-white mb-6">Actionable Recommendations</h3>
+        <h3 className="text-xl font-bold text-text-primary mb-6">Actionable Recommendations</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {recommendations.map(rec => (
             <RecommendationCard key={rec.id} recommendation={rec} />
@@ -54,7 +54,7 @@ export const AIInsights: React.FC = () => {
       </div>
 
       <div>
-        <h3 className="text-xl font-bold text-white mb-6">Performance Insights</h3>
+        <h3 className="text-xl font-bold text-text-primary mb-6">Performance Insights</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {otherInsights.map(insight => (
             <InsightCard key={insight.id} insight={insight} />

@@ -3,20 +3,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
   {
     variants: {
       variant: {
-        default: "bg-violet-600 text-white hover:bg-violet-700 shadow-sm",
-        secondary: "bg-white border border-zinc-200 text-zinc-900 hover:bg-zinc-50 shadow-sm",
-        ghost: "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900",
-        danger: "bg-rose-600 text-white hover:bg-rose-700 shadow-sm",
+        default: "bg-brand text-text-inverse hover:bg-brand-hover shadow-level-1",
+        secondary: "bg-bg-elevated border border-border text-text-primary hover:bg-bg-sunken shadow-level-1",
+        ghost: "text-text-secondary hover:bg-bg-sunken hover:text-text-primary",
+        danger: "bg-error text-text-inverse hover:bg-red-600 shadow-level-1",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-12 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-10 px-4 py-2 text-sm rounded-[var(--radius-button)]",
+        sm: "h-8 px-3 text-xs rounded-[var(--radius-button)]",
+        lg: "h-12 px-8 text-sm rounded-[var(--radius-button)]",
+        icon: "h-10 w-10 rounded-[var(--radius-button)]",
       },
     },
     defaultVariants: {

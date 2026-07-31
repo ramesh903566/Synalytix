@@ -50,8 +50,8 @@ export function AnalyticsTable<TData, TValue>({
 
   if (isLoading) {
     return (
-      <div className="w-full h-64 rounded-xl border border-zinc-800/50 bg-zinc-900/20 animate-pulse flex items-center justify-center">
-        <span className="text-zinc-500">Loading data...</span>
+      <div className="w-full h-64 rounded-xl border border-border-light bg-bg-elevated animate-pulse flex items-center justify-center">
+        <span className="text-text-muted">Loading data...</span>
       </div>
     );
   }
@@ -62,10 +62,10 @@ export function AnalyticsTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      <div className="rounded-xl border border-zinc-800/50 overflow-hidden bg-zinc-900/40 backdrop-blur-sm">
+      <div className="rounded-xl border border-border-light overflow-hidden bg-bg-elevated backdrop-blur-sm">
         <div ref={parentRef} className="overflow-x-auto overflow-y-auto max-h-[600px] relative">
           <table className="w-full text-sm text-left grid">
-            <thead className="text-xs text-zinc-400 bg-zinc-900/95 border-b border-zinc-800/50 uppercase tracking-wider sticky top-0 z-10 grid">
+            <thead className="text-xs text-text-secondary bg-bg-elevated border-b border-border-light uppercase tracking-wider sticky top-0 z-10 grid">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className="flex w-full">
                   {headerGroup.headers.map((header) => {
@@ -83,7 +83,7 @@ export function AnalyticsTable<TData, TValue>({
                             type="button"
                             {...{
                               className: header.column.getCanSort()
-                                ? 'cursor-pointer select-none flex items-center gap-1 hover:text-zinc-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded'
+                                ? 'cursor-pointer select-none flex items-center gap-1 hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded'
                                 : 'flex items-center',
                               onClick: header.column.getToggleSortingHandler(),
                             }}
@@ -113,7 +113,7 @@ export function AnalyticsTable<TData, TValue>({
                 return (
                   <tr
                     key={row.id}
-                    className="hover:bg-zinc-800/30 transition-colors group absolute w-full flex"
+                    className="hover:bg-bg-sunken transition-colors group absolute w-full flex"
                     style={{
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${virtualRow.start}px)`,
@@ -123,7 +123,7 @@ export function AnalyticsTable<TData, TValue>({
                     {row.getVisibleCells().map((cell) => (
                       <td 
                         key={cell.id} 
-                        className="px-6 py-4 text-zinc-300 flex items-center overflow-hidden"
+                        className="px-6 py-4 text-text-secondary flex items-center overflow-hidden"
                         style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : 'auto', flex: cell.column.getSize() !== 150 ? 'none' : 1 }}
                         role="gridcell"
                       >
@@ -140,7 +140,7 @@ export function AnalyticsTable<TData, TValue>({
       
       {/* Pagination */}
       <div className="flex items-center justify-between px-2 py-4">
-        <div className="text-sm text-zinc-400">
+        <div className="text-sm text-text-secondary">
           Page {table.getState().pagination.pageIndex + 1} of{' '}
           {table.getPageCount()}
         </div>
@@ -148,14 +148,14 @@ export function AnalyticsTable<TData, TValue>({
           <button
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="p-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1 rounded bg-bg-elevated border border-border text-text-secondary hover:bg-bg-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="p-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1 rounded bg-bg-elevated border border-border text-text-secondary hover:bg-bg-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronRight className="w-5 h-5" />
           </button>

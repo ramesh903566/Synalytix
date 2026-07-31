@@ -7,8 +7,8 @@ export const Audience: React.FC = () => {
   const audienceData = AudienceService.getAudienceData();
 
   const AudiencePieChart = ({ data, title }: { data: { name: string; value?: number; pct?: number }[], title: string }) => (
-    <div className="bg-[#11161D] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6 h-[400px] flex flex-col">
-      <h3 className="text-lg font-bold text-white mb-4">{title}</h3>
+    <div className="bg-bg-elevated border border-border-light rounded-2xl p-6 h-[400px] flex flex-col">
+      <h3 className="text-lg font-bold text-text-primary mb-4">{title}</h3>
       <div className="flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

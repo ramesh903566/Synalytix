@@ -21,7 +21,7 @@ export function Modal({ isOpen, onClose, children, title, className }: ModalProp
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-text-primary/40 backdrop-blur-sm"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -29,16 +29,16 @@ export function Modal({ isOpen, onClose, children, title, className }: ModalProp
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
             className={cn(
-              "relative w-full max-w-lg rounded-xl border border-zinc-200 bg-white p-6 shadow-xl",
+              "relative w-full max-w-lg rounded-[var(--radius-card)] border border-border bg-bg-elevated p-6 shadow-level-3",
               className
             )}
           >
             {title && (
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-zinc-900">{title}</h2>
+                <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="rounded-md p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  className="rounded-[var(--radius-chip)] p-1 text-text-muted hover:bg-bg-sunken hover:text-text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
                 >
                   <X className="h-5 w-5" />
                 </button>

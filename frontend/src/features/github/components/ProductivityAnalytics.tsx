@@ -17,32 +17,32 @@ export const ProductivityAnalytics: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-zinc-950 border border-zinc-800/50 rounded-3xl p-6 lg:p-8"
+      className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8"
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-zinc-100">Productivity</h2>
-        <select className="bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 px-3 py-1 outline-none">
+        <h2 className="text-lg font-semibold text-text-primary">Productivity</h2>
+        <select className="bg-bg-elevated border border-border rounded-lg text-sm text-text-secondary px-3 py-1 outline-none">
           <option>Weekly</option>
           <option>Monthly</option>
         </select>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="p-4 bg-zinc-900/30 rounded-xl border border-zinc-800/50">
-          <p className="text-[10px] uppercase text-zinc-500 mb-1 tracking-wider">Most Productive Day</p>
-          <p className="text-xl font-bold text-zinc-100">Tuesday</p>
+        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
+          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Most Productive Day</p>
+          <p className="text-xl font-bold text-text-primary">Tuesday</p>
         </div>
-        <div className="p-4 bg-zinc-900/30 rounded-xl border border-zinc-800/50">
-          <p className="text-[10px] uppercase text-zinc-500 mb-1 tracking-wider">Consistency Score</p>
-          <p className="text-xl font-bold text-zinc-100">92/100</p>
+        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
+          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Consistency Score</p>
+          <p className="text-xl font-bold text-text-primary">92/100</p>
         </div>
-        <div className="p-4 bg-zinc-900/30 rounded-xl border border-zinc-800/50">
-          <p className="text-[10px] uppercase text-zinc-500 mb-1 tracking-wider">Avg Commit Size</p>
-          <p className="text-xl font-bold text-zinc-100">54 LOC</p>
+        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
+          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Avg Commit Size</p>
+          <p className="text-xl font-bold text-text-primary">54 LOC</p>
         </div>
-        <div className="p-4 bg-zinc-900/30 rounded-xl border border-zinc-800/50">
-          <p className="text-[10px] uppercase text-zinc-500 mb-1 tracking-wider">Longest Gap</p>
-          <p className="text-xl font-bold text-zinc-100">4 days</p>
+        <div className="p-4 bg-bg-elevated rounded-xl border border-border-light">
+          <p className="text-[10px] uppercase text-text-muted mb-1 tracking-wider">Longest Gap</p>
+          <p className="text-xl font-bold text-text-primary">4 days</p>
         </div>
       </div>
 

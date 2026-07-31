@@ -154,7 +154,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIs...
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
 JWT_SECRET=your-supabase-jwt-secret-from-dashboard
 
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:4000
 
 # Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"

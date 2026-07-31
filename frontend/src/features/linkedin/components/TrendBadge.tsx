@@ -12,7 +12,7 @@ export const TrendBadge: React.FC<TrendBadgeProps> = ({ value, isPercentage = tr
 
   const getColors = () => {
     if (isPositive) return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-    if (isNeutral) return 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20';
+    if (isNeutral) return 'bg-bg-canvas text-text-secondary border border-zinc-500/20';
     return 'bg-red-500/10 text-red-400 border border-red-500/20';
   };
 

@@ -14,14 +14,14 @@ export const SkillsDetection: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-zinc-950 border border-zinc-800/50 rounded-3xl p-6 lg:p-8"
+      className="bg-bg-canvas border border-border-light rounded-3xl p-6 lg:p-8"
     >
-      <h2 className="text-lg font-semibold text-zinc-100 mb-6">Inferred Skills</h2>
+      <h2 className="text-lg font-semibold text-text-primary mb-6">Inferred Skills</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {SKILLS.map((domain) => (
           <div key={domain.domain} className="space-y-4">
-            <div className="flex items-center gap-2 text-zinc-400">
+            <div className="flex items-center gap-2 text-text-secondary">
               {domain.icon}
               <h3 className="text-sm font-medium">{domain.domain}</h3>
             </div>
@@ -29,10 +29,10 @@ export const SkillsDetection: React.FC = () => {
               {domain.items.map(skill => (
                 <div key={skill.name}>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-zinc-300">{skill.name}</span>
-                    <span className="text-zinc-500">{skill.score}% confidence</span>
+                    <span className="text-text-secondary">{skill.name}</span>
+                    <span className="text-text-muted">{skill.score}% confidence</span>
                   </div>
-                  <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-bg-elevated rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${skill.score}%` }}

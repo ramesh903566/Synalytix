@@ -15,7 +15,7 @@ export const VideoPage: React.FC = () => {
         accessorKey: 'title',
         header: 'Video',
         cell: (info) => (
-          <div className="max-w-xs truncate font-medium text-white">
+          <div className="max-w-xs truncate font-medium text-text-primary">
             {info.getValue<string>()}
           </div>
         ),
@@ -24,7 +24,7 @@ export const VideoPage: React.FC = () => {
         accessorKey: 'publishedAt',
         header: 'Published Date',
         cell: (info) => (
-          <span className="text-zinc-400">
+          <span className="text-text-secondary">
             {format(new Date(info.getValue<string>()), 'MMM d, yyyy')}
           </span>
         ),
@@ -32,7 +32,7 @@ export const VideoPage: React.FC = () => {
       {
         accessorKey: 'views',
         header: 'Views',
-        cell: (info) => <span className="font-semibold text-zinc-200">{info.getValue<number>().toLocaleString()}</span>,
+        cell: (info) => <span className="font-semibold text-text-primary">{info.getValue<number>().toLocaleString()}</span>,
       },
       {
         accessorKey: 'watchTimeHours',
@@ -85,7 +85,7 @@ export const VideoPage: React.FC = () => {
   }, [videos]);
 
   if (isLoading) {
-    return <div className="h-96 flex items-center justify-center text-zinc-500 animate-pulse">Loading video data...</div>;
+    return <div className="h-96 flex items-center justify-center text-text-muted animate-pulse">Loading video data...</div>;
   }
 
   if (error || !videos) {
@@ -95,7 +95,7 @@ export const VideoPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-white tracking-tight">Video Performance</h2>
+        <h2 className="text-xl font-semibold text-text-primary tracking-tight">Video Performance</h2>
       </div>
 
       <motion.div 
@@ -104,33 +104,33 @@ export const VideoPage: React.FC = () => {
         animate="visible"
         className="grid grid-cols-2 md:grid-cols-4 gap-4"
       >
-        <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-5 backdrop-blur-sm">
-          <h4 className="text-sm font-medium text-zinc-400 mb-2">Total Views</h4>
-          <span className="text-3xl font-bold text-white">{aggregates.views}</span>
+        <div className="bg-bg-elevated border border-border-light rounded-xl p-5 backdrop-blur-sm">
+          <h4 className="text-sm font-medium text-text-secondary mb-2">Total Views</h4>
+          <span className="text-3xl font-bold text-text-primary">{aggregates.views}</span>
         </div>
-        <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-5 backdrop-blur-sm">
-          <h4 className="text-sm font-medium text-zinc-400 mb-2">Watch Time</h4>
-          <span className="text-3xl font-bold text-white">{aggregates.watchTime} <span className="text-lg text-zinc-500">hrs</span></span>
+        <div className="bg-bg-elevated border border-border-light rounded-xl p-5 backdrop-blur-sm">
+          <h4 className="text-sm font-medium text-text-secondary mb-2">Watch Time</h4>
+          <span className="text-3xl font-bold text-text-primary">{aggregates.watchTime} <span className="text-lg text-text-muted">hrs</span></span>
         </div>
-        <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-5 backdrop-blur-sm">
-          <h4 className="text-sm font-medium text-zinc-400 mb-2">Avg Duration</h4>
-          <span className="text-3xl font-bold text-white">{aggregates.avgDuration}</span>
+        <div className="bg-bg-elevated border border-border-light rounded-xl p-5 backdrop-blur-sm">
+          <h4 className="text-sm font-medium text-text-secondary mb-2">Avg Duration</h4>
+          <span className="text-3xl font-bold text-text-primary">{aggregates.avgDuration}</span>
         </div>
-        <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-5 backdrop-blur-sm">
-          <h4 className="text-sm font-medium text-zinc-400 mb-2">Completion Rate</h4>
+        <div className="bg-bg-elevated border border-border-light rounded-xl p-5 backdrop-blur-sm">
+          <h4 className="text-sm font-medium text-text-secondary mb-2">Completion Rate</h4>
           <span className="text-3xl font-bold text-blue-400">{aggregates.completion}%</span>
         </div>
       </motion.div>
 
       <ChartCard title="Video Completion Funnel" className="h-[250px]">
         {/* Simplified funnel representation */}
-        <div className="relative h-32 w-full border-b border-zinc-800/50 flex items-end mt-4">
+        <div className="relative h-32 w-full border-b border-border-light flex items-end mt-4">
           <div className="absolute left-[10%] w-[15%] h-[90%] bg-blue-500/80 rounded-t-sm"></div>
           <div className="absolute left-[30%] w-[15%] h-[65%] bg-blue-500/60 rounded-t-sm"></div>
           <div className="absolute left-[50%] w-[15%] h-[48%] bg-blue-500/40 rounded-t-sm"></div>
           <div className="absolute left-[70%] w-[15%] h-[35%] bg-blue-500/20 rounded-t-sm"></div>
         </div>
-        <div className="flex justify-between text-xs text-zinc-500 mt-3 px-10">
+        <div className="flex justify-between text-xs text-text-muted mt-3 px-10">
           <span>Start</span>
           <span>25%</span>
           <span>50%</span>
@@ -140,7 +140,7 @@ export const VideoPage: React.FC = () => {
       </ChartCard>
 
       <div className="mt-8">
-        <h3 className="text-lg font-medium text-white mb-4">Top Videos</h3>
+        <h3 className="text-lg font-medium text-text-primary mb-4">Top Videos</h3>
         <AnalyticsTable columns={columns} data={videos} />
       </div>
     </div>

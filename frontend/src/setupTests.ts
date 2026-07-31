@@ -1,8 +1,25 @@
-import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
-import { afterEach } from 'vitest';
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
-// Automatically cleanup after each test
-afterEach(() => {
-  cleanup();
+// Mock matchMedia for Recharts responsive container
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // Deprecated
+    removeListener: vi.fn(), // Deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
 });
+
+// Mock ResizeObserver for Recharts
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+global.ResizeObserver = MockResizeObserver as any;

@@ -25,7 +25,7 @@ const getTypeIcon = (type: PostType) => {
     case 'Carousel': return <FileText className="w-4 h-4 text-orange-400" />;
     case 'Poll': return <BarChart2 className="w-4 h-4 text-pink-400" />;
     case 'Newsletter': return <Mail className="w-4 h-4 text-indigo-400" />;
-    default: return <FileText className="w-4 h-4 text-zinc-400" />;
+    default: return <FileText className="w-4 h-4 text-text-secondary" />;
   }
 };
 
@@ -43,7 +43,7 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data, onRowClick
       header: 'Post',
       cell: info => (
         <div className="flex items-center gap-3 max-w-[400px]">
-          <div className="w-10 h-10 rounded bg-[#1A222C] flex items-center justify-center shrink-0 overflow-hidden border border-[rgba(255,255,255,0.06)]">
+          <div className="w-10 h-10 rounded bg-bg-sunken flex items-center justify-center shrink-0 overflow-hidden border border-border-light">
             {info.row.original.img ? (
               <img src={info.row.original.img} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -51,10 +51,10 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data, onRowClick
             )}
           </div>
           <div>
-            <p className="text-sm font-bold text-white truncate max-w-[300px]">{info.getValue()}</p>
+            <p className="text-sm font-bold text-text-primary truncate max-w-[300px]">{info.getValue()}</p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-zinc-500 font-medium bg-[#1A222C] px-1.5 py-0.5 rounded">{info.row.original.type}</span>
-              <span className="text-[10px] text-zinc-600">{new Date(info.row.original.publishedAt).toLocaleDateString()}</span>
+              <span className="text-[10px] text-text-muted font-medium bg-bg-sunken px-1.5 py-0.5 rounded">{info.row.original.type}</span>
+              <span className="text-[10px] text-text-muted">{new Date(info.row.original.publishedAt).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
@@ -62,15 +62,15 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data, onRowClick
     }),
     columnHelper.accessor('impressions', {
       header: ({ column }) => (
-        <button className="flex items-center gap-1 hover:text-white transition-colors" onClick={column.getToggleSortingHandler()}>
+        <button className="flex items-center gap-1 hover:text-text-primary transition-colors" onClick={column.getToggleSortingHandler()}>
           Impressions <ArrowUpDown className="w-3 h-3" />
         </button>
       ),
-      cell: info => <span className="font-medium text-white">{formatNumber(info.getValue())}</span>,
+      cell: info => <span className="font-medium text-text-primary">{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor('engagementRate', {
       header: ({ column }) => (
-        <button className="flex items-center gap-1 hover:text-white transition-colors" onClick={column.getToggleSortingHandler()}>
+        <button className="flex items-center gap-1 hover:text-text-primary transition-colors" onClick={column.getToggleSortingHandler()}>
           Eng. Rate <ArrowUpDown className="w-3 h-3" />
         </button>
       ),
@@ -78,23 +78,23 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data, onRowClick
     }),
     columnHelper.accessor('comments', {
       header: ({ column }) => (
-        <button className="flex items-center gap-1 hover:text-white transition-colors" onClick={column.getToggleSortingHandler()}>
+        <button className="flex items-center gap-1 hover:text-text-primary transition-colors" onClick={column.getToggleSortingHandler()}>
           Comments <ArrowUpDown className="w-3 h-3" />
         </button>
       ),
-      cell: info => <span className="text-zinc-300">{formatNumber(info.getValue())}</span>,
+      cell: info => <span className="text-text-secondary">{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor('reposts', {
       header: ({ column }) => (
-        <button className="flex items-center gap-1 hover:text-white transition-colors" onClick={column.getToggleSortingHandler()}>
+        <button className="flex items-center gap-1 hover:text-text-primary transition-colors" onClick={column.getToggleSortingHandler()}>
           Reposts <ArrowUpDown className="w-3 h-3" />
         </button>
       ),
-      cell: info => <span className="text-zinc-300">{formatNumber(info.getValue())}</span>,
+      cell: info => <span className="text-text-secondary">{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor('score', {
       header: ({ column }) => (
-        <button className="flex items-center gap-1 hover:text-white transition-colors" onClick={column.getToggleSortingHandler()}>
+        <button className="flex items-center gap-1 hover:text-text-primary transition-colors" onClick={column.getToggleSortingHandler()}>
           AI Score <ArrowUpDown className="w-3 h-3" />
         </button>
       ),
@@ -118,10 +118,10 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data, onRowClick
   });
 
   return (
-    <div className="bg-[#11161D] border border-[rgba(255,255,255,0.06)] rounded-2xl overflow-hidden">
+    <div className="bg-bg-elevated border border-border-light rounded-2xl overflow-hidden">
       <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-[#0B0F14]/50 border-b border-[rgba(255,255,255,0.06)] text-xs uppercase tracking-wider font-bold text-zinc-500">
+          <thead className="bg-bg-canvas border-b border-border-light text-xs uppercase tracking-wider font-bold text-text-muted">
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
@@ -137,7 +137,7 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ data, onRowClick
               <tr 
                 key={row.id} 
                 onClick={() => onRowClick?.(row.original)}
-                className="hover:bg-[#1A222C] transition-colors cursor-pointer group"
+                className="hover:bg-bg-sunken transition-colors cursor-pointer group"
               >
                 {row.getVisibleCells().map(cell => (
                   <td key={cell.id} className="px-6 py-4">

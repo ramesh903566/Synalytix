@@ -26,20 +26,20 @@ export const Followers: React.FC = () => {
             height={400}
           />
         </div>
-        <div className="bg-[#11161D] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6 flex flex-col justify-center">
+        <div className="bg-bg-elevated border border-border-light rounded-2xl p-6 flex flex-col justify-center">
           <div className="text-center mb-8">
-            <h3 className="text-zinc-400 text-sm font-bold uppercase tracking-wider mb-2">Net Follower Growth</h3>
-            <div className="text-5xl font-bold text-white mb-2">+{followersStats.netGrowth}</div>
-            <p className="text-sm text-emerald-400 font-bold">+{followersStats.netGrowthRate}% <span className="text-zinc-500 font-normal">vs previous period</span></p>
+            <h3 className="text-text-secondary text-sm font-bold uppercase tracking-wider mb-2">Net Follower Growth</h3>
+            <div className="text-5xl font-bold text-text-primary mb-2">+{followersStats.netGrowth}</div>
+            <p className="text-sm text-emerald-400 font-bold">+{followersStats.netGrowthRate}% <span className="text-text-muted font-normal">vs previous period</span></p>
           </div>
           
-          <div className="space-y-4 border-t border-[rgba(255,255,255,0.06)] pt-6">
+          <div className="space-y-4 border-t border-border-light pt-6">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-400">Gained</span>
+              <span className="text-text-secondary">Gained</span>
               <span className="text-emerald-400 font-bold">+{followersStats.newFollowers}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-400">Lost</span>
+              <span className="text-text-secondary">Lost</span>
               <span className="text-red-400 font-bold">-{followersStats.lostFollowers}</span>
             </div>
           </div>

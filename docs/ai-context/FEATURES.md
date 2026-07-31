@@ -7,7 +7,7 @@ This document tracks the core features of the Synalytix application.
 ### 1. The App Store (Connection Hub)
 *   **Purpose**: Allow users to connect to Instagram, X, LinkedIn, GitHub, and LeetCode.
 *   **Current Implementation**: OAuth flows handled by backend; frontend UI displays connection status.
-*   **Status**: In progress. OAuth integration ongoing.
+*   **Status**: OAuth integration fixed and functional.
 
 ### 2. The Command Center (Unified Dashboard)
 *   **Purpose**: Post-login landing page displaying the Digital Presence Score (DPS), live stat cards, cross-platform activity feed, and AI briefings.
@@ -16,8 +16,8 @@ This document tracks the core features of the Synalytix application.
 
 ### 3. Per-Platform Deep Dives
 *   **Purpose**: Dedicated analytics pages for each platform with native-grade depth (trend graphs, heatmaps).
-*   **Current Implementation**: Basic pages exist (e.g., `ContentAnalytics.tsx`, `Audience.tsx`, `VideoPage.tsx`).
-*   **Status**: Active development.
+*   **Current Implementation**: Comprehensive GitHub, LinkedIn, and X analytics dashboards with new UI components.
+*   **Status**: Implemented.
 
 ### 4. Cross-Post Studio
 *   **Purpose**: Unified content composer to draft, AI-rewrite, and broadcast content across all five platforms.

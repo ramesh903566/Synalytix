@@ -50,7 +50,7 @@ export default function WeeklyPlanPanel({ weeklyPlan }: WeeklyPlanPanelProps) {
                     : 'border-neutral-300 hover:border-brand-primary'
                 }`}
               >
-                {isDone && <Check className="w-3 h-3 text-white" />}
+                {isDone && <Check className="w-3 h-3 text-text-primary" />}
               </button>
               <div className="flex-1">
                 <span className={`text-xs leading-relaxed transition-all ${isDone ? 'line-through text-[#999]' : 'text-[#1A1A1A]'}`}>

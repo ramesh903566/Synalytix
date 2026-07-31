@@ -1,7 +1,7 @@
 # Synalytix — Technical Design Review (TDR)
 
 **Version:** 1.0
-**Date:** 2026-07-27
+**Date:** 2026-07-27 (Updated)
 **Status:** Internal Draft
 **Last Commit Verified:** Current main branch
 

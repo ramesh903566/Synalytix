@@ -13,7 +13,7 @@ export const LivePage: React.FC = () => {
         accessorKey: 'title',
         header: 'Broadcast',
         cell: (info) => (
-          <div className="font-medium text-white truncate max-w-[200px]">
+          <div className="font-medium text-text-primary truncate max-w-[200px]">
             {info.getValue<string>()}
           </div>
         ),
@@ -22,7 +22,7 @@ export const LivePage: React.FC = () => {
         accessorKey: 'startedAt',
         header: 'Date',
         cell: (info) => (
-          <span className="text-zinc-400">
+          <span className="text-text-secondary">
             {format(new Date(info.getValue<string>()), 'MMM d, yyyy')}
           </span>
         ),
@@ -36,7 +36,7 @@ export const LivePage: React.FC = () => {
             <span className={cn(
               "px-2 py-1 rounded text-xs font-medium",
               status === 'Live' ? "bg-red-500/10 text-red-500" :
-              status === 'Ended' ? "bg-zinc-800 text-zinc-400" :
+              status === 'Ended' ? "bg-bg-sunken text-text-secondary" :
               "bg-blue-500/10 text-blue-500"
             )}>
               {status === 'Live' ? '🔴 Live' : status}
@@ -73,15 +73,15 @@ export const LivePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-white tracking-tight">Live Broadcasts</h2>
+        <h2 className="text-xl font-semibold text-text-primary tracking-tight">Live Broadcasts</h2>
       </div>
 
       {isLoading ? (
-        <div className="h-96 flex items-center justify-center text-zinc-500 animate-pulse">Loading live data...</div>
+        <div className="h-96 flex items-center justify-center text-text-muted animate-pulse">Loading live data...</div>
       ) : error || !broadcasts ? (
         <div className="h-96 flex items-center justify-center text-red-500">Failed to load live data.</div>
       ) : (
-        <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl overflow-hidden backdrop-blur-sm shadow-xl p-1">
+        <div className="bg-bg-elevated border border-border-light rounded-xl overflow-hidden backdrop-blur-sm shadow-xl p-1">
           <AnalyticsTable columns={columns} data={broadcasts} />
         </div>
       )}

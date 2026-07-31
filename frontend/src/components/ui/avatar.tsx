@@ -6,7 +6,7 @@ const Avatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElem
     <div
       ref={ref}
       className={cn(
-        "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full border border-zinc-200 bg-zinc-100",
+        "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-[var(--radius-avatar)] border border-border bg-bg-sunken",
         className
       )}
       {...props}
@@ -31,7 +31,7 @@ const AvatarFallback = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTM
     <div
       ref={ref}
       className={cn(
-        "flex h-full w-full items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-900",
+        "flex h-full w-full items-center justify-center rounded-[var(--radius-avatar)] bg-brand-light text-sm font-semibold text-brand",
         className
       )}
       {...props}

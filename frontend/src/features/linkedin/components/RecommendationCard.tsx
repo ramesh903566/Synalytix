@@ -8,7 +8,7 @@ interface RecommendationCardProps {
 
 export const RecommendationCard: React.FC<RecommendationCardProps> = ({ recommendation }) => {
   return (
-    <div className="bg-[#11161D] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6 flex flex-col justify-between hover:border-[#0A66C2]/30 transition-all">
+    <div className="bg-bg-elevated border border-border-light rounded-2xl p-6 flex flex-col justify-between hover:border-[#0A66C2]/30 transition-all">
       <div>
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -28,31 +28,31 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({ recommen
           )}
         </div>
         
-        <h3 className="text-lg font-bold text-white mb-2">{recommendation.title}</h3>
-        <p className="text-sm text-zinc-400 mb-6">{recommendation.description}</p>
+        <h3 className="text-lg font-bold text-text-primary mb-2">{recommendation.title}</h3>
+        <p className="text-sm text-text-secondary mb-6">{recommendation.description}</p>
         
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-[#1A222C] rounded-xl p-3">
-            <span className="text-[10px] text-zinc-500 font-bold uppercase block mb-1">Impact</span>
-            <span className="text-sm font-bold text-white">{recommendation.impact || 'Unknown'}</span>
+          <div className="bg-bg-sunken rounded-xl p-3">
+            <span className="text-[10px] text-text-muted font-bold uppercase block mb-1">Impact</span>
+            <span className="text-sm font-bold text-text-primary">{recommendation.impact || 'Unknown'}</span>
           </div>
-          <div className="bg-[#1A222C] rounded-xl p-3">
-            <span className="text-[10px] text-zinc-500 font-bold uppercase block mb-1">Difficulty</span>
-            <span className="text-sm font-bold text-white">{recommendation.difficulty || 'Unknown'}</span>
+          <div className="bg-bg-sunken rounded-xl p-3">
+            <span className="text-[10px] text-text-muted font-bold uppercase block mb-1">Difficulty</span>
+            <span className="text-sm font-bold text-text-primary">{recommendation.difficulty || 'Unknown'}</span>
           </div>
         </div>
 
-        <div className="mb-6 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0B0F14]/60 p-3">
+        <div className="mb-6 rounded-xl border border-border-light bg-bg-canvas p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] text-zinc-500 font-bold uppercase">Confidence</span>
-            <span className="text-xs font-bold text-white">{recommendation.confidence}%</span>
+            <span className="text-[10px] text-text-muted font-bold uppercase">Confidence</span>
+            <span className="text-xs font-bold text-text-primary">{recommendation.confidence}%</span>
           </div>
-          <p className="text-xs text-zinc-400 leading-relaxed">{recommendation.suggestedAction}</p>
-          <p className="text-[11px] text-zinc-500 mt-2">{recommendation.supportingMetrics.join(' | ')}</p>
+          <p className="text-xs text-text-secondary leading-relaxed">{recommendation.suggestedAction}</p>
+          <p className="text-[11px] text-text-muted mt-2">{recommendation.supportingMetrics.join(' | ')}</p>
         </div>
       </div>
       
-      <button className="w-full py-3 bg-[#0A66C2] hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+      <button className="w-full py-3 bg-[#0A66C2] hover:bg-blue-700 text-text-primary text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
         Take Action <ArrowRight className="w-4 h-4" />
       </button>
     </div>

@@ -160,17 +160,17 @@ export function LandingSections() {
         <div className="max-w-7xl mx-auto px-6 sm:px-12 relative z-10">
           <div className="grid md:grid-cols-3 gap-16 text-center">
              <motion.div {...fadeUp} className="flex flex-col items-center">
-               <div className="text-6xl font-display text-white mb-6">10h+</div>
+               <div className="text-6xl font-display text-text-primary mb-6">10h+</div>
                <h4 className="text-xl font-medium mb-3 text-slate-100">Saved Weekly</h4>
                <p className="text-slate-400 text-sm">Automate cross-posting with a visual calendar and smart scheduling.</p>
              </motion.div>
              <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="flex flex-col items-center">
-               <div className="text-6xl font-display text-white mb-6">3x</div>
+               <div className="text-6xl font-display text-text-primary mb-6">3x</div>
                <h4 className="text-xl font-medium mb-3 text-slate-100">Faster Growth</h4>
                <p className="text-slate-400 text-sm">Make data-driven decisions on what content works.</p>
              </motion.div>
              <motion.div {...fadeUp} transition={{ delay: 0.2 }} className="flex flex-col items-center">
-               <div className="text-6xl font-display text-white mb-6">100%</div>
+               <div className="text-6xl font-display text-text-primary mb-6">100%</div>
                <h4 className="text-xl font-medium mb-3 text-slate-100">Platform Visibility</h4>
                <p className="text-slate-400 text-sm">Never miss an important metric or engagement opportunity.</p>
              </motion.div>
@@ -246,8 +246,8 @@ export function LandingSections() {
       <section className="py-40 relative overflow-hidden bg-brand-primary">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15)_0%,transparent_70%)]"></div>
         <div className="max-w-4xl mx-auto px-6 sm:px-12 relative z-10 text-center">
-           <h2 className="text-5xl sm:text-6xl font-display text-white mb-8">Ready to grow your digital presence?</h2>
-           <p className="text-xl text-white/80 mb-12 max-w-2xl mx-auto">Join thousands of creators and developers who use Synalytix to save time and scale their audience.</p>
+           <h2 className="text-5xl sm:text-6xl font-display text-text-primary mb-8">Ready to grow your digital presence?</h2>
+           <p className="text-xl text-text-primary/80 mb-12 max-w-2xl mx-auto">Join thousands of creators and developers who use Synalytix to save time and scale their audience.</p>
            <button onClick={() => navigate('/app')} className="px-10 py-4 rounded-2xl bg-white text-brand-primary font-bold tracking-wide hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/20 transition-all flex items-center gap-3 mx-auto">
              Get Started for Free <ArrowRight className="w-5 h-5" />
            </button>
@@ -261,9 +261,9 @@ export function LandingSections() {
               <img src="/icons/synalytix-icon.svg" alt="Synalytix" className="h-8 w-auto" />
            </div>
            <div className="flex gap-6 text-sm">
-             <button className="hover:text-white transition-colors">Terms</button>
-             <button className="hover:text-white transition-colors">Privacy</button>
-             <button className="hover:text-white transition-colors">Contact</button>
+             <button className="hover:text-text-primary transition-colors">Terms</button>
+             <button className="hover:text-text-primary transition-colors">Privacy</button>
+             <button className="hover:text-text-primary transition-colors">Contact</button>
            </div>
            <div className="text-sm">
              © 2026 Synalytix. All rights reserved.

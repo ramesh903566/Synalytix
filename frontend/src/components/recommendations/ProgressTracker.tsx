@@ -15,7 +15,7 @@ export default function ProgressTracker({ completedCount, totalCount, growthImpa
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6 text-white space-y-6"
+      className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6 text-text-primary space-y-6"
     >
       <h3 className="text-lg font-semibold flex items-center gap-2">
         <Target className="w-5 h-5 text-indigo-400" />
@@ -27,7 +27,7 @@ export default function ProgressTracker({ completedCount, totalCount, growthImpa
         <div>
           <div className="flex justify-between text-sm mb-1 text-slate-300">
             <span>Completed this month</span>
-            <span className="font-medium text-white">{completedCount} / {totalCount}</span>
+            <span className="font-medium text-text-primary">{completedCount} / {totalCount}</span>
           </div>
           <div className="w-full bg-slate-800 rounded-full h-2">
             <div 

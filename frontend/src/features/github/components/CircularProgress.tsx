@@ -53,11 +53,11 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
           />
         </svg>
         {/* Value text in center */}
-        <div className="absolute flex items-center justify-center text-xs font-semibold text-zinc-100">
+        <div className="absolute flex items-center justify-center text-xs font-semibold text-text-primary">
           {Math.round(percent * 100)}%
         </div>
       </div>
-      <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium text-center leading-tight">
+      <span className="text-[10px] uppercase tracking-wider text-text-secondary font-medium text-center leading-tight">
         {label}
       </span>
     </div>

@@ -13,7 +13,7 @@ export const ContentPage: React.FC = () => {
         accessorKey: 'content',
         header: 'Post',
         cell: (info) => (
-          <div className="max-w-xs truncate text-zinc-200">
+          <div className="max-w-xs truncate text-text-primary">
             {info.getValue<string>()}
           </div>
         ),
@@ -24,7 +24,7 @@ export const ContentPage: React.FC = () => {
         cell: (info) => {
           const val = info.getValue<string>();
           return (
-            <span className="px-2 py-1 rounded bg-zinc-800 text-zinc-300 text-xs">
+            <span className="px-2 py-1 rounded bg-bg-sunken text-text-secondary text-xs">
               {val}
             </span>
           );
@@ -34,7 +34,7 @@ export const ContentPage: React.FC = () => {
         accessorKey: 'publishedAt',
         header: 'Published Date',
         cell: (info) => (
-          <span className="text-zinc-400">
+          <span className="text-text-secondary">
             {format(new Date(info.getValue<string>()), 'MMM d, yyyy h:mm a')}
           </span>
         ),
@@ -78,7 +78,7 @@ export const ContentPage: React.FC = () => {
               "px-2 py-1 rounded text-xs",
               val === 'Published' ? "bg-green-500/10 text-green-500" :
               val === 'Scheduled' ? "bg-blue-500/10 text-blue-500" :
-              "bg-zinc-500/10 text-zinc-400"
+              "bg-bg-canvas text-text-secondary"
             )}>
               {val}
             </span>
@@ -94,10 +94,10 @@ export const ContentPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-white tracking-tight">Content Performance</h2>
+        <h2 className="text-xl font-semibold text-text-primary tracking-tight">Content Performance</h2>
       </div>
       {isLoading ? (
-        <div className="h-96 flex items-center justify-center text-zinc-500 animate-pulse">Loading content data...</div>
+        <div className="h-96 flex items-center justify-center text-text-muted animate-pulse">Loading content data...</div>
       ) : error || !posts ? (
         <div className="h-96 flex items-center justify-center text-red-500">Failed to load content data.</div>
       ) : (
