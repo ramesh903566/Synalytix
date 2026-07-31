@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '../context/AppContext';
@@ -113,7 +113,7 @@ export default function AppDetails() {
     };
   }, [appInfo?.id, isConnected]);
 
-  const accounts = id ? (MOCK_ACCOUNTS[id as string] || []) : [];
+  const accounts = useMemo(() => id ? (MOCK_ACCOUNTS[id as string] || []) : [], [id]);
 
   useEffect(() => {
     if (isConnected && accounts.length > 0 && !selectedAccount) {

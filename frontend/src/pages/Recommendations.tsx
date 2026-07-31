@@ -29,10 +29,6 @@ export default function Recommendations() {
 
   const { filters, setFilters, selectedRecommendationId, setSelectedRecommendationId } = useRecommendationsStore();
 
-  useEffect(() => {
-    refreshConnections();
-  }, [refreshConnections]);
-
   const handleGenerate = () => {
     const focusCategory = filters.category !== 'ALL' ? filters.category : undefined;
     generate({ forceRefresh: true, focusCategory }, {
@@ -41,7 +37,7 @@ export default function Recommendations() {
     });
   };
 
-  const showEmptyState = !isLoading && !isGenerating && (!recData || recData.recommendations.length === 0);
+  const showEmptyState = !isLoading && !isGenerating && (!recData || !recData.recommendations || recData.recommendations.length === 0);
   const hasConnections = connectedApps.length > 0;
 
   const recommendations = recData?.recommendations || [];

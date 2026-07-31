@@ -256,7 +256,7 @@ export default function Dashboard() {
                 );
               })
             )}
-            <button onClick={() => window.location.href = '/app/apps'} className="w-full py-3 mt-2 text-[10px] font-bold text-neutral-400 hover:text-black border border-neutral-200 rounded-lg transition-all">
+            <button onClick={() => navigate('/app/apps')} className="w-full py-3 mt-2 text-[10px] font-bold text-neutral-400 hover:text-black border border-neutral-200 rounded-lg transition-all">
               MANAGE CONNECTIONS
             </button>
           </div>

@@ -1,4 +1,10 @@
-// Mock decryption since we don't have the real key setup
+import { decrypt } from './supabase';
+
+/**
+ * Decrypts an encrypted token string.
+ * Wrapper around the main decrypt function for backward compatibility
+ * with recommendation connectors.
+ */
 export function decryptToken(encrypted: string): string {
-  return encrypted;
+  return decrypt(encrypted);
 }

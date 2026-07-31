@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, Zap, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { LandingSections } from '../components/landing/LandingSections';

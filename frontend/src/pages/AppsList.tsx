@@ -33,12 +33,10 @@ export default function AppsList() {
     // Check for OAuth callbacks
     const params = new URLSearchParams(window.location.search);
     if (params.get('connected') === 'true') {
-      alert('Platform connected successfully!');
       refreshConnections();
       window.history.replaceState({}, '', window.location.pathname);
     }
     if (params.get('error')) {
-      alert(`Connection failed: ${params.get('error')}`);
       window.history.replaceState({}, '', window.location.pathname);
     }
     

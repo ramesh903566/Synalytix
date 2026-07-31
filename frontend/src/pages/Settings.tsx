@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 import { MOCK_APPS } from '../data/mockData';
@@ -14,6 +14,12 @@ export default function Settings() {
   const [prefs, setPrefs] = useState({ format: 'PNG', tone: 'Casual', aiAggressiveness: 'Medium', theme: 'Light', notifications: true, weeklyDigest: true });
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (profilePhoto) URL.revokeObjectURL(profilePhoto);
+    };
+  }, [profilePhoto]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,7 +181,7 @@ export default function Settings() {
                         </div>
                       </div>
                       {isConn ? (
-                        <button onClick={()=>disconnectApp(app.id as any).catch(e => alert(e.message))} className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors">
+                        <button onClick={()=>disconnectApp(app.id as any).catch(() => {})} className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors">
                           Disconnect
                         </button>
                       ) : (

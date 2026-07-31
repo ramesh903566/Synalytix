@@ -8,7 +8,7 @@ import { AppName } from '../types';
 export default function Studio() {
   const { connectedApps, scheduledPosts, addScheduledPost, deleteScheduledPost, saveDraft, savedDrafts, deleteDraft } = useAppContext();
   const [description, setDescription] = useState('');
-  const [selectedApps, setSelectedApps] = useState<string[]>([]);
+  const [selectedApps, setSelectedApps] = useState<AppName[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedDrafts, setOptimizedDrafts] = useState<Record<string, string>>({});
@@ -20,7 +20,7 @@ export default function Studio() {
 
   const handleAppToggle = (appId: string) => {
     setSelectedApps(prev => 
-      prev.includes(appId) ? prev.filter(a => a !== appId) : [...prev, appId]
+      prev.includes(appId as AppName) ? prev.filter(a => a !== appId) : [...prev, appId as AppName]
     );
   };
 
@@ -74,7 +74,6 @@ export default function Studio() {
       setOptimizedDrafts({});
       setDescription('');
       setSelectedApps([]);
-      alert("Post published successfully!");
     }
   };
 
@@ -258,7 +257,6 @@ export default function Studio() {
                           setOptimizedDrafts({});
                           setDescription('');
                           setSelectedApps([]);
-                          alert("Draft saved!");
                         }}
                         className="w-full py-3 text-xs font-bold bg-white text-black border border-black rounded-lg flex justify-center items-center gap-2 transition-all hover:bg-neutral-50"
                       >

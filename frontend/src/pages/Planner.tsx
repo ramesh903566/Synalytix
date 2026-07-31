@@ -249,7 +249,7 @@ export default function Planner() {
                 <span className="text-base font-normal text-[#666] ml-1">{today.getHours() < 12 ? 'am' : 'pm'}</span>
               </div>
               <div className="text-sm text-[#666] font-medium mt-1">
-                {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][today.getDay() === 0 ? 6 : today.getDay() - 1]}, {today.getDate()}th {MONTHS[today.getMonth()]}
+                {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][today.getDay() === 0 ? 6 : today.getDay() - 1]}, {today.getDate()}{today.getDate() === 1 ? 'st' : today.getDate() === 2 ? 'nd' : today.getDate() === 3 ? 'rd' : 'th'} {MONTHS[today.getMonth()]}
               </div>
             </div>
             <div className="ml-auto text-right">

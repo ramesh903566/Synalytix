@@ -85,7 +85,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addScheduledPost = (post: Omit<ScheduledPost, 'id' | 'status'>) => {
-    setScheduledPosts(prev => [{ ...post, id: Math.random().toString(36).substr(2, 9), status: 'scheduled' }, ...prev]);
+    setScheduledPosts(prev => [{ ...post, id: crypto.randomUUID(), status: 'scheduled' }, ...prev]);
   };
 
   const deleteScheduledPost = (id: string) => {
@@ -93,7 +93,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const saveDraft = (draft: Omit<DraftPost, 'id' | 'createdAt'>) => {
-    setSavedDrafts(prev => [{ ...draft, id: Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() }, ...prev]);
+    setSavedDrafts(prev => [{ ...draft, id: crypto.randomUUID(), createdAt: new Date().toISOString() }, ...prev]);
   };
 
   const deleteDraft = (id: string) => {
@@ -101,7 +101,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addPlannerTask = (task: Omit<PlannerTask, 'id' | 'createdAt'>) => {
-    setPlannerTasks(prev => [{ ...task, id: Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() }, ...prev]);
+    setPlannerTasks(prev => [{ ...task, id: crypto.randomUUID(), createdAt: new Date().toISOString() }, ...prev]);
   };
 
   const updatePlannerTask = (id: string, updates: Partial<PlannerTask>) => {
@@ -114,7 +114,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refreshConnections = useCallback(async () => {
     try {
-      setConnectedApps(['github', 'instagram', 'x', 'linkedin', 'leetcode'] as AppName[]);
+      const result = await getConnectionStatus();
+      if (result.success && result.data) {
+        setConnectedApps(result.data.connected as AppName[]);
+      }
     } catch (e) {
       console.error('Failed to refresh connections:', e);
     }

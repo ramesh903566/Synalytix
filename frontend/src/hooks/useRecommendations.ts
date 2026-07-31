@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { GenerateInput, GenerateOutput } from "../types/recommendations";
 
-const API_BASE = "http://localhost:4000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
-async function fetchRecommendations(): Promise<GenerateOutput["data"]> {
+async function fetchRecommendations(): Promise<GenerateOutput["data"] | null> {
   const token = localStorage.getItem("token") || "";
   const res = await fetch(`${API_BASE}/recommendations`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
-    if (res.status === 404) return null as any;
+    if (res.status === 404) return null;
     throw new Error("Failed to fetch recommendations");
   }
   const json = await res.json();

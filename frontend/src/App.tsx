@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 
@@ -17,7 +17,7 @@ import Planner from './pages/Planner';
 import Recommendations from './pages/Recommendations';
 import AppLayout from './layouts/AppLayout';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoadingAuth } = useAppContext();
   
   if (isLoadingAuth) {
@@ -28,7 +28,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // if (!isAuthenticated) return <Navigate to="/auth" replace />;
+  if (!isAuthenticated) return <Navigate to="/auth" replace />;
   return <>{children}</>;
 }
 

@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { supabase, decrypt } from '../lib/supabase';
+import { supabase, decrypt, encrypt } from '../lib/supabase';
 import { ConnectionService } from './connectionService';
 import { InstagramService } from './instagramService';
 import { XService } from './platformServices';
@@ -85,8 +85,8 @@ async function refreshToken(connection: any) {
       const { error } = await supabase
         .from('platform_connections')
         .update({
-          access_token: refreshed.access_token,   // will be encrypted in the service
-          refresh_token: refreshed.refresh_token,
+          access_token: encrypt(refreshed.access_token),
+          refresh_token: encrypt(refreshed.refresh_token),
           expires_at: expiresAt,
           updated_at: new Date().toISOString(),
         })
