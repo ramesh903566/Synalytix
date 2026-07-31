@@ -11,7 +11,6 @@ interface ChatMessageListProps {
   onCopy?: (content: string) => void;
   onRegenerate?: (messageId: string) => void;
   onDelete?: (messageId: string) => void;
-  onPin?: (messageId: string) => void;
   onEdit?: (messageId: string) => void;
 }
 
@@ -21,7 +20,6 @@ export function ChatMessageList({
   onCopy,
   onRegenerate,
   onDelete,
-  onPin,
   onEdit,
 }: ChatMessageListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -74,7 +72,6 @@ export function ChatMessageList({
                 onCopy={onCopy}
                 onRegenerate={() => onRegenerate?.(msg.id)}
                 onDelete={() => onDelete?.(msg.id)}
-                onPin={() => onPin?.(msg.id)}
                 onEdit={() => onEdit?.(msg.id)}
               />
             </div>

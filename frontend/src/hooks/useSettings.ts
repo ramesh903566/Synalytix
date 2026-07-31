@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAuthToken } from "../lib/auth-token";
 import {
   fetchModels,
   saveProvider,
@@ -50,7 +51,7 @@ export interface CustomInstructions {
 }
 
 async function fetchInstructions(provider: string): Promise<CustomInstructions> {
-  const token = localStorage.getItem("token");
+  const token = await getAuthToken();
   const res = await fetch(
     `/api/settings/ai-instructions?provider=${encodeURIComponent(provider)}`,
     { headers: token ? { Authorization: `Bearer ${token}` } : {} }
@@ -63,7 +64,7 @@ async function saveInstructions(
   provider: string,
   instructions: string
 ): Promise<void> {
-  const token = localStorage.getItem("token");
+  const token = await getAuthToken();
   const res = await fetch("/api/settings/ai-instructions", {
     method: "POST",
     headers: {
@@ -106,7 +107,7 @@ export interface PlatformConnection {
 }
 
 async function fetchConnections(): Promise<PlatformConnection[]> {
-  const token = localStorage.getItem("token");
+  const token = await getAuthToken();
   const res = await fetch("/api/auth/status", {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
@@ -126,7 +127,7 @@ export function usePlatformConnections() {
 // ─── LeetCode ───────────────────────────────────────────────────────────────
 
 async function connectLeetCode(username: string): Promise<void> {
-  const token = localStorage.getItem("token");
+  const token = await getAuthToken();
   const res = await fetch("/api/data/leetcode/connect", {
     method: "POST",
     headers: {
@@ -142,7 +143,7 @@ async function connectLeetCode(username: string): Promise<void> {
 }
 
 async function syncLeetCode(): Promise<void> {
-  const token = localStorage.getItem("token");
+  const token = await getAuthToken();
   const res = await fetch("/api/data/leetcode/sync", {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -154,7 +155,7 @@ async function syncLeetCode(): Promise<void> {
 }
 
 async function disconnectPlatform(platform: string): Promise<void> {
-  const token = localStorage.getItem("token");
+  const token = await getAuthToken();
   const res = await fetch(`/api/auth/disconnect/${platform}`, {
     method: "DELETE",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -197,7 +198,7 @@ export interface CalendarConnection {
 }
 
 async function fetchCalendarConnections(): Promise<CalendarConnection[]> {
-  const token = localStorage.getItem("token");
+  const token = await getAuthToken();
   const res = await fetch("/api/auth/status", {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
@@ -226,7 +227,6 @@ export function useCalendarConnections() {
 export function useConnectGoogleCalendar() {
   return useMutation({
     mutationFn: async () => {
-      // Redirect to OAuth flow
       window.location.href = "/api/auth/connect/google-calendar";
     },
   });

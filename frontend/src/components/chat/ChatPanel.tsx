@@ -76,8 +76,6 @@ export function ChatPanel() {
         conversation_id: convId!,
         role: "user",
         content,
-        attachments: [],
-        pinned: false,
         created_at: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, userMsg]);
@@ -99,15 +97,13 @@ export function ChatPanel() {
           fullResponse += token;
           setStreamingContent(fullResponse);
         },
-        onDone: () => {
+        onComplete: (fullText) => {
           // Add assistant message
           const assistantMsg: ChatMessage = {
             id: `assistant-${Date.now()}`,
             conversation_id: convId!,
             role: "assistant",
             content: fullResponse,
-            attachments: [],
-            pinned: false,
             created_at: new Date().toISOString(),
           };
           setMessages((prev) => [
@@ -231,13 +227,6 @@ export function ChatPanel() {
                     }}
                     onDelete={(id) =>
                       setMessages((prev) => prev.filter((m) => m.id !== id))
-                    }
-                    onPin={(id) =>
-                      setMessages((prev) =>
-                        prev.map((m) =>
-                          m.id === id ? { ...m, pinned: !m.pinned } : m
-                        )
-                      )
                     }
                   />
                 )}

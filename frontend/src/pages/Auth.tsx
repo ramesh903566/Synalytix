@@ -15,10 +15,9 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
 
   useEffect(() => {
-    // TODO: Uncomment for production auth
-    // supabase.auth.getSession().then(({ data: { session } }) => {
-    //   if (session) navigate('/app', { replace: true });
-    // });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate('/app', { replace: true });
+    });
   }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {

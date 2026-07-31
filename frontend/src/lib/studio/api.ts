@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AppName } from '../../types';
+import { getAuthToken } from '../../lib/auth-token';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE = '';
 
 // ─── Zod Schemas ─────────────────────────────────────────────────────────────
 
@@ -49,24 +49,22 @@ export type GenerateDraftsPayload = z.infer<typeof GenerateDraftsPayloadSchema>;
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 
-const getToken = () => localStorage.getItem('token');
-
-const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = getToken();
+async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  const token = await getAuthToken();
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
-  const response = await fetch(`${API_URL}${url}`, { ...options, headers });
+  const response = await fetch(`${API_BASE}${url}`, { ...options, headers });
   const data = await response.json();
-  
+
   if (!response.ok) {
     throw new Error(data.error || 'API request failed');
   }
   return data;
-};
+}
 
 // ─── React Query Hooks ───────────────────────────────────────────────────────
 
@@ -111,25 +109,73 @@ export const usePublishToRepo = () => {
 
 export const useGenerateDrafts = () => {
   return useMutation({
-    mutationFn: async (payload: GenerateDraftsPayload) => {
-      // Mock generation delay
-      return new Promise<Record<string, string>>((resolve) => {
-        setTimeout(() => {
-          const drafts: Record<string, string> = {};
-          payload.apps.forEach(app => {
-            let prefix = '';
-            let suffix = '';
-            if (app === 'linkedin') { prefix = 'Excited to share an update on my professional journey. '; suffix = '\n\n#ProfessionalGrowth #Innovation'; }
-            if (app === 'x') { suffix = ' 🚀 #buildinpublic'; }
-            if (app === 'instagram') { suffix = '\n\n.\n.\n.\n#inspiration #daily #grow'; }
-            if (app === 'github') { prefix = '🚀 Released new features: \n'; suffix = '\nCheck out the repo!'; }
-            if (app === 'leetcode') { prefix = 'Another milestone reached! '; suffix = '\n#algorithms #dailycoding'; }
-            
-            drafts[app] = `${prefix}${payload.description}${suffix}`;
-          });
-          resolve(drafts);
-        }, 1500);
+    mutationFn: async (payload: GenerateDraftsPayload): Promise<Record<string, string>> => {
+      const token = await getAuthToken();
+      const res = await fetch(`${API_BASE}/api/chat/new`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          title: `Draft: ${payload.description.slice(0, 50)}`,
+          model_provider: 'openai',
+          model_name: 'gpt-4o',
+        }),
       });
+      const conv = await res.json();
+      const conversationId = conv.data?.id;
+
+      if (!conversationId) throw new Error('Failed to create draft conversation');
+
+      const prompt = `Generate social media posts for the following topic. Return ONLY a JSON object with keys for each platform (${payload.apps.join(', ')}) and the post content as the value. Topic: ${payload.description}`;
+
+      const token2 = await getAuthToken();
+      const streamRes = await fetch(`${API_BASE}/api/chat/${conversationId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token2 ? { Authorization: `Bearer ${token2}` } : {}),
+        },
+        body: JSON.stringify({ content: prompt }),
+      });
+
+      if (!streamRes.ok) throw new Error('Failed to generate drafts');
+
+      const reader = streamRes.body?.getReader();
+      if (!reader) throw new Error('No response body');
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const event = JSON.parse(line.slice(6));
+            if (event.type === 'token') fullText += event.content;
+          } catch { /* skip */ }
+        }
+      }
+
+      // Parse JSON from the response
+      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+
+      // Fallback: create drafts from raw text per platform
+      const drafts: Record<string, string> = {};
+      payload.apps.forEach(app => {
+        drafts[app] = fullText || `Draft for ${app}: ${payload.description}`;
+      });
+      return drafts;
     },
   });
 };

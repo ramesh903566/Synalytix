@@ -196,28 +196,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Bypass auth for review — set authenticated immediately
-    setIsAuthenticated(true);
-    setIsLoadingAuth(false);
-    refreshConnections();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+      if (session) refreshConnections();
+      setIsLoadingAuth(false);
+    });
 
-    // TODO: Uncomment for production auth
-    // supabase.auth.getSession().then(({ data: { session } }) => {
-    //   setIsAuthenticated(!!session);
-    //   if (session) refreshConnections();
-    //   setIsLoadingAuth(false);
-    // });
-    //
-    // const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    //   setIsAuthenticated(!!session);
-    //   if (session) {
-    //     refreshConnections();
-    //   } else {
-    //     setConnectedApps([]);
-    //   }
-    // });
-    //
-    // return () => subscription.unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      if (session) {
+        refreshConnections();
+      } else {
+        setConnectedApps([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [refreshConnections]);
 
   return (

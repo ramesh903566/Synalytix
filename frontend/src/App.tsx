@@ -28,20 +28,16 @@ function PageSpinner() {
 }
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
-  // Bypass auth for review
+  const { isAuthenticated, isLoadingAuth } = useAppContext();
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-canvas">
+        <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (!isAuthenticated) return <Navigate to="/auth" replace />;
   return <>{children}</>;
-
-  // TODO: Uncomment for production auth
-  // const { isAuthenticated, isLoadingAuth } = useAppContext();
-  // if (isLoadingAuth) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-white">
-  //       <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-  //     </div>
-  //   );
-  // }
-  // if (!isAuthenticated) return <Navigate to="/auth" replace />;
-  // return <>{children}</>;
 }
 
 function AppRoutes() {

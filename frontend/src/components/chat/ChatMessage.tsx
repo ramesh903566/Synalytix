@@ -2,7 +2,7 @@ import { useRef, useEffect, memo } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { Copy, RefreshCw, Trash2, Pin, Pencil } from "lucide-react";
+import { Copy, RefreshCw, Trash2, Pencil } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { ChatMessage as ChatMessageType } from "../../lib/chat-api";
 
@@ -12,7 +12,6 @@ interface ChatMessageProps {
   onCopy?: (content: string) => void;
   onRegenerate?: () => void;
   onDelete?: () => void;
-  onPin?: () => void;
   onEdit?: () => void;
 }
 
@@ -22,7 +21,6 @@ export const ChatMessage = memo(function ChatMessage({
   onCopy,
   onRegenerate,
   onDelete,
-  onPin,
   onEdit,
 }: ChatMessageProps) {
   const isUser = message.role === "user";
@@ -106,18 +104,6 @@ export const ChatMessage = memo(function ChatMessage({
             title="Edit"
           >
             <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={onPin}
-            className={cn(
-              "w-7 h-7 rounded-[var(--radius-button)] flex items-center justify-center transition-colors",
-              message.pinned
-                ? "text-brand bg-brand-light"
-                : "text-text-muted hover:bg-bg-sunken hover:text-text-primary"
-            )}
-            title="Pin"
-          >
-            <Pin className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onDelete}

@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchModels,
-  fetchHistory,
-  fetchConversation,
+  fetchChatHistory,
+  getConversation,
   createConversation,
   updateConversation,
   deleteConversation,
   type ProviderModel,
-  type ConversationSummary,
-  type Conversation,
-  type HistoryResponse,
+  type ChatConversation,
+  type ChatMessage,
+  type ChatHistoryResponse,
 } from "../lib/chat-api";
 
 // ─── Models ─────────────────────────────────────────────────────────────────
@@ -30,9 +30,9 @@ export function useChatHistory(
   search = "",
   filter = "all"
 ) {
-  return useQuery<HistoryResponse>({
+  return useQuery<ChatHistoryResponse>({
     queryKey: ["chat-history", page, limit, search, filter],
-    queryFn: () => fetchHistory(page, limit, search, filter),
+    queryFn: () => fetchChatHistory(page, limit, search, filter),
     staleTime: 10_000,
   });
 }
@@ -40,9 +40,9 @@ export function useChatHistory(
 // ─── Single Conversation ────────────────────────────────────────────────────
 
 export function useConversation(id: string | null) {
-  return useQuery<Conversation>({
+  return useQuery<ChatConversation & { messages: ChatMessage[] }>({
     queryKey: ["conversation", id],
-    queryFn: () => fetchConversation(id!),
+    queryFn: () => getConversation(id!),
     enabled: !!id,
     staleTime: 5_000,
   });
@@ -53,7 +53,8 @@ export function useConversation(id: string | null) {
 export function useCreateConversation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: createConversation,
+    mutationFn: ({ title, model_provider, model_name }: { title?: string; model_provider?: string; model_name?: string }) =>
+      createConversation(title, model_provider, model_name),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["chat-history"] });
     },
