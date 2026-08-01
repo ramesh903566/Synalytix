@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth';
 import { ConnectionService, OAuthStateService } from '../services/connectionService';
 import { InstagramService } from '../services/instagramService';
 import { XService, LinkedInService } from '../services/platformServices';
+import { GithubSyncService } from '../services/githubSyncService';
 import { generateState, generateCodeVerifier, generateCodeChallenge } from '../lib/supabase';
 import { Platform } from '../types';
 import { GoogleCalendarService } from '../services/googleCalendarService';
@@ -234,7 +235,6 @@ router.get('/callback/github', async (req: Request, res: Response) => {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    // 4. Save to database (encrypted)
     await ConnectionService.upsert({
       user_id: savedState.user_id,
       platform: 'github',
@@ -247,6 +247,12 @@ router.get('/callback/github', async (req: Request, res: Response) => {
     });
 
     console.log(`[OAuth] GitHub connected for user ${savedState.user_id} (@${githubUser.login})`);
+    
+    // Trigger the background sync for GitHub data
+    GithubSyncService.syncUser(savedState.user_id).catch((err) => {
+      console.error(`[OAuth Callback] Background sync failed for GitHub user ${savedState.user_id}:`, err);
+    });
+
     return redirectWithSuccess(res, 'github');
 
   } catch (err: any) {

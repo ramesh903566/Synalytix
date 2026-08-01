@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth';
 import { ConnectionService } from '../services/connectionService';
 import { GitHubService } from '../services/githubService';
 import { InstagramService } from '../services/instagramService';
+import { GithubSyncService } from '../services/githubSyncService';
 import { XService, LinkedInService } from '../services/platformServices';
 import { LeetCodeService } from '../services/leetcodeService';
 import { GoogleCalendarService } from '../services/googleCalendarService';
@@ -73,17 +74,28 @@ async function getCached<T>(
 //  GITHUB ROUTES
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// POST /api/data/github/sync
+router.post('/github/sync', authenticate, async (req: Request, res: Response) => {
+  const conn = await getConnection(req.userId!, 'github', res);
+  if (!conn) return;
+
+  try {
+    await GithubSyncService.syncUser(req.userId!);
+    res.json({ success: true, message: 'Sync complete' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET /api/data/github/profile
 router.get('/github/profile', authenticate, async (req: Request, res: Response) => {
   const conn = await getConnection(req.userId!, 'github', res);
   if (!conn) return;
 
   try {
-    const data = await getCached(
-      `github_profile_${req.userId}`,
-      30, // cache for 30 minutes
-      () => GitHubService.getProfile(getToken(conn))
-    );
+    const { data, error } = await supabase.from('github_profiles').select('*').eq('user_id', req.userId!).single();
+    if (error && error.code !== 'PGRST116') throw error;
+    if (!data) return res.status(202).json({ success: true, message: 'Syncing', data: null });
     res.json({ success: true, data });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -95,15 +107,9 @@ router.get('/github/repos', authenticate, async (req: Request, res: Response) =>
   const conn = await getConnection(req.userId!, 'github', res);
   if (!conn) return;
 
-  const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const perPage = Math.min(100, Math.max(1, parseInt(req.query.per_page as string) || 30));
-
   try {
-    const data = await getCached(
-      `github_repos_${req.userId}_p${page}`,
-      30,
-      () => GitHubService.getRepos(getToken(conn), page, perPage)
-    );
+    const { data, error } = await supabase.from('github_repositories').select('*').eq('user_id', req.userId!).order('stargazers_count', { ascending: false });
+    if (error) throw error;
     res.json({ success: true, data });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -116,12 +122,9 @@ router.get('/github/contributions', authenticate, async (req: Request, res: Resp
   if (!conn) return;
 
   try {
-    const data = await getCached(
-      `github_contributions_${req.userId}`,
-      60, // contributions change less often
-      () => GitHubService.getContributions(getToken(conn), conn.platform_username)
-    );
-    res.json({ success: true, data });
+    const { data, error } = await supabase.from('github_activity_events').select('*').eq('user_id', req.userId!).order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ success: true, data: { events: data, total_this_year: data.length } });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -133,13 +136,30 @@ router.get('/github/languages', authenticate, async (req: Request, res: Response
   if (!conn) return;
 
   try {
-    const repos = await GitHubService.getRepos(getToken(conn));
-    const data = await getCached(
-      `github_languages_${req.userId}`,
-      120,
-      () => GitHubService.getLanguageBreakdown(getToken(conn), repos)
-    );
-    res.json({ success: true, data });
+    const { data, error } = await supabase.from('github_languages').select('*').eq('user_id', req.userId!);
+    if (error) throw error;
+    
+    const languageBreakdown: Record<string, number> = {};
+    if (data) {
+      data.forEach(l => {
+        languageBreakdown[l.language] = l.bytes;
+      });
+    }
+    res.json({ success: true, data: languageBreakdown });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/data/github/insights
+router.get('/github/insights', authenticate, async (req: Request, res: Response) => {
+  const conn = await getConnection(req.userId!, 'github', res);
+  if (!conn) return;
+
+  try {
+    const { data, error } = await supabase.from('github_insights').select('*').eq('user_id', req.userId!).single();
+    if (error && error.code !== 'PGRST116') throw error;
+    res.json({ success: true, data: data || { portfolio_score: 0, insights_json: [] } });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -151,22 +171,43 @@ router.get('/github/all', authenticate, async (req: Request, res: Response) => {
   if (!conn) return;
 
   try {
-    const [profile, repos, contributions] = await Promise.all([
-      getCached(`github_profile_${req.userId}`, 30, () =>
-        GitHubService.getProfile(getToken(conn))
-      ),
-      GitHubService.getAllRepos(getToken(conn)),
-      getCached(`github_contributions_${req.userId}`, 60, () =>
-        GitHubService.getContributions(getToken(conn), conn.platform_username)
-      ),
+    const [profileRes, reposRes, eventsRes, langRes, insightsRes] = await Promise.all([
+      supabase.from('github_profiles').select('*').eq('user_id', req.userId!).single(),
+      supabase.from('github_repositories').select('*').eq('user_id', req.userId!).order('stargazers_count', { ascending: false }),
+      supabase.from('github_activity_events').select('*').eq('user_id', req.userId!).order('created_at', { ascending: false }),
+      supabase.from('github_languages').select('*').eq('user_id', req.userId!),
+      supabase.from('github_insights').select('*').eq('user_id', req.userId!).single()
     ]);
 
-    const stats = {
-      total_stars: repos.reduce((sum, repo) => sum + repo.stargazers_count, 0),
-      fetched_at: new Date().toISOString(),
-    };
+    const profile = profileRes.data;
+    if (!profile) {
+      return res.status(202).json({ success: true, message: 'Syncing', data: null });
+    }
 
-    res.json({ success: true, data: { profile, repos, contributions, stats } });
+    const repos = reposRes.data || [];
+    const events = eventsRes.data || [];
+    const languages = langRes.data || [];
+    const insights = insightsRes.data || { portfolio_score: 0, insights_json: [] };
+
+    const languageBreakdown: Record<string, number> = {};
+    languages.forEach(l => {
+      languageBreakdown[l.language] = l.bytes;
+    });
+
+    res.json({
+      success: true,
+      data: {
+        profile,
+        repos,
+        contributions: { events, total_this_year: events.length },
+        languages: languageBreakdown,
+        insights,
+        stats: {
+          total_stars: repos.reduce((sum: any, r: any) => sum + r.stargazers_count, 0),
+          fetched_at: profile.synced_at
+        }
+      }
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -602,9 +643,8 @@ router.get('/summary', authenticate, async (req: Request, res: Response) => {
 
         switch (platform) {
           case 'github':
-            summary.github = await getCached(`github_profile_${userId}`, 30, () =>
-              GitHubService.getProfile(getToken(conn))
-            );
+            const { data: githubProfile } = await supabase.from('github_profiles').select('*').eq('user_id', userId).single();
+            summary.github = githubProfile;
             break;
 
           case 'instagram':

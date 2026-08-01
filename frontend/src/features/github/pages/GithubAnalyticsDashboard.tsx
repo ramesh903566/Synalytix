@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, RefreshCw, ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 import { ProfileHeader } from '../components/ProfileHeader';
 import { ErrorBoundary } from '../../../components/ui/ErrorBoundary';
+import { syncGithubData } from '../api/githubApi';
 
 // Lazy loaded heavy components
 const ContributionHeatmap = React.lazy(() => import('../components/ContributionHeatmap').then(m => ({ default: m.ContributionHeatmap })));
@@ -33,9 +33,16 @@ export const GithubAnalyticsDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1000);
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await syncGithubData();
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to sync GitHub data:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (

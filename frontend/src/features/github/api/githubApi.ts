@@ -24,11 +24,14 @@ async function getToken(): Promise<string | null> {
 
 const apiFetch = async <T>(
   url: string,
+  options?: RequestInit
 ): Promise<any> => {
   const token = await getToken();
   const response = await fetch(`${API_BASE}${url}`, {
+    ...options,
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers
     },
   });
   if (!response.ok) {
@@ -36,6 +39,10 @@ const apiFetch = async <T>(
   }
   const json = await response.json();
   return json.data ?? json;
+};
+
+export const syncGithubData = async (): Promise<void> => {
+  await apiFetch('/api/data/github/sync', { method: 'POST' });
 };
 
 export const fetchGithubProfile = async (_username: string): Promise<GithubProfile> => {
