@@ -77,7 +77,7 @@ npm run dev             # http://localhost:4000
 |----------|-------------|
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key |
-| `VITE_API_URL` | Backend API URL (default: `http://localhost:4000/api`) |
+| `VITE_API_BASE_URL` | Backend origin. Leave empty in local development to use the Vite `/api` proxy; set to your deployed backend origin in production. |
 
 **Backend** (`.env`):
 
@@ -93,6 +93,26 @@ npm run dev             # http://localhost:4000
 | `META_APP_ID` / `META_APP_SECRET` | Meta/Instagram app credentials |
 | `X_CLIENT_ID` / `X_CLIENT_SECRET` | X/Twitter OAuth 2.0 credentials |
 | `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` | LinkedIn OAuth credentials |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Calendar OAuth credentials |
+
+### OAuth App Setup
+
+Use the same backend origin as `BACKEND_URL` and the same frontend origin as `FRONTEND_URL`.
+
+| Platform | App setting | Local value | Production value |
+|----------|-------------|-------------|------------------|
+| GitHub | Homepage URL | `http://localhost:3000` | `https://your-frontend-url.com` |
+| GitHub | Authorization callback URL | `http://localhost:4000/api/auth/callback/github` | `https://your-backend-url.com/api/auth/callback/github` |
+| Instagram / Meta | Valid OAuth Redirect URI | `http://localhost:4000/api/auth/callback/instagram` | `https://your-backend-url.com/api/auth/callback/instagram` |
+| X / Twitter | Website URL | `http://localhost:3000` | `https://your-frontend-url.com` |
+| X / Twitter | Callback URI | `http://localhost:4000/api/auth/callback/x` | `https://your-backend-url.com/api/auth/callback/x` |
+
+Required environment variables after creating the apps: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `META_APP_ID`, `META_APP_SECRET`, `X_CLIENT_ID`, and `X_CLIENT_SECRET`.
+
+Requested provider permissions:
+
+- Instagram / Meta: `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`
+- X / Twitter: `tweet.read`, `tweet.write`, `users.read`, `offline.access`
 
 ## Features
 

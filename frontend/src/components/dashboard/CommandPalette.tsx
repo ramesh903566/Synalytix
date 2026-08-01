@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { cn } from "../../lib/utils"
 import { Search, ArrowUp, ArrowDown, CornerDownLeft, X } from "lucide-react"
-import { MOCK_APPS } from "../../data/mockData"
+import { APP_REGISTRY } from "../../lib/appRegistry"
 import { useChatStore } from "../../store/chatStore"
 
 interface SearchResult {
@@ -38,7 +38,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       { id: "settings", title: "Settings", subtitle: "Account & preferences", section: "Pages", action: () => navigate("/app/settings") },
     ]
 
-    const apps: SearchResult[] = MOCK_APPS.map((app) => ({
+    const apps: SearchResult[] = APP_REGISTRY.map((app) => ({
       id: `app-${app.id}`,
       title: app.name,
       subtitle: `View ${app.name} analytics`,

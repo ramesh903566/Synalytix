@@ -42,7 +42,8 @@ router.get("/history", authenticate, async (req: Request, res: Response) => {
       .order("updated_at", { ascending: false });
 
     if (search) {
-      query = query.ilike("title", `%${search}%`);
+      const safeSearch = search.replace(/[%_]/g, '\\$&');
+      query = query.ilike("title", `%${safeSearch}%`);
     }
     if (filter === "pinned") {
       query = query.eq("pinned", true);

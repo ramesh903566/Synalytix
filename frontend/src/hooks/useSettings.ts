@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAuthToken } from "../lib/auth-token";
+import { connectPlatform } from "../lib/api";
 import {
   fetchModels,
   saveProvider,
@@ -226,9 +227,7 @@ export function useCalendarConnections() {
 
 export function useConnectGoogleCalendar() {
   return useMutation({
-    mutationFn: async () => {
-      window.location.href = "/api/auth/connect/google-calendar";
-    },
+    mutationFn: () => connectPlatform("google-calendar"),
   });
 }
 

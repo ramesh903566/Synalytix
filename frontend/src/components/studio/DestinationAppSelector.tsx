@@ -1,5 +1,5 @@
 import React from 'react';
-import { MOCK_APPS } from '../../data/mockData';
+import { APP_REGISTRY } from '../../lib/appRegistry';
 import { useStudioStore } from '../../store/studioStore';
 import { useAppContext } from '../../context/AppContext';
 import { AppName } from '../../types';
@@ -34,7 +34,7 @@ export const DestinationAppSelector: React.FC<Props> = ({ onShowAccountModal, se
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
         {connectedApps.filter(id => id !== 'leetcode').map(appId => {
-          const appInfo = MOCK_APPS.find(a => a.id === appId);
+          const appInfo = APP_REGISTRY.find(a => a.id === appId);
           const isSelected = selectedApps.includes(appId as AppName);
 
           // Check if any uploaded file is incompatible with this app
@@ -83,7 +83,7 @@ export const DestinationAppSelector: React.FC<Props> = ({ onShowAccountModal, se
           <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Accounts Selected</label>
           <div className="flex flex-col gap-2">
             {selectedApps.map(appId => {
-              const appInfo = MOCK_APPS.find(a => a.id === appId);
+              const appInfo = APP_REGISTRY.find(a => a.id === appId);
               // For demonstration, we just show mocked selected accounts
               const accIds = selectedAccounts[appId] || [];
               const allAccountsForApp = [

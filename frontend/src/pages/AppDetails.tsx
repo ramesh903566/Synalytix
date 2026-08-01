@@ -2,9 +2,9 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '../context/AppContext';
-import { useQueryClient } from '@tanstack/react-query';
-import { MOCK_APPS, MOCK_ACCOUNTS, IG_OVERVIEW, IG_AUDIENCE, IG_CONTENT_POSTS } from '../data/mockData';
-import { connectLeetCode, connectPlatform, getGitHubData, getLeetCodeData } from '../lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { APP_REGISTRY } from '../lib/appRegistry';
+import { connectLeetCode, connectPlatform, getInstagramData } from '../lib/api';
 import { ArrowLeft, Plus, Heart, MessageCircle, Send, Bookmark, X, Eye, Activity, Info, ChevronDown, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -15,14 +15,8 @@ import { mapInstagramData } from '../modules/analytics/utils/instagramAdapter';
 import { LeetCodeAnalyticsDashboard } from '../features/leetcode/pages/LeetCodeAnalyticsDashboard';
 import { AccountStorySwitcher } from '../components/ui/AccountStorySwitcher';
 import { GithubWorkspaceView } from '../features/github/components/GithubWorkspaceView';
-type ContentSort = 'Views' | 'Accounts reached' | 'Follows' | 'Likes' | 'Comments' | 'Reposts' | 'Shares' | 'Saves';
 type InsightsTab = 'overview' | 'content' | 'audience';
 
-const contentSorts: ContentSort[] = ['Views','Accounts reached','Follows','Likes','Comments','Reposts','Shares','Saves'];
-const SORT_KEYS: Record<ContentSort, keyof typeof IG_CONTENT_POSTS[0]> = {
-  'Views': 'views','Accounts reached': 'accountsReached','Follows': 'follows',
-  'Likes': 'likes','Comments': 'comments','Reposts': 'reposts','Shares': 'shares','Saves': 'saves',
-};
 const BACKEND_APPS = new Set(['github', 'instagram', 'x', 'linkedin', 'leetcode']);
 const OAUTH_APPS = new Set(['github', 'instagram', 'x', 'linkedin']);
 
@@ -32,13 +26,12 @@ export default function AppDetails() {
   const location = useLocation();
   const { connectedApps, refreshConnections } = useAppContext();
 
-  const appInfo = MOCK_APPS.find(a => a.id === id);
+  const appInfo = APP_REGISTRY.find(a => a.id === id);
   const isConnected = connectedApps.includes(id as any);
   const isConnectionCallback = new URLSearchParams(location.search).get('connected') === 'true';
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [igTab, setIgTab] = useState<InsightsTab>('overview');
-  const [contentSort, setContentSort] = useState<ContentSort>('Views');
   const [audienceSegment, setAudienceSegment] = useState<'overall'|'follows'|'unfollows'>('overall');
   const [activeDay, setActiveDay] = useState('Su');
   const [locationView, setLocationView] = useState<'Countries'|'Towns/cities'>('Countries');
@@ -84,7 +77,26 @@ export default function AppDetails() {
 
   // Removed old manual GitHub data fetching in favor of React Query in GithubWorkspaceView
 
-  const accounts = useMemo(() => id ? (MOCK_ACCOUNTS[id as string] || []) : [], [id]);
+  // Build accounts from real connection status instead of mock data
+  const accounts = useMemo(() => {
+    if (!id) return [];
+    // Use connection data from context (real backend data)
+    return connectedApps.includes(id as any)
+      ? [{ id: `${id}_1`, username: id, avatarUrl: '', type: 'connected' }]
+      : [];
+  }, [id, connectedApps]);
+
+  // Fetch real Instagram data when on Instagram page
+  const { data: igApiData } = useQuery({
+    queryKey: ['instagram-all'],
+    queryFn: async () => {
+      const res = await getInstagramData();
+      if (!res.success || !res.data) return null;
+      return res.data;
+    },
+    enabled: id === 'instagram' && isConnected,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Handle app switching and initial account selection
   useEffect(() => {
@@ -161,9 +173,6 @@ export default function AppDetails() {
       </motion.div>
     );
   }
-
-  const sortedContent = [...IG_CONTENT_POSTS].sort((a, b) => (b[SORT_KEYS[contentSort]] as number) - (a[SORT_KEYS[contentSort]] as number));
-  const days = ['Su','M','Tu','W','Th','F','Sa'];
 
   const renderActiveAccountsStory = () => {
     return (
@@ -276,7 +285,7 @@ export default function AppDetails() {
 
   // ─── INSTAGRAM (Full Insights) ───
   if (appInfo.id === 'instagram') {
-    const data = mapInstagramData();
+    const data = mapInstagramData(igApiData);
     return (
       <div className="max-w-5xl mx-auto px-6 pt-6">
         <button onClick={() => navigate('/app/apps')} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-black mb-6 transition-colors">

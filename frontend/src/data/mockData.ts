@@ -1,4 +1,4 @@
-export const MOCK_APPS = [
+export const APP_REGISTRY = [
   { id: 'instagram', name: 'Instagram', color: 'text-pink-600', iconUrl: '/icons/instagram.jpeg' },
   { id: 'x', name: 'X (Twitter)', color: 'text-black', iconUrl: '/icons/x.jpeg' },
   { id: 'linkedin', name: 'LinkedIn', color: 'text-blue-600', iconUrl: '/icons/linkedin.jpeg' },

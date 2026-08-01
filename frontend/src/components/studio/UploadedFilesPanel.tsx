@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStudioStore } from '../../store/studioStore';
 import { Trash2, FileText, Image as ImageIcon, Video, Grid, List, Check, Settings } from 'lucide-react';
-import { MOCK_APPS } from '../../data/mockData';
+import { APP_REGISTRY } from '../../lib/appRegistry';
 import { AppName } from '../../types';
 
 interface UploadedFilesPanelProps {
@@ -99,7 +99,7 @@ const FileListView: React.FC<{ onOpenGithubModal: (fileId: string) => void }> = 
 
             <div className="flex items-center gap-2 flex-shrink-0">
               {selectedApps.map(app => {
-                const appInfo = MOCK_APPS.find(a => a.id === app);
+                const appInfo = APP_REGISTRY.find(a => a.id === app);
                 const isIncluded = perAppInclusion[id]?.[app];
                 const isCompatible = isIncluded !== undefined; // If it's undefined, it means our capabilities didn't even register it. Actually wait, it's boolean.
 

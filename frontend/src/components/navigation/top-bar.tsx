@@ -5,7 +5,7 @@ import { cn } from "../../lib/utils"
 import { NotificationPopover, type Notification } from "../dashboard/notification-popover"
 import { Avatar, AvatarFallback } from "../ui/avatar"
 import { Menu, MessageSquare, Search } from "lucide-react"
-import { MOCK_APPS } from "../../data/mockData"
+import { APP_REGISTRY } from "../../lib/appRegistry"
 import { useAppContext } from "../../context/AppContext"
 import { useChatStore } from "../../store/chatStore"
 
@@ -27,7 +27,7 @@ const pageTitles: Record<string, string> = {
 
 export function TopBar({ onMenuClick, showMenu, onSearchOpen }: TopBarProps) {
   const { connectedApps: connectedAppIds } = useAppContext()
-  const connectedApps = MOCK_APPS.filter(app => connectedAppIds.includes(app.id as any))
+  const connectedApps = APP_REGISTRY.filter(app => connectedAppIds.includes(app.id as any))
   const navigate = useNavigate()
   const location = useLocation()
   const { isOpen: isChatOpen, togglePanel: toggleChat } = useChatStore()

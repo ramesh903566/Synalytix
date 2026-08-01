@@ -62,11 +62,12 @@ export function CalendarsTab() {
               {googleCal ? (
                 <>
                   <button
-                    onClick={() => window.location.href = "/api/auth/connect/google-calendar"}
+                    onClick={() => connectGoogle.mutate()}
+                    disabled={connectGoogle.isPending}
                     className="w-8 h-8 rounded-[var(--radius-button)] flex items-center justify-center text-text-muted hover:bg-bg-sunken hover:text-text-primary transition-colors"
                     title="Re-sync"
                   >
-                    <RefreshCw className="w-3.5 h-3.5" />
+                    <RefreshCw className={cn("w-3.5 h-3.5", connectGoogle.isPending && "animate-spin")} />
                   </button>
                   <button
                     onClick={() => {

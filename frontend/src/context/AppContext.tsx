@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { AppName } from '../types';
-import { disconnectPlatform, getConnectionStatus } from '../lib/api';
+import { connectPlatform, disconnectPlatform, getConnectionStatus } from '../lib/api';
 import { supabase } from '../lib/supabase';
 
 export interface ScheduledPost {
@@ -155,8 +155,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const connectCalendar = async (provider: ExternalCalendarProvider) => {
     if (provider === 'google') {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      window.location.href = `${apiBase}/api/auth/connect/google-calendar`;
+      await connectPlatform('google-calendar');
     }
   };
 

@@ -1,9 +1,27 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { authenticate } from '../middleware/auth';
 import { ConnectionService } from '../services/connectionService';
 import { GitHubService } from '../services/githubService';
 
 const router = Router();
+
+const GitHubCreateRepoSchema = z.object({
+  name: z.string().min(1).max(100).regex(/^[a-zA-Z0-9_.-]+$/, 'Invalid repository name'),
+  description: z.string().max(350).optional(),
+  private: z.boolean().optional(),
+});
+
+const GitHubPublishSchema = z.object({
+  owner: z.string().min(1).max(100).regex(/^[a-zA-Z0-9_.-]+$/),
+  repo: z.string().min(1).max(100).regex(/^[a-zA-Z0-9_.-]+$/),
+  branch: z.string().max(100).regex(/^[a-zA-Z0-9_/.-]*$/).optional().default('main'),
+  message: z.string().min(1).max(200),
+  files: z.array(z.object({
+    path: z.string().min(1).max(500).refine(p => !p.includes('..'), 'Path must not contain ..'),
+    content: z.string().max(1000000),
+  })).min(1).max(20),
+});
 
 // Retrieve GitHub Token Helper
 const getGitHubToken = async (userId: string) => {
@@ -34,15 +52,20 @@ router.get('/github/repos', authenticate, async (req, res) => {
 // POST /api/studio/github/repos
 // Create a new repository
 router.post('/github/repos', authenticate, async (req, res) => {
+  const parsed = GitHubCreateRepoSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.issues[0].message });
+    return;
+  }
+
   try {
     const accessToken = await getGitHubToken(req.userId!);
-    const newRepo = await GitHubService.createRepo(accessToken, req.body);
+    const newRepo = await GitHubService.createRepo(accessToken, parsed.data);
     res.json({ success: true, repo: newRepo });
   } catch (error: any) {
-    console.error('Error creating GitHub repo:', error?.response?.data || error);
-    res.status(500).json({ 
-      success: false, 
-      error: error?.response?.data?.message || 'Failed to create repository' 
+    res.status(500).json({
+      success: false,
+      error: error?.response?.data?.message || 'Failed to create repository'
     });
   }
 });
@@ -50,13 +73,15 @@ router.post('/github/repos', authenticate, async (req, res) => {
 // POST /api/studio/github/publish
 // Publish files to a GitHub repository
 router.post('/github/publish', authenticate, async (req, res) => {
+  const parsed = GitHubPublishSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.issues[0].message });
+    return;
+  }
+
   try {
     const accessToken = await getGitHubToken(req.userId!);
-    const { owner, repo, branch = 'main', message, files } = req.body;
-    
-    if (!owner || !repo || !message || !files || !Array.isArray(files)) {
-      return res.status(400).json({ success: false, error: 'Missing required fields' });
-    }
+    const { owner, repo, branch, message, files } = parsed.data;
 
     const commitResult = await GitHubService.commitFiles(
       accessToken,
@@ -69,10 +94,9 @@ router.post('/github/publish', authenticate, async (req, res) => {
 
     res.json({ success: true, commit: commitResult });
   } catch (error: any) {
-    console.error('Error publishing to GitHub:', error?.response?.data || error);
-    res.status(500).json({ 
-      success: false, 
-      error: error?.response?.data?.message || 'Failed to publish to GitHub' 
+    res.status(500).json({
+      success: false,
+      error: error?.response?.data?.message || 'Failed to publish to GitHub'
     });
   }
 });

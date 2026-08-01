@@ -16,11 +16,11 @@ export function errorHandler(
     stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
   });
 
-  // Don't leak internal error details in production
+  // Don't leak internal error details outside development
   const message =
-    process.env.NODE_ENV === 'production'
-      ? 'An internal server error occurred'
-      : error.message;
+    process.env.NODE_ENV === 'development'
+      ? error.message
+      : 'An internal server error occurred';
 
   res.status(500).json({
     success: false,

@@ -1,8 +1,11 @@
-import { MOCK_APPS } from "../../data/mockData";
+import { APP_REGISTRY } from "../../lib/appRegistry";
 import { useAppContext } from "../../context/AppContext";
 import { usePlatformConnections, useDisconnectPlatform } from "../../hooks/useSettings";
 import { LeetCodeCard } from "./LeetCodeCard";
 import { XPlatformCard } from "./XPlatformCard";
+import { connectPlatform } from "../../lib/api";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 const BACKEND_APPS = new Set(["github", "instagram", "x", "linkedin", "leetcode"]);
 
@@ -10,12 +13,20 @@ export function IntegrationsTab() {
   const { connectedApps } = useAppContext();
   const { data: connections } = usePlatformConnections();
   const disconnect = useDisconnectPlatform();
+  const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
 
   const getConnection = (platform: string) =>
     connections?.find((c) => c.platform === platform);
 
-  const handleConnect = (platform: string) => {
-    window.location.href = `/api/auth/connect/${platform}`;
+  const handleConnect = async (platform: string) => {
+    setConnectingPlatform(platform);
+    try {
+      await connectPlatform(platform);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to start OAuth connection";
+      toast.error(message);
+      setConnectingPlatform(null);
+    }
   };
 
   const handleDisconnect = (platform: string) => {
@@ -25,11 +36,11 @@ export function IntegrationsTab() {
   };
 
   // Separate LeetCode and X for special rendering
-  const regularApps = MOCK_APPS.filter(
+  const regularApps = APP_REGISTRY.filter(
     (app) => app.id !== "leetcode" && app.id !== "x"
   );
-  const xApp = MOCK_APPS.find((app) => app.id === "x");
-  const leetcodeApp = MOCK_APPS.find((app) => app.id === "leetcode");
+  const xApp = APP_REGISTRY.find((app) => app.id === "x");
+  const leetcodeApp = APP_REGISTRY.find((app) => app.id === "leetcode");
 
   return (
     <div className="space-y-6">
@@ -89,9 +100,10 @@ export function IntegrationsTab() {
               ) : isSupported ? (
                 <button
                   onClick={() => handleConnect(app.id)}
+                  disabled={connectingPlatform === app.id}
                   className="text-[10px] font-bold text-brand bg-brand-light border border-brand/20 px-3 py-1.5 rounded-[var(--radius-badge)] hover:bg-brand/10 transition-colors"
                 >
-                  Connect
+                  {connectingPlatform === app.id ? "Connecting..." : "Connect"}
                 </button>
               ) : (
                 <span className="text-[10px] font-bold text-text-muted bg-bg-sunken border border-border px-3 py-1.5 rounded-[var(--radius-badge)]">

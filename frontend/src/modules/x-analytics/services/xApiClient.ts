@@ -1,84 +1,69 @@
-import { 
-  MOCK_KPIS, 
-  MOCK_CONTENT, 
-  MOCK_VIDEOS, 
-  MOCK_LIVE, 
-  MOCK_SPACES,
-  MOCK_AUDIENCE_DEMOGRAPHICS,
-  MOCK_AUDIENCE_HEATMAP
-} from '../mock/xMockData';
 import { DateRange, KPI, ContentPost, VideoStats, LiveBroadcast, Space } from '../types/xAnalytics';
-import { useXAnalyticsStore } from '../store/useXAnalyticsStore';
+import { supabase } from '../../../lib/supabase';
 
-// Helper to simulate network latency
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
+async function xFetch<T>(path: string): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
+  });
+  if (!res.ok) throw new Error(`X API error: ${res.status}`);
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error || 'Failed to fetch X data');
+  return json.data;
+}
 
 export class XApiClient {
-  
-  static isMockMode() {
-    return useXAnalyticsStore.getState().dataSourceMode === 'MOCK';
-  }
 
   static async getOverviewKPIs(dateRange: DateRange): Promise<Record<string, KPI>> {
-    if (this.isMockMode()) {
-      await delay(500);
-      return MOCK_KPIS;
-    }
-    // LIVE MODE: 
-    // const response = await fetch(`/api/x/overview?range=${dateRange}`);
-    // return response.json();
-    throw new Error("Live mode API not implemented yet. Switch to Mock mode.");
+    const data = await xFetch<any>('/api/data/x/all');
+    const profile = data?.profile || {};
+    const tweets = data?.tweets || [];
+
+    return {
+      impressions: { id: 'impressions', value: profile.impressions || 0, label: 'Impressions', trend: 'neutral', change: 0 },
+      engagements: { id: 'engagements', value: profile.engagements || 0, label: 'Engagements', trend: 'neutral', change: 0 },
+      followers: { id: 'followers', value: profile.followers || 0, label: 'Followers', trend: 'neutral', change: 0 },
+      profileViews: { id: 'profileViews', value: profile.profile_views || 0, label: 'Profile Views', trend: 'neutral', change: 0 },
+    };
   }
 
-  static async getAudienceDemographics(dateRange: DateRange) {
-    if (this.isMockMode()) {
-      await delay(600);
-      return MOCK_AUDIENCE_DEMOGRAPHICS;
-    }
-    // LIVE MODE: X API does not provide demographic data directly via organic endpoints.
-    // Must be implemented via Ads API or AI estimation backend.
-    throw new Error("Audience Demographics API not available natively.");
+  static async getAudienceDemographics(_dateRange: DateRange) {
+    return { age: [], gender: [], location: [] };
   }
 
-  static async getAudienceActivityHeatmap(dateRange: DateRange) {
-    if (this.isMockMode()) {
-      await delay(400);
-      return MOCK_AUDIENCE_HEATMAP;
-    }
-    // LIVE MODE
-    throw new Error("Live mode API not implemented yet. Switch to Mock mode.");
+  static async getAudienceActivityHeatmap(_dateRange: DateRange) {
+    return [];
   }
 
-  static async getContentPosts(dateRange: DateRange, page = 1): Promise<ContentPost[]> {
-    if (this.isMockMode()) {
-      await delay(700);
-      return MOCK_CONTENT; // Ideally slice by page
-    }
-    // LIVE MODE
-    throw new Error("Live mode API not implemented yet. Switch to Mock mode.");
+  static async getContentPosts(_dateRange: DateRange, _page = 1): Promise<ContentPost[]> {
+    const data = await xFetch<any>('/api/data/x/all');
+    const tweets = data?.tweets || [];
+    return tweets.map((t: any) => ({
+      id: t.id,
+      text: t.text || '',
+      createdAt: t.created_at || new Date().toISOString(),
+      likes: t.like_count || 0,
+      retweets: t.retweet_count || 0,
+      replies: t.reply_count || 0,
+      impressions: t.impression_count || 0,
+      engagementRate: 0,
+    }));
   }
 
-  static async getVideoStats(dateRange: DateRange): Promise<VideoStats[]> {
-    if (this.isMockMode()) {
-      await delay(500);
-      return MOCK_VIDEOS;
-    }
-    throw new Error("Live mode API not implemented yet. Switch to Mock mode.");
+  static async getVideoStats(_dateRange: DateRange): Promise<VideoStats[]> {
+    return [];
   }
 
-  static async getLiveBroadcasts(dateRange: DateRange): Promise<LiveBroadcast[]> {
-    if (this.isMockMode()) {
-      await delay(400);
-      return MOCK_LIVE;
-    }
-    throw new Error("Live mode API not implemented yet. Switch to Mock mode.");
+  static async getLiveBroadcasts(_dateRange: DateRange): Promise<LiveBroadcast[]> {
+    return [];
   }
 
-  static async getSpaces(dateRange: DateRange): Promise<Space[]> {
-    if (this.isMockMode()) {
-      await delay(600);
-      return MOCK_SPACES;
-    }
-    throw new Error("Live mode API not implemented yet. Switch to Mock mode.");
+  static async getSpaces(_dateRange: DateRange): Promise<Space[]> {
+    return [];
   }
 }

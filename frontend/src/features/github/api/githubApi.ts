@@ -13,65 +13,53 @@ import {
   GithubLanguageSchema,
   GithubTimelineEventSchema
 } from '../types/github.types';
-import {
-  GITHUB_PROFILE_MOCK,
-  GITHUB_CONTRIBUTIONS_MOCK,
-  GITHUB_ACTIVITY_MOCK,
-  GITHUB_REPOS_MOCK,
-  GITHUB_LANGUAGES_MOCK,
-  GITHUB_TIMELINE_MOCK
-} from './mockData';
+import { supabase } from '../../../lib/supabase';
 
-// Fetch helper with fallback to mock data if API fails or returns 404
-const fetchWithFallback = async <T>(
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
+async function getToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
+
+const apiFetch = async <T>(
   url: string,
   schema: z.ZodType<T>,
-  fallback: T,
-  delayMs: number = 800
 ): Promise<T> => {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-    const data = await response.json();
-    return schema.parse(data);
-  } catch (error) {
-    console.warn(`Falling back to mock data for ${url}:`, error);
-    // Simulate network delay for fallback
-    await new Promise(resolve => setTimeout(resolve, delayMs));
-    return fallback;
+  const token = await getToken();
+  const response = await fetch(`${API_BASE}${url}`, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
   }
+  const json = await response.json();
+  const data = json.data ?? json;
+  return schema.parse(data);
 };
 
-export const fetchGithubProfile = async (username: string): Promise<GithubProfile> => {
-  const fallback = {
-    ...GITHUB_PROFILE_MOCK,
-    login: username,
-    name: username === 'ramesh903566' ? 'Ramesh Kumar' : username
-  };
-  return fetchWithFallback(`/api/github/${username}/profile`, GithubProfileSchema, fallback, 800);
+export const fetchGithubProfile = async (_username: string): Promise<GithubProfile> => {
+  return apiFetch('/api/data/github/profile', GithubProfileSchema);
 };
 
-export const fetchGithubContributions = async (username: string): Promise<GithubContributions> => {
-  return fetchWithFallback(`/api/github/${username}/contributions`, GithubContributionsSchema, GITHUB_CONTRIBUTIONS_MOCK, 1000);
+export const fetchGithubContributions = async (_username: string): Promise<GithubContributions> => {
+  return apiFetch('/api/data/github/contributions', GithubContributionsSchema);
 };
 
-export const fetchGithubActivity = async (username: string): Promise<GithubActivity> => {
-  return fetchWithFallback(`/api/github/${username}/activity`, GithubActivitySchema, GITHUB_ACTIVITY_MOCK, 700);
+export const fetchGithubActivity = async (_username: string): Promise<GithubActivity> => {
+  return apiFetch('/api/data/github/activity', GithubActivitySchema);
 };
 
-export const fetchGithubRepositories = async (username: string): Promise<GithubRepository[]> => {
-  return fetchWithFallback(`/api/github/${username}/repositories`, z.array(GithubRepositorySchema), GITHUB_REPOS_MOCK, 1200);
+export const fetchGithubRepositories = async (_username: string): Promise<GithubRepository[]> => {
+  return apiFetch('/api/data/github/repos', z.array(GithubRepositorySchema));
 };
 
-export const fetchGithubLanguages = async (username: string): Promise<GithubLanguage[]> => {
-  return fetchWithFallback(`/api/github/${username}/languages`, z.array(GithubLanguageSchema), GITHUB_LANGUAGES_MOCK, 900);
+export const fetchGithubLanguages = async (_username: string): Promise<GithubLanguage[]> => {
+  return apiFetch('/api/data/github/languages', z.array(GithubLanguageSchema));
 };
 
-export const fetchGithubTimeline = async (username: string, page: number = 1): Promise<GithubTimelineEvent[]> => {
-  const start = (page - 1) * 2;
-  const end = start + 2;
-  const fallbackPage = GITHUB_TIMELINE_MOCK.slice(start, end);
-  return fetchWithFallback(`/api/github/${username}/timeline?page=${page}`, z.array(GithubTimelineEventSchema), fallbackPage, 600);
+export const fetchGithubTimeline = async (_username: string, page: number = 1): Promise<GithubTimelineEvent[]> => {
+  return apiFetch(`/api/data/github/timeline?page=${page}`, z.array(GithubTimelineEventSchema));
 };

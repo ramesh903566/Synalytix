@@ -75,6 +75,11 @@ For your frontend login (not for platform OAuth — that goes through your backe
 
 ## STEP 2 — Create Developer Apps on Each Platform
 
+Use `BACKEND_URL` for every callback URL and `FRONTEND_URL` for every homepage or website URL. For local development in this repo, the default values are:
+
+- Frontend URL: `http://localhost:3000`
+- Backend URL: `http://localhost:4000`
+
 ### GitHub
 1. Go to https://github.com/settings/developers
 2. Click **OAuth Apps → New OAuth App**
@@ -91,12 +96,13 @@ For your frontend login (not for platform OAuth — that goes through your backe
 2. Click **My Apps → Create App**
 3. Select **Business** as the app type
 4. Name it `Synalytix`
-5. In the app dashboard, click **Add Product → Instagram Graph API**
-6. Go to **Facebook Login → Settings** (under Products)
+5. Add the **Facebook Login** product
+6. Go to **Facebook Login → Settings**
 7. Add to **Valid OAuth Redirect URIs**: `http://localhost:4000/api/auth/callback/instagram`
 8. Go to **App Settings → Basic**
 9. Copy **App ID** → `META_APP_ID`
 10. Copy **App Secret** → `META_APP_SECRET`
+11. Request or test with these permissions: `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`
 
 > ⚠️ For Instagram Insights, the user's Instagram must be a **Professional account**
 > (Creator or Business) connected to a **Facebook Page**.
@@ -108,11 +114,15 @@ For your frontend login (not for platform OAuth — that goes through your backe
 1. Go to https://developer.twitter.com
 2. Apply for a developer account (free)
 3. Create a **Project** then an **App** inside it
-4. In App Settings, enable **OAuth 2.0**
-5. Set Type of App to **Web App**
-6. Callback URL: `http://localhost:4000/api/auth/callback/x`
-7. Copy **Client ID** → `X_CLIENT_ID`
-8. Copy **Client Secret** → `X_CLIENT_SECRET`
+4. Go to **User authentication settings**
+5. Enable **OAuth 2.0**
+6. Set Type of App to **Web App**
+7. Callback URI: `http://localhost:4000/api/auth/callback/x`
+8. Website URL: `http://localhost:3000`
+9. Enable PKCE / code challenge if shown. The backend already sends the S256 code challenge.
+10. Set app permissions to **Read and Write** if publishing is needed, or **Read** for analytics-only access
+11. Copy **Client ID** → `X_CLIENT_ID`
+12. Copy **Client Secret** → `X_CLIENT_SECRET`
 
 > ⚠️ The free tier gives very limited analytics. `impression_count` requires
 > the Basic plan ($100/month). Basic engagement (likes, retweets) is free.
@@ -171,6 +181,9 @@ X_CLIENT_SECRET=abc123...
 
 LINKEDIN_CLIENT_ID=abc123...
 LINKEDIN_CLIENT_SECRET=abc123...
+
+GOOGLE_CLIENT_ID=abc123...
+GOOGLE_CLIENT_SECRET=abc123...
 ```
 
 ---

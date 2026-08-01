@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sparkles, Calendar, Clock, CheckCircle2, Trash2, Save } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { MOCK_APPS } from '../data/mockData';
+import { APP_REGISTRY } from '../lib/appRegistry';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppName } from '../types';
 import toast from 'react-hot-toast';
+import { useQuery } from '@tanstack/react-query';
+import { getConnectionStatus } from '../lib/api';
 
 import { useStudioStore } from '../store/studioStore';
 import { useGenerateDrafts } from '../lib/studio/api';
@@ -15,16 +17,36 @@ import { DestinationAppSelector } from '../components/studio/DestinationAppSelec
 import { PostPreviewPanel } from '../components/studio/PostPreviewPanel';
 import { GitHubPublishDetailsModal } from '../components/studio/GitHubPublishDetailsModal';
 
-const MOCK_ACCOUNTS: Record<string, {id: string, name: string, handle: string}[]> = {
-  instagram: [{id: 'ig_1', name: 'Synalytix HQ', handle: '@synalytix'}],
-  x: [{id: 'x_1', name: 'Synalytix', handle: '@synalytix_app'}],
-  linkedin: [{id: 'li_1', name: 'Synalytix AI', handle: 'synalytix-company'}],
-  github: [{id: 'gh_1', name: 'Synalytix', handle: 'synalytix-hq'}],
-  leetcode: [{id: 'lc_1', name: 'Synalytix', handle: 'synalytix_dev'}],
-};
+const OAUTH_APPS = new Set(['github', 'instagram', 'x', 'linkedin']);
 
 export default function Studio() {
   const { connectedApps, scheduledPosts, addScheduledPost, deleteScheduledPost, saveDraft, savedDrafts, deleteDraft } = useAppContext();
+
+  // Fetch real connected accounts from backend
+  const { data: connectionData } = useQuery({
+    queryKey: ['connection-status'],
+    queryFn: async () => {
+      const res = await getConnectionStatus();
+      if (!res.success || !res.data) return null;
+      return res.data as { connected: string[]; connections: Array<{ platform: string; username: string }> };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Build accounts from real connection data
+  const MOCK_ACCOUNTS = useMemo(() => {
+    const accounts: Record<string, { id: string; name: string; handle: string }[]> = {};
+    if (connectionData?.connections) {
+      for (const conn of connectionData.connections) {
+        accounts[conn.platform] = [{
+          id: `${conn.platform}_1`,
+          name: conn.username,
+          handle: `@${conn.username}`,
+        }];
+      }
+    }
+    return accounts;
+  }, [connectionData]);
   
   const { 
     postDescription, 
@@ -272,7 +294,7 @@ export default function Studio() {
                 <div className="flex gap-2 items-center flex-wrap mt-auto pt-4 border-t border-border-light">
                   <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted mr-1">Platforms:</span>
                   {post.apps.map(app => {
-                    const appInfo = MOCK_APPS.find(a => a.id === app);
+                    const appInfo = APP_REGISTRY.find(a => a.id === app);
                     return (
                       <span key={app} className={`px-2 py-0.5 rounded-[var(--radius-badge)] text-[9px] font-bold text-text-primary bg-bg-canvas flex items-center gap-1.5 border border-border`}>
                         <img src={appInfo?.iconUrl} alt={appInfo?.name} className="w-3 h-3 object-cover rounded-[var(--radius-badge)]" />
@@ -311,7 +333,7 @@ export default function Studio() {
                 <div className="flex gap-2 items-center flex-wrap mt-auto pt-4 border-t border-border-light mb-4">
                   <span className="text-[9px] uppercase tracking-wider font-bold text-text-muted mr-1">Platforms:</span>
                   {draft.apps.map(app => {
-                    const appInfo = MOCK_APPS.find(a => a.id === app);
+                    const appInfo = APP_REGISTRY.find(a => a.id === app);
                     return (
                       <span key={app} className={`px-2 py-0.5 rounded-[var(--radius-badge)] text-[9px] font-bold text-text-primary bg-bg-canvas flex items-center gap-1.5 border border-border`}>
                         <img src={appInfo?.iconUrl} alt={appInfo?.name} className="w-3 h-3 object-cover rounded-[var(--radius-badge)]" />
@@ -343,7 +365,7 @@ export default function Studio() {
         {showAccountModal && (
           <div className="fixed inset-0 bg-bg-base/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <motion.div initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} exit={{opacity:0, scale:0.95}} className="bg-bg-elevated border border-border rounded-[var(--radius-card)] p-6 max-w-sm w-full shadow-level-2">
-              <h3 className="text-sm font-semibold text-text-primary mb-4">Select accounts for {MOCK_APPS.find(a => a.id === showAccountModal)?.name}</h3>
+              <h3 className="text-sm font-semibold text-text-primary mb-4">Select accounts for {APP_REGISTRY.find(a => a.id === showAccountModal)?.name}</h3>
               <div className="space-y-3 mb-6">
                 {(MOCK_ACCOUNTS[showAccountModal] || []).map(acc => (
                   <label key={acc.id} className="flex items-center gap-3 p-3 rounded-[var(--radius-card-inner)] border border-border cursor-pointer hover:bg-bg-sunken">

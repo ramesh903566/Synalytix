@@ -7,7 +7,7 @@ import { InstagramService } from '../services/instagramService';
 import { XService, LinkedInService } from '../services/platformServices';
 import { LeetCodeService } from '../services/leetcodeService';
 import { GoogleCalendarService } from '../services/googleCalendarService';
-import { supabase } from '../lib/supabase';
+import { supabase, decrypt } from '../lib/supabase';
 
 const LeetCodeConnectSchema = z.object({
   username: z.string().min(1).max(50).trim(),
@@ -95,8 +95,8 @@ router.get('/github/repos', authenticate, async (req: Request, res: Response) =>
   const conn = await getConnection(req.userId!, 'github', res);
   if (!conn) return;
 
-  const page = parseInt(req.query.page as string) || 1;
-  const perPage = parseInt(req.query.per_page as string) || 30;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const perPage = Math.min(100, Math.max(1, parseInt(req.query.per_page as string) || 30));
 
   try {
     const data = await getCached(
@@ -198,7 +198,7 @@ router.get('/instagram/insights', authenticate, async (req: Request, res: Respon
   const conn = await getConnection(req.userId!, 'instagram', res);
   if (!conn) return;
 
-  const period = (req.query.period as 'day' | 'week' | 'month') || 'month';
+  const period = (['day', 'week', 'month'].includes(req.query.period as string) ? req.query.period as 'day' | 'week' | 'month' : 'month');
 
   try {
     const data = await getCached(
@@ -221,7 +221,7 @@ router.get('/instagram/media', authenticate, async (req: Request, res: Response)
   const conn = await getConnection(req.userId!, 'instagram', res);
   if (!conn) return;
 
-  const limit = parseInt(req.query.limit as string) || 20;
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
 
   try {
     const data = await getCached(
@@ -293,7 +293,7 @@ router.get('/x/tweets', authenticate, async (req: Request, res: Response) => {
   const conn = await getConnection(req.userId!, 'x', res);
   if (!conn) return;
 
-  const limit = parseInt(req.query.limit as string) || 10;
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
 
   try {
     const data = await getCached(
@@ -477,7 +477,7 @@ router.get('/leetcode/submissions', authenticate, async (req: Request, res: Resp
   const conn = await getConnection(req.userId!, 'leetcode', res);
   if (!conn) return;
 
-  const limit = parseInt(req.query.limit as string) || 15;
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 15));
   const username = conn.platform_username;
 
   try {
@@ -662,12 +662,12 @@ router.get('/google-calendar/events', authenticate, async (req: Request, res: Re
     const conn = await getConnection(userId, 'google-calendar', res);
     if (!conn) return;
 
-    if (!conn.access_token) {
+    if (!conn.decrypted_access_token) {
       res.status(401).json({ success: false, error: 'Google Calendar access token is missing' });
       return;
     }
 
-    const events = await GoogleCalendarService.getEvents(conn.access_token, conn.refresh_token);
+    const events = await GoogleCalendarService.getEvents(conn.decrypted_access_token, conn.refresh_token ? decrypt(conn.refresh_token) : null);
 
     // Normalize events for frontend
     const normalizedEvents = events.map(event => {
@@ -712,14 +712,19 @@ router.get('/google-calendar/events', authenticate, async (req: Request, res: Re
 
 router.post('/cache/invalidate/:platform', authenticate, async (req: Request, res: Response) => {
   const platform = req.params.platform;
+  const validPlatforms = ['github', 'instagram', 'x', 'linkedin', 'leetcode', 'google-calendar'];
+  if (!validPlatforms.includes(platform)) {
+    res.status(400).json({ success: false, error: 'Invalid platform' });
+    return;
+  }
   const userId = req.userId!;
 
   try {
-    // Delete all cache entries for this user + platform
+    const safePlatform = platform.replace(/[%_]/g, '\\$&');
     await supabase
       .from('api_cache')
       .delete()
-      .like('cache_key', `${platform}_%_${userId}%`);
+      .like('cache_key', `${safePlatform}_%_${userId}%`);
 
     res.json({ success: true, message: `Cache cleared for ${platform}` });
   } catch (err: any) {

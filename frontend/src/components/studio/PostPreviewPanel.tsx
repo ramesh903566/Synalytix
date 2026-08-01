@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStudioStore } from '../../store/studioStore';
 import { Sparkles, Github } from 'lucide-react';
-import { MOCK_APPS } from '../../data/mockData';
+import { APP_REGISTRY } from '../../lib/appRegistry';
 import { AppName } from '../../types';
 
 interface PostPreviewPanelProps {
@@ -45,7 +45,7 @@ export const PostPreviewPanel: React.FC<PostPreviewPanelProps> = ({ onOpenGithub
       {/* Tab Strip */}
       <div className="flex bg-bg-canvas border-b border-border p-2 gap-2 overflow-x-auto custom-scrollbar">
         {selectedApps.map(app => {
-          const appInfo = MOCK_APPS.find(a => a.id === app);
+          const appInfo = APP_REGISTRY.find(a => a.id === app);
           const isActive = activePreviewTab === app;
           return (
             <button

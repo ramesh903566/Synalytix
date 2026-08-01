@@ -21,6 +21,22 @@ function wantsJson(req: Request) {
   return req.get('accept')?.includes('application/json') || req.query.format === 'json';
 }
 
+function requireEnv(platform: string, names: string[]): boolean {
+  const missing = names.filter((name) => !process.env[name]);
+  if (missing.length > 0) {
+    console.warn(`[OAuth Connect] ${platform} missing env vars: ${missing.join(', ')}`);
+    return false;
+  }
+  return true;
+}
+
+function failConnect(res: Response, platform: string, message: string) {
+  res.status(500).json({
+    success: false,
+    error: `${platform} OAuth is not configured: ${message}`,
+  });
+}
+
 // ─── Helper: redirect to frontend with error ──────────────────────────────────
 function redirectWithError(res: Response, platform: string, message: string) {
   const url = new URL(`${FRONTEND_URL}/app/apps`);
@@ -45,9 +61,14 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
   const platform = req.params.platform as Platform;
   const userId = req.userId!;
 
-  const validPlatforms: Platform[] = ['github', 'instagram', 'x', 'linkedin', 'leetcode', 'google-calendar'];
+  const validPlatforms: Platform[] = ['github', 'instagram', 'x', 'linkedin', 'google-calendar'];
   if (!validPlatforms.includes(platform)) {
     res.status(400).json({ success: false, error: `Unknown platform: ${platform}` });
+    return;
+  }
+
+  if (!BACKEND_URL || !FRONTEND_URL) {
+    failConnect(res, platform, 'BACKEND_URL and FRONTEND_URL must be set');
     return;
   }
 
@@ -56,6 +77,11 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
     let authUrl = '';
 
     if (platform === 'github') {
+      if (!requireEnv(platform, ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'])) {
+        failConnect(res, platform, 'set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET');
+        return;
+      }
+
       // GitHub OAuth 2.0 — simple, no PKCE needed
       await OAuthStateService.save({ user_id: userId, platform, state_token: stateToken });
 
@@ -68,19 +94,29 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
       authUrl = `https://github.com/login/oauth/authorize?${params}`;
 
     } else if (platform === 'instagram') {
+      if (!requireEnv(platform, ['META_APP_ID', 'META_APP_SECRET'])) {
+        failConnect(res, platform, 'set META_APP_ID and META_APP_SECRET');
+        return;
+      }
+
       // Meta / Instagram OAuth
       await OAuthStateService.save({ user_id: userId, platform, state_token: stateToken });
 
       const params = new URLSearchParams({
         client_id: process.env.META_APP_ID!,
         redirect_uri: `${BACKEND_URL}/api/auth/callback/instagram`,
-        scope: 'pages_show_list,instagram_basic,instagram_manage_insights,pages_read_engagement',
+        scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement',
         response_type: 'code',
         state: stateToken,
       });
       authUrl = `https://www.facebook.com/dialog/oauth?${params}`;
 
     } else if (platform === 'x') {
+      if (!requireEnv(platform, ['X_CLIENT_ID', 'X_CLIENT_SECRET'])) {
+        failConnect(res, platform, 'set X_CLIENT_ID and X_CLIENT_SECRET');
+        return;
+      }
+
       // X OAuth 2.0 with PKCE (required by X)
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = generateCodeChallenge(codeVerifier);
@@ -96,7 +132,7 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
         response_type: 'code',
         client_id: process.env.X_CLIENT_ID!,
         redirect_uri: `${BACKEND_URL}/api/auth/callback/x`,
-        scope: 'tweet.read users.read offline.access',
+        scope: 'tweet.read tweet.write users.read offline.access',
         state: stateToken,
         code_challenge: codeChallenge,
         code_challenge_method: 'S256',
@@ -104,6 +140,11 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
       authUrl = `https://twitter.com/i/oauth2/authorize?${params}`;
 
     } else if (platform === 'linkedin') {
+      if (!requireEnv(platform, ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET'])) {
+        failConnect(res, platform, 'set LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET');
+        return;
+      }
+
       await OAuthStateService.save({ user_id: userId, platform, state_token: stateToken });
       const params = new URLSearchParams({
         response_type: 'code',
@@ -114,6 +155,11 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
       });
       authUrl = `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
     } else if (platform === 'google-calendar') {
+      if (!requireEnv(platform, ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'])) {
+        failConnect(res, platform, 'set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET');
+        return;
+      }
+
       await OAuthStateService.save({ user_id: userId, platform, state_token: stateToken });
       authUrl = GoogleCalendarService.getAuthUrl(stateToken);
     }
@@ -259,7 +305,7 @@ router.get('/callback/instagram', async (req: Request, res: Response) => {
       expires_at: expiresAt,
       platform_user_id: igAccount.ig_account_id,
       platform_username: igProfile.username,
-      scope: 'instagram_basic,instagram_manage_insights',
+      scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement',
     });
 
     console.log(`[OAuth] Instagram connected: @${igProfile.username}`);
@@ -315,7 +361,7 @@ router.get('/callback/x', async (req: Request, res: Response) => {
       expires_at: expiresAt,
       platform_user_id: profile.id,
       platform_username: profile.username,
-      scope: 'tweet.read users.read offline.access',
+      scope: 'tweet.read tweet.write users.read offline.access',
     });
 
     console.log(`[OAuth] X connected: @${profile.username}`);

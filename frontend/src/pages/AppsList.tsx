@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_APPS } from '../data/mockData';
+import { APP_REGISTRY } from '../lib/appRegistry';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { Check, Plus } from 'lucide-react';
@@ -86,7 +86,7 @@ export default function AppsList() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {MOCK_APPS.map(app => {
+        {APP_REGISTRY.map(app => {
           const isConnected = connectedApps.includes(app.id as any);
           const isSupported = BACKEND_APPS.has(app.id);
           const meta = APP_META[app.id];
