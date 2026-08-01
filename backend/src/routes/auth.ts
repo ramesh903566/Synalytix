@@ -108,14 +108,21 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
       // Meta / Instagram OAuth
       await OAuthStateService.save({ user_id: userId, platform, state_token: stateToken });
 
-      const params = new URLSearchParams({
+      const params: Record<string, string> = {
         client_id: process.env.META_APP_ID!,
         redirect_uri: `${BACKEND_URL}/api/auth/callback/instagram`,
-        scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_manage_comments,pages_manage_metadata',
         response_type: 'code',
         state: stateToken,
-      });
-      authUrl = `https://www.facebook.com/dialog/oauth?${params}`;
+      };
+
+      if (process.env.META_CONFIG_ID) {
+        params.config_id = process.env.META_CONFIG_ID;
+      } else {
+        params.scope = 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_manage_comments';
+      }
+
+      const searchParams = new URLSearchParams(params);
+      authUrl = `https://www.facebook.com/v19.0/dialog/oauth?${searchParams}`;
 
     } else if (platform === 'x') {
       if (!requireEnv(platform, ['X_CLIENT_ID', 'X_CLIENT_SECRET'])) {
@@ -311,7 +318,7 @@ router.get('/callback/instagram', async (req: Request, res: Response) => {
       expires_at: expiresAt,
       platform_user_id: igAccount.ig_account_id,
       platform_username: igProfile.username,
-      scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_manage_comments,pages_manage_metadata',
+      scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_manage_comments',
     });
 
     console.log(`[OAuth] Instagram connected: @${igProfile.username}`);
