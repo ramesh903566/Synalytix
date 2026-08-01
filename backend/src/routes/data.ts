@@ -7,7 +7,7 @@ import { InstagramService } from '../services/instagramService';
 import { XService, LinkedInService } from '../services/platformServices';
 import { LeetCodeService } from '../services/leetcodeService';
 import { GoogleCalendarService } from '../services/googleCalendarService';
-import { supabase, decrypt } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 const LeetCodeConnectSchema = z.object({
   username: z.string().min(1).max(50).trim(),
@@ -667,7 +667,7 @@ router.get('/google-calendar/events', authenticate, async (req: Request, res: Re
       return;
     }
 
-    const events = await GoogleCalendarService.getEvents(conn.decrypted_access_token, conn.refresh_token ? decrypt(conn.refresh_token) : null);
+    const events = await GoogleCalendarService.getEvents(conn.decrypted_access_token, conn.decrypted_refresh_token);
 
     // Normalize events for frontend
     const normalizedEvents = events.map(event => {

@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAuthToken } from "../lib/auth-token";
 import { connectPlatform } from "../lib/api";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 import {
   fetchModels,
   saveProvider,
@@ -54,7 +56,7 @@ export interface CustomInstructions {
 async function fetchInstructions(provider: string): Promise<CustomInstructions> {
   const token = await getAuthToken();
   const res = await fetch(
-    `/api/settings/ai-instructions?provider=${encodeURIComponent(provider)}`,
+    `${API_BASE}/api/settings/ai-instructions?provider=${encodeURIComponent(provider)}`,
     { headers: token ? { Authorization: `Bearer ${token}` } : {} }
   );
   if (!res.ok) throw new Error("Failed to fetch instructions");
@@ -66,7 +68,7 @@ async function saveInstructions(
   instructions: string
 ): Promise<void> {
   const token = await getAuthToken();
-  const res = await fetch("/api/settings/ai-instructions", {
+  const res = await fetch(`${API_BASE}/api/settings/ai-instructions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -109,7 +111,7 @@ export interface PlatformConnection {
 
 async function fetchConnections(): Promise<PlatformConnection[]> {
   const token = await getAuthToken();
-  const res = await fetch("/api/auth/status", {
+  const res = await fetch(`${API_BASE}/api/auth/status`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!res.ok) throw new Error("Failed to fetch connections");
@@ -129,7 +131,7 @@ export function usePlatformConnections() {
 
 async function connectLeetCode(username: string): Promise<void> {
   const token = await getAuthToken();
-  const res = await fetch("/api/data/leetcode/connect", {
+  const res = await fetch(`${API_BASE}/api/data/leetcode/connect`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -145,7 +147,7 @@ async function connectLeetCode(username: string): Promise<void> {
 
 async function syncLeetCode(): Promise<void> {
   const token = await getAuthToken();
-  const res = await fetch("/api/data/leetcode/sync", {
+  const res = await fetch(`${API_BASE}/api/data/leetcode/sync`, {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
@@ -157,7 +159,7 @@ async function syncLeetCode(): Promise<void> {
 
 async function disconnectPlatform(platform: string): Promise<void> {
   const token = await getAuthToken();
-  const res = await fetch(`/api/auth/disconnect/${platform}`, {
+  const res = await fetch(`${API_BASE}/api/auth/disconnect/${platform}`, {
     method: "DELETE",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
@@ -200,7 +202,7 @@ export interface CalendarConnection {
 
 async function fetchCalendarConnections(): Promise<CalendarConnection[]> {
   const token = await getAuthToken();
-  const res = await fetch("/api/auth/status", {
+  const res = await fetch(`${API_BASE}/api/auth/status`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!res.ok) throw new Error("Failed to fetch connections");

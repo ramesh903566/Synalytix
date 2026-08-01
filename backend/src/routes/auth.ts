@@ -45,8 +45,14 @@ function redirectWithError(res: Response, platform: string, message: string) {
   res.redirect(url.toString());
 }
 
-// ─── Helper: redirect to frontend with success ────────────────────────────────
 function redirectWithSuccess(res: Response, platform: string) {
+  if (platform === 'google-calendar') {
+    const url = new URL(`${FRONTEND_URL}/app/settings`);
+    url.searchParams.set('tab', 'calendars');
+    url.searchParams.set('connected', 'true');
+    res.redirect(url.toString());
+    return;
+  }
   const url = new URL(`${FRONTEND_URL}/app/apps/${platform}`);
   url.searchParams.set('connected', 'true');
   res.redirect(url.toString());
