@@ -23,6 +23,7 @@ const PORT = process.env.PORT || 4000;
 // ─── Security Middleware ──────────────────────────────────────────────────────
 
 // Helmet sets secure HTTP headers
+app.set('trust proxy', 1);
 app.use(helmet());
 
 // CORS — only allow your frontend origin
