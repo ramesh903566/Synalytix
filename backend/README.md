@@ -81,15 +81,23 @@ Use `BACKEND_URL` for every callback URL and `FRONTEND_URL` for every homepage o
 - Backend URL: `http://localhost:4000`
 
 ### GitHub
-1. Go to https://github.com/settings/developers
-2. Click **OAuth Apps → New OAuth App**
-3. Fill in:
-   - Application name: `Synalytix`
-   - Homepage URL: `http://localhost:3000`
-   - Callback URL: `http://localhost:4000/api/auth/callback/github`
-4. Click Register application
-5. Copy **Client ID** → `GITHUB_CLIENT_ID`
-6. Click **Generate a new client secret** → `GITHUB_CLIENT_SECRET`
+
+**IMPORTANT:** Because GitHub only allows ONE callback URL per OAuth app, you must create **TWO separate OAuth Apps** if you are using Supabase for frontend login and Render for backend data fetching.
+
+#### App 1: For Website Login (Supabase)
+1. Go to https://github.com/settings/developers → **OAuth Apps → New OAuth App**
+2. Name it `Synalytix Login`
+3. Homepage URL: `http://localhost:3000` (or your Vercel URL in production)
+4. Callback URL: `https://<YOUR_SUPABASE_PROJECT>.supabase.co/auth/v1/callback`
+5. Paste the Client ID and Secret into your **Supabase Dashboard** (Authentication → Providers → GitHub).
+
+#### App 2: For Connecting Data (Render Backend)
+1. Create another **New OAuth App**
+2. Name it `Synalytix Data Connector`
+3. Homepage URL: `http://localhost:3000` (or your Vercel URL in production)
+4. Callback URL: `http://localhost:4000/api/auth/callback/github` (or your Render URL in production)
+5. Copy **Client ID** → `GITHUB_CLIENT_ID` in your backend `.env`
+6. Copy **Client Secret** → `GITHUB_CLIENT_SECRET` in your backend `.env`
 
 ### Instagram / Meta
 1. Go to https://developers.facebook.com
