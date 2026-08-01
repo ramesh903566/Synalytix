@@ -516,7 +516,9 @@ router.get('/leetcode/all', authenticate, async (req: Request, res: Response) =>
       acceptance_rate: profile.acceptance_rate || 0,
       ranking: profile.ranking || 0,
       reputation: profile.reputation || 0,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      streak: profile.streak || 0,
+      activity_summary: profile.activity_summary || null
     };
 
     res.json({ success: true, data: { stats, submissions } });

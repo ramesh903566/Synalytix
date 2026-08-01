@@ -11,6 +11,8 @@ export interface LeetCodeStats {
   reputation?: number;
   total_submissions?: number;
   timestamp?: string;
+  streak?: number;
+  activity_summary?: Record<string, number> | null;
 }
 
 export interface LeetCodeSubmission {
