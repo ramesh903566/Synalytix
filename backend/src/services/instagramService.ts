@@ -63,7 +63,8 @@ export const InstagramService = {
             page_id: page.id,
           };
         }
-      } catch {
+      } catch (error: any) {
+        console.error(`[InstagramService] Failed to get IG account for page ${page.id}:`, error.response?.data || error.message);
         continue;
       }
     }
@@ -135,7 +136,8 @@ export const InstagramService = {
         follower_count: metrics.follower_count ?? 0,
         accounts_engaged: metrics.accounts_engaged ?? 0,
       };
-    } catch {
+    } catch (error: any) {
+      console.error(`[InstagramService] Failed to fetch account insights for ${igAccountId}:`, error.response?.data || error.message);
       // Insights require business/creator account — return zeros if unavailable
       return {
         impressions: 0,
@@ -179,7 +181,8 @@ export const InstagramService = {
             item.media_type
           );
           return { ...item, insights };
-        } catch {
+        } catch (error: any) {
+          console.error(`[InstagramService] Failed to fetch post insights for media ${item.id}:`, error.response?.data || error.message);
           return item;
         }
       })

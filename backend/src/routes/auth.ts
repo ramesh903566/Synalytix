@@ -111,7 +111,7 @@ router.get('/connect/:platform', authenticate, async (req: Request, res: Respons
       const params = new URLSearchParams({
         client_id: process.env.META_APP_ID!,
         redirect_uri: `${BACKEND_URL}/api/auth/callback/instagram`,
-        scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement',
+        scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_manage_comments,pages_manage_metadata',
         response_type: 'code',
         state: stateToken,
       });
@@ -311,7 +311,7 @@ router.get('/callback/instagram', async (req: Request, res: Response) => {
       expires_at: expiresAt,
       platform_user_id: igAccount.ig_account_id,
       platform_username: igProfile.username,
-      scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement',
+      scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_manage_comments,pages_manage_metadata',
     });
 
     console.log(`[OAuth] Instagram connected: @${igProfile.username}`);
