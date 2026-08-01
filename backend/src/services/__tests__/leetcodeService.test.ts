@@ -6,7 +6,7 @@ import { redis } from '../../lib/redis';
 vi.mock('../../lib/redis', () => ({
   redis: {
     get: vi.fn(),
-    setex: vi.fn(),
+    set: vi.fn(),
   }
 }));
 
@@ -71,7 +71,7 @@ describe('LeetCodeService', () => {
       const result = await LeetCodeService.getProfile('testuser');
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(redis.setex).toHaveBeenCalled();
+      expect(redis.set).toHaveBeenCalled();
       expect(result.ranking).toBe(5000);
       expect(result.easy_solved).toBe(50);
       expect(result.contest_rating).toBe(1500);

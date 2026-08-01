@@ -137,7 +137,7 @@ export const LeetCodeService = {
           activity_summary: activitySummary
         };
 
-        await redis.setex(cacheKey, CACHE_TTL_SECONDS, JSON.stringify(snapshot));
+        await redis.set(cacheKey, JSON.stringify(snapshot), "EX", CACHE_TTL_SECONDS);
         return snapshot;
 
       } catch (err: any) {
