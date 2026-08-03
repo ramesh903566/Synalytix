@@ -1,13 +1,20 @@
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { LandingSections } from '../components/landing/LandingSections';
+import { STORAGE_KEYS, APP_CONFIG } from '../lib/constants';
 
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
 export default function Landing() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (APP_CONFIG.SHOW_LANDING_ONCE) {
+      localStorage.setItem(STORAGE_KEYS.HAS_VISITED_LANDING, 'true');
+    }
+  }, []);
 
   return (
     <div className="min-h-screen selection:bg-brand-primary selection:text-white overflow-hidden font-label">

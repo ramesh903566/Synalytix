@@ -1,8 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Heart, Star, GitMerge, ArrowUpRight } from 'lucide-react';
+import { Globe, Heart, Star, GitMerge, ArrowUpRight, Loader2 } from 'lucide-react';
+import { useGithubRepositories, useGithubActivity } from '../hooks/useGithubData';
 
-export const OpenSourceAnalytics: React.FC = () => {
+export const OpenSourceAnalytics: React.FC<{ username: string }> = ({ username }) => {
+  const { data: repos, isLoading: reposLoading } = useGithubRepositories(username);
+  const { data: activity, isLoading: activityLoading } = useGithubActivity(username);
+
+  const totalStars = repos?.reduce((acc, repo) => acc + repo.stargazerCount, 0) || 0;
+  // Approximation of OSS projects maintained: public repos that aren't forks
+  const ossProjects = repos?.filter(r => !r.isPrivate && !r.isFork).length || 0;
+
+  // Since we don't have PR data by repo directly, we leave this empty or mock it.
+  // In a real scenario, this would come from the backend.
+  const topContributions = [
+    { repo: 'Synalytix (Internal)', prs: activity?.prs?.count || 0 },
+  ];
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -22,7 +35,7 @@ export const OpenSourceAnalytics: React.FC = () => {
             <Star className="w-16 h-16 text-blue-400" />
           </div>
           <Star className="w-5 h-5 text-blue-400 mb-3 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
-          <span className="text-3xl font-bold text-zinc-50 tracking-tight">4,520</span>
+          <span className="text-3xl font-bold text-zinc-50 tracking-tight">{totalStars.toLocaleString()}</span>
           <span className="text-xs text-zinc-400 font-medium">Total Stars Earned</span>
         </div>
         <div className="flex flex-col gap-1 p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 group hover:border-emerald-500/40 transition-colors cursor-default relative overflow-hidden">
@@ -30,7 +43,7 @@ export const OpenSourceAnalytics: React.FC = () => {
             <Heart className="w-16 h-16 text-emerald-400" />
           </div>
           <Heart className="w-5 h-5 text-emerald-400 mb-3 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-          <span className="text-3xl font-bold text-zinc-50 tracking-tight">12</span>
+          <span className="text-3xl font-bold text-zinc-50 tracking-tight">{ossProjects}</span>
           <span className="text-xs text-zinc-400 font-medium">OSS Projects Maintained</span>
         </div>
       </div>
@@ -38,11 +51,7 @@ export const OpenSourceAnalytics: React.FC = () => {
       <div className="flex-1 flex flex-col">
         <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-4">Top External Contributions</h3>
         <div className="space-y-3">
-          {[
-            { repo: 'vercel/next.js', prs: 14 },
-            { repo: 'facebook/react', prs: 5 },
-            { repo: 'tailwindlabs/tailwindcss', prs: 8 }
-          ].map((item, i) => (
+          {topContributions.map((item, i) => (
             <motion.div 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}

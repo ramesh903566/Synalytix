@@ -3,15 +3,13 @@ import { motion } from 'framer-motion';
 import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area } from 'recharts';
 import { Calendar, TrendingUp } from 'lucide-react';
 
-const DATA = [
-  { day: 'Mon', commits: 12, avgSize: 45, lines: 120 },
-  { day: 'Tue', commits: 25, avgSize: 80, lines: 450 },
-  { day: 'Wed', commits: 21, avgSize: 65, lines: 310 },
-  { day: 'Thu', commits: 18, avgSize: 55, lines: 250 },
-  { day: 'Fri', commits: 30, avgSize: 70, lines: 600 },
-  { day: 'Sat', commits: 4, avgSize: 20, lines: 40 },
-  { day: 'Sun', commits: 2, avgSize: 10, lines: 15 },
-];
+import { useGithubContributions } from '../hooks/useGithubData';
+
+// Helper to get day name from date string
+const getDayName = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { weekday: 'short' });
+};
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -35,8 +33,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export const ProductivityAnalytics: React.FC = () => {
+export const ProductivityAnalytics: React.FC<{ username: string }> = ({ username }) => {
   const [timeframe, setTimeframe] = useState<'weekly' | 'monthly'>('weekly');
+  const { data } = useGithubContributions(username);
+  
+  // Create a default empty data structure
+  const emptyData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
+    day, commits: 0, avgSize: 0, lines: 0
+  }));
+
+  const chartData = emptyData; // To be populated from data?.events in future
+
+  // For now, if we have data, we just use the emptyData or some aggregate
+  const mostProductiveDay = data?.activeDay || 'N/A';
+  const consistencyScore = 0; // derived from streaks
+  const avgCommitSize = 0;
+  const longestGap = 0;
 
   return (
     <motion.div
@@ -72,7 +84,7 @@ export const ProductivityAnalytics: React.FC = () => {
             <Calendar className="w-12 h-12" />
           </div>
           <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Most Productive Day</p>
-          <p className="text-2xl font-bold text-zinc-50 group-hover:text-blue-400 transition-colors">Friday</p>
+          <p className="text-2xl font-bold text-zinc-50 group-hover:text-blue-400 transition-colors">{mostProductiveDay}</p>
         </div>
         <div className="p-5 bg-zinc-900/50 rounded-2xl border border-border-light hover:border-zinc-700 transition-colors group cursor-default relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -80,21 +92,21 @@ export const ProductivityAnalytics: React.FC = () => {
           </div>
           <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Consistency Score</p>
           <div className="flex items-end gap-2">
-            <p className="text-2xl font-bold text-zinc-50 group-hover:text-emerald-400 transition-colors">92</p>
+            <p className="text-2xl font-bold text-zinc-50 group-hover:text-emerald-400 transition-colors">{consistencyScore}</p>
             <p className="text-sm font-medium text-zinc-500 mb-1">/100</p>
           </div>
         </div>
         <div className="p-5 bg-zinc-900/50 rounded-2xl border border-border-light hover:border-zinc-700 transition-colors group cursor-default">
           <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Avg Commit Size</p>
           <div className="flex items-end gap-2">
-            <p className="text-2xl font-bold text-zinc-50 group-hover:text-purple-400 transition-colors">54</p>
+            <p className="text-2xl font-bold text-zinc-50 group-hover:text-purple-400 transition-colors">{avgCommitSize}</p>
             <p className="text-sm font-medium text-zinc-500 mb-1">LOC</p>
           </div>
         </div>
         <div className="p-5 bg-zinc-900/50 rounded-2xl border border-border-light hover:border-zinc-700 transition-colors group cursor-default">
           <p className="text-[10px] uppercase text-zinc-400 mb-2 tracking-wider font-semibold">Longest Gap</p>
           <div className="flex items-end gap-2">
-            <p className="text-2xl font-bold text-zinc-50 group-hover:text-rose-400 transition-colors">4</p>
+            <p className="text-2xl font-bold text-zinc-50 group-hover:text-rose-400 transition-colors">{longestGap}</p>
             <p className="text-sm font-medium text-zinc-500 mb-1">days</p>
           </div>
         </div>
@@ -102,7 +114,7 @@ export const ProductivityAnalytics: React.FC = () => {
 
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={DATA} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorLines" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>

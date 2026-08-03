@@ -130,6 +130,60 @@ router.get('/github/contributions', authenticate, async (req: Request, res: Resp
   }
 });
 
+// GET /api/data/github/activity
+router.get('/github/activity', authenticate, async (req: Request, res: Response) => {
+  const conn = await getConnection(req.userId!, 'github', res);
+  if (!conn) return;
+
+  try {
+    const { data: events, error } = await supabase.from('github_activity_events').select('*').eq('user_id', req.userId!);
+    if (error) throw error;
+    
+    let commits = 0;
+    let prs = 0;
+    let issues = 0;
+    let reviews = 0;
+    let forks = 0;
+    let releases = 0;
+    let discussions = 0;
+
+    if (events) {
+      events.forEach((event: any) => {
+        if (event.type === 'PushEvent') commits++;
+        else if (event.type === 'PullRequestEvent') prs++;
+        else if (event.type === 'IssuesEvent') issues++;
+        else if (event.type === 'PullRequestReviewEvent') reviews++;
+        else if (event.type === 'ForkEvent') forks++;
+        else if (event.type === 'ReleaseEvent') releases++;
+        else if (event.type === 'DiscussionEvent') discussions++;
+      });
+    }
+
+    const total = commits + prs + issues + reviews + forks + releases + discussions || 1; // avoid div by 0
+
+    const formatData = (count: number) => ({
+      count,
+      percentage: Math.round((count / total) * 100),
+      delta: '+0%', // Mocking delta for now, could be derived by comparing with previous period
+    });
+
+    res.json({
+      success: true,
+      data: {
+        commits: formatData(commits),
+        prs: formatData(prs),
+        issues: formatData(issues),
+        reviews: formatData(reviews),
+        discussions: formatData(discussions),
+        releases: formatData(releases),
+        forks: formatData(forks),
+      }
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET /api/data/github/languages
 router.get('/github/languages', authenticate, async (req: Request, res: Response) => {
   const conn = await getConnection(req.userId!, 'github', res);

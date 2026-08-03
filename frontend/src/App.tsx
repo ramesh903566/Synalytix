@@ -19,6 +19,8 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Planner = lazy(() => import('./pages/Planner'));
 const Recommendations = lazy(() => import('./pages/Recommendations'));
 
+import { STORAGE_KEYS, APP_CONFIG } from './lib/constants';
+
 function PageSpinner() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -40,11 +42,30 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function LandingRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isLoadingAuth } = useAppContext();
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-canvas">
+        <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (isAuthenticated) return <Navigate to="/app" replace />;
+  
+  if (APP_CONFIG.SHOW_LANDING_ONCE) {
+    const hasVisited = localStorage.getItem(STORAGE_KEYS.HAS_VISITED_LANDING);
+    if (hasVisited) return <Navigate to="/auth" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<PageSpinner />}>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<LandingRoute><Landing /></LandingRoute>} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />

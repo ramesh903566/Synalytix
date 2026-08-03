@@ -5,7 +5,8 @@ import {
   fetchGithubActivity,
   fetchGithubRepositories,
   fetchGithubLanguages,
-  fetchGithubTimeline
+  fetchGithubTimeline,
+  fetchGithubInsights
 } from '../api/githubApi';
 
 export const useGithubProfile = (username: string) => {
@@ -58,5 +59,15 @@ export const useGithubTimeline = (username: string) => {
     },
     initialPageParam: 1,
     staleTime: 1000 * 60 * 15, // 15 minutes
+    enabled: !!username,
+  });
+};
+
+export const useGithubInsights = (username: string) => {
+  return useQuery({
+    queryKey: ['github', 'insights', username],
+    queryFn: () => fetchGithubInsights(username),
+    staleTime: 1000 * 60 * 60, // 1 hour
+    enabled: !!username,
   });
 };

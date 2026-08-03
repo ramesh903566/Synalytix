@@ -2,14 +2,27 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Code2, Server, Layout, Database, Sparkles } from 'lucide-react';
 
-const SKILLS = [
-  { domain: 'Frontend', icon: <Layout className="w-4 h-4" />, color: 'bg-blue-500', shadow: 'shadow-blue-500/50', items: [{ name: 'React', score: 95 }, { name: 'Tailwind CSS', score: 90 }, { name: 'Framer Motion', score: 85 }] },
-  { domain: 'Backend', icon: <Server className="w-4 h-4" />, color: 'bg-emerald-500', shadow: 'shadow-emerald-500/50', items: [{ name: 'Node.js', score: 88 }, { name: 'Go', score: 75 }, { name: 'Python', score: 70 }] },
-  { domain: 'Languages', icon: <Code2 className="w-4 h-4" />, color: 'bg-purple-500', shadow: 'shadow-purple-500/50', items: [{ name: 'TypeScript', score: 98 }, { name: 'JavaScript', score: 95 }] },
-  { domain: 'Data & DB', icon: <Database className="w-4 h-4" />, color: 'bg-orange-500', shadow: 'shadow-orange-500/50', items: [{ name: 'PostgreSQL', score: 80 }, { name: 'Redis', score: 75 }] },
-];
+import { useGithubLanguages } from '../hooks/useGithubData';
 
-export const SkillsDetection: React.FC = () => {
+export const SkillsDetection: React.FC<{ username: string }> = ({ username }) => {
+  const { data: languages } = useGithubLanguages(username);
+
+  // Map real language data to the skills UI structure
+  const topLanguages = languages ? [...languages].sort((a, b) => b.bytes - a.bytes).slice(0, 5) : [];
+  const totalBytes = topLanguages.reduce((sum, l) => sum + l.bytes, 0) || 1;
+
+  const SKILLS = [
+    { 
+      domain: 'Languages', 
+      icon: <Code2 className="w-4 h-4" />, 
+      color: 'bg-purple-500', 
+      shadow: 'shadow-purple-500/50', 
+      items: topLanguages.map(l => ({
+        name: l.name,
+        score: Math.round((l.bytes / totalBytes) * 100)
+      }))
+    }
+  ];
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

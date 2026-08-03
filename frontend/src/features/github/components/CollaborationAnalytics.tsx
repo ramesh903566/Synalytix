@@ -2,14 +2,21 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { GitPullRequest, MessageSquare, Users, CheckCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { useGithubActivity } from '../hooks/useGithubData';
 
-const PR_DATA = [
-  { name: 'Merged', value: 85, color: '#10B981' },
-  { name: 'Closed', value: 10, color: '#EF4444' },
-  { name: 'Open', value: 5, color: '#3B82F6' },
-];
+export const CollaborationAnalytics: React.FC<{ username: string }> = ({ username }) => {
+  const { data: activity } = useGithubActivity(username);
 
-export const CollaborationAnalytics: React.FC = () => {
+  const prsOpened = activity?.prs?.count || 0;
+  const prsReviewed = activity?.reviews?.count || 0;
+  const comments = activity?.discussions?.count || 0;
+
+  // Mocked PR merge rate for now since we don't have PR status breakdown
+  const PR_DATA = [
+    { name: 'Merged', value: 85, color: '#10B981' },
+    { name: 'Closed', value: 10, color: '#EF4444' },
+    { name: 'Open', value: 5, color: '#3B82F6' },
+  ];
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -40,7 +47,7 @@ export const CollaborationAnalytics: React.FC = () => {
                 <p className="text-xs text-zinc-500">Last 30 days</p>
               </div>
             </div>
-            <span className="text-2xl font-bold text-zinc-50 group-hover:text-purple-400 transition-colors">42</span>
+            <span className="text-2xl font-bold text-zinc-50 group-hover:text-purple-400 transition-colors">{prsOpened}</span>
           </motion.div>
           
           <motion.div 
@@ -58,7 +65,7 @@ export const CollaborationAnalytics: React.FC = () => {
                 <p className="text-xs text-zinc-500">Last 30 days</p>
               </div>
             </div>
-            <span className="text-2xl font-bold text-zinc-50 group-hover:text-emerald-400 transition-colors">128</span>
+            <span className="text-2xl font-bold text-zinc-50 group-hover:text-emerald-400 transition-colors">{prsReviewed}</span>
           </motion.div>
 
           <motion.div 
@@ -76,7 +83,7 @@ export const CollaborationAnalytics: React.FC = () => {
                 <p className="text-xs text-zinc-500">Last 30 days</p>
               </div>
             </div>
-            <span className="text-2xl font-bold text-zinc-50 group-hover:text-amber-400 transition-colors">345</span>
+            <span className="text-2xl font-bold text-zinc-50 group-hover:text-amber-400 transition-colors">{comments}</span>
           </motion.div>
         </div>
 

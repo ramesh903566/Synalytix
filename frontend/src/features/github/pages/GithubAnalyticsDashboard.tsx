@@ -26,8 +26,8 @@ const SkeletonLoader = ({ height = "h-80" }) => (
   <div className={`w-full ${height} animate-pulse bg-zinc-900/50 rounded-3xl border border-zinc-800/50`} />
 );
 
-// We hardcode the mock username for now
-const GITHUB_USERNAME = "ramesh903566";
+// Use "me" as the identifier for the current authenticated user's data
+const GITHUB_USERNAME = "me";
 
 export const GithubAnalyticsDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -139,7 +139,7 @@ export const GithubAnalyticsDashboard: React.FC = () => {
           <div className="col-span-1 md:col-span-12 lg:col-span-8">
             <ErrorBoundary>
               <React.Suspense fallback={<SkeletonLoader height="h-full min-h-[300px]" />}>
-                <Achievements />
+                <Achievements username={GITHUB_USERNAME} />
               </React.Suspense>
             </ErrorBoundary>
           </div>
@@ -148,14 +148,14 @@ export const GithubAnalyticsDashboard: React.FC = () => {
           <div className="col-span-1 md:col-span-12 lg:col-span-8">
             <ErrorBoundary>
               <React.Suspense fallback={<SkeletonLoader height="h-[450px]" />}>
-                <ProductivityAnalytics />
+                <ProductivityAnalytics username={GITHUB_USERNAME} />
               </React.Suspense>
             </ErrorBoundary>
           </div>
           <div className="col-span-1 md:col-span-12 lg:col-span-4">
             <ErrorBoundary>
               <React.Suspense fallback={<SkeletonLoader height="h-[450px]" />}>
-                <OpenSourceAnalytics />
+                <OpenSourceAnalytics username={GITHUB_USERNAME} />
               </React.Suspense>
             </ErrorBoundary>
           </div>
@@ -180,14 +180,14 @@ export const GithubAnalyticsDashboard: React.FC = () => {
           <div className="col-span-1 md:col-span-12 lg:col-span-4">
             <ErrorBoundary>
               <React.Suspense fallback={<SkeletonLoader height="h-[450px]" />}>
-                <CollaborationAnalytics />
+                <CollaborationAnalytics username={GITHUB_USERNAME} />
               </React.Suspense>
             </ErrorBoundary>
           </div>
           <div className="col-span-1 md:col-span-12 lg:col-span-4">
             <ErrorBoundary>
               <React.Suspense fallback={<SkeletonLoader height="h-[450px]" />}>
-                <SkillsDetection />
+                <SkillsDetection username={GITHUB_USERNAME} />
               </React.Suspense>
             </ErrorBoundary>
           </div>

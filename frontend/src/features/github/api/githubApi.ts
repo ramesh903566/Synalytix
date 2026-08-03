@@ -92,17 +92,13 @@ export const fetchGithubContributions = async (_username: string): Promise<Githu
 };
 
 export const fetchGithubActivity = async (_username: string): Promise<GithubActivity> => {
-  // Backend doesn't have an activity endpoint, so we return mock data that matches the schema
-  const mockActivity = {
-    commits: { count: 120, percentage: 60, delta: '+12%' },
-    prs: { count: 15, percentage: 10, delta: '+5%' },
-    issues: { count: 10, percentage: 5, delta: '-2%' },
-    reviews: { count: 25, percentage: 15, delta: '+8%' },
-    discussions: { count: 5, percentage: 2, delta: '0%' },
-    releases: { count: 2, percentage: 1, delta: '0%' },
-    forks: { count: 3, percentage: 1, delta: '+1%' }
-  };
-  return GithubActivitySchema.parse(mockActivity);
+  const data = await apiFetch('/api/data/github/activity');
+  return GithubActivitySchema.parse(data);
+};
+
+export const fetchGithubInsights = async (_username: string): Promise<any> => {
+  const data = await apiFetch('/api/data/github/insights');
+  return data;
 };
 
 export const fetchGithubRepositories = async (_username: string): Promise<GithubRepository[]> => {
